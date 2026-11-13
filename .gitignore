@@ -18,6 +18,7 @@ data/**
 models/*.pkl
 models/*.txt
 models/*.bin
+models/**/model.txt
 
 # Logs
 logs/

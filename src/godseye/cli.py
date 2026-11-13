@@ -22,7 +22,7 @@ def _train(args) -> None:
     from godseye.risk import train
 
     cfg = get_config()
-    train.run(grid_path=args.grid, out=args.out or cfg.model_path,
+    train.run(grid_path=args.grid, out=args.out or cfg.model_dir,
               predictions=args.predictions or cfg.predictions_path, grid_deg=args.grid_deg, step=args.step,
               val_weeks=args.val_weeks, n_estimators=args.n_estimators,
               min_history_days=cfg.risk["min_history_days"])
@@ -74,7 +74,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     t = sub.add_parser("train", help="train the 7-day risk model on fires_daily_grid")
     t.add_argument("--grid", type=Path)
-    t.add_argument("--out", type=Path, help=f"model bundle (default: {cfg.model_path})")
+    t.add_argument("--out", type=Path, help=f"model directory: model.txt + model_meta.json (default: {cfg.model_dir})")
     t.add_argument("--predictions", type=Path, help=f"latest forecast CSV (default: {cfg.predictions_path})")
     t.add_argument("--grid-deg", type=float, default=cfg.risk["grid_deg"])
     t.add_argument("--step", type=int, default=cfg.risk["step_days"], help="days between training issue dates")

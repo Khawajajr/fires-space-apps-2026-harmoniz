@@ -33,3 +33,5 @@ Times are Asia/Amman.
 - Ticket 09 review fixes: ADR 0006 amendment moved back to PROPOSED (config switch, approved rule is default),
   anomaly/gate/floor fixes, helpers for 10. User asleep: FOR_ME_TObeDONE.md lists decisions and manual steps.
 - Ticket 10 built: /api/calendar/now + 'This week vs history' card; incomplete current year now gets anomalies.
+- Ticket 10 committed (6b6413b). Ticket 02 built: native LightGBM model + metadata (pickle migrated, identical
+  predictions), GET /api/meta.

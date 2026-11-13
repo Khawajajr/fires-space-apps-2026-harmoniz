@@ -56,8 +56,12 @@ class Config:
         return self.data_dir / "processed"
 
     @property
-    def model_path(self) -> Path:
-        return self.models_dir / self.risk["model_file"]
+    def model_dir(self) -> Path:
+        return self.models_dir / self.risk["model_dir"]
+
+    @property
+    def legacy_model_path(self) -> Path:
+        return self.models_dir / self.risk["legacy_model_file"]
 
     @property
     def predictions_path(self) -> Path:

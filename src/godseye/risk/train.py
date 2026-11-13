@@ -7,8 +7,6 @@ on weekly issue dates, holds out the last `val_weeks` issue dates, then refits o
 """
 from __future__ import annotations
 
-import json
-import pickle
 import time
 from pathlib import Path
 
@@ -16,9 +14,16 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
+from godseye.clean.io import find_table
+from godseye.config import get_config
+from godseye.risk import artifact
 from godseye.risk.metrics import evaluate
 from godseye.risk.model import LGB_PARAMS, RISK_BINS, RISK_LABELS, predict_latest, risk_level
 from godseye.risk.panel import FEATURES, HORIZON_DAYS, Panel, load_grid
+
+
+def artifact_data_path() -> Path:
+    return find_table(get_config().processed_dir, "fires_daily_grid")
 
 
 def run(*, grid_path: Path | None, out: Path, predictions: Path, grid_deg: float, step: int, val_weeks: int,
@@ -76,10 +81,15 @@ def run(*, grid_path: Path | None, out: Path, predictions: Path, grid_deg: float
         "feature_importance_gain": dict(sorted(zip(FEATURES, (round(float(g), 1) for g in gain)),
                                                key=lambda kv: -kv[1])),
     }
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with open(out, "wb") as fh:
-        pickle.dump(bundle, fh)
-    (out.with_suffix(".json")).write_text(json.dumps({k: v for k, v in bundle.items() if k != "model"}, indent=2))
+    data_path = grid_path or artifact_data_path()
+    artifact.save(bundle, out, {
+        "name": Path(out).name, "version": Path(out).name, "params": LGB_PARAMS, "best_iteration": best_iter,
+        "data_window": [str(panel.dates[0].date()), str(panel.dates[-1].date())],
+        "data_sha256": artifact.file_sha256(data_path),
+        "git_sha": artifact.git_sha(Path(__file__).resolve().parents[3]),
+        "issue_dates": {"train": [str(panel.dates[train_issue[0]].date()), str(panel.dates[train_issue[-1]].date())],
+                        "validation": [str(panel.dates[val_issue[0]].date()), str(panel.dates[val_issue[-1]].date())]},
+    })
 
     preds = predict_latest(bundle, panel)
     preds.to_csv(predictions, index=False)

@@ -82,5 +82,18 @@
     "frp_sum_7": 16125.8,
     "bt31_mean_7": 14801.0,
     "accel_7_30": 2189.2
-  }
+  },
+  "name": "risk_v1",
+  "version": "v1",
+  "created_at": null,
+  "data_sha256": null,
+  "git_sha": null,
+  "params": null,
+  "data_window": null,
+  "migrated_from": "gods_eye_risk_model.pkl",
+  "migrated_at": "2026-11-13T21:57:09+00:00",
+  "migrated_with_data_sha256": "4be74481c7656f96c872c202cf29606c9f151c0f54f7cfa8477a86d02df4d8c6",
+  "migrated_at_git_sha": "6b6413b",
+  "note": "v1 was refit on train + validation after early stopping; its validation metrics are optimistic, and its training provenance was not recorded (see ticket 11a and ADR 0005).",
+  "num_trees": 130
 }

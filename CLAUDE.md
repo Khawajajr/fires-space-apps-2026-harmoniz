@@ -12,7 +12,9 @@ Display name lives in one config value; the Python package stays `godseye` (inte
   basemap built by `web/tools/build_basemap.py`). API: `/api/aois`, `/api/calendar?aoi=|bbox=&unit=&metric=`.
 - v0 Leaflet dashboard: `http://localhost:8000/`
 - Globe: `cd gods-eye-view; npm run dev` → `http://localhost:4173` (needs `GODS_EYE_API_URL=http://127.0.0.1:8000`)
-- Pipeline: `python -m godseye clean` (~7 min, reads `data/raw`), then `python -m godseye train` (~25 s).
+- Pipeline: `python -m godseye clean` (~7 min, reads `data/raw`), then `python -m godseye train` (~25 s; writes
+  `models/<dir>/model.txt` + `model_meta.json`, no pickle), `aggregate`, `harmonize` (links + figures).
+  `GET /api/meta` reports data coverage, model provenance, harmonization and attribution.
   `scripts/*.py` are deprecated wrappers. Then `python -m godseye aggregate` (~40 s: per-sensor fire cells,
   0.25° sensor grid, sensor availability, coverage chart) and `python -m godseye manifest` (data/manifest.json).
 - Tests: `.venv\Scripts\python -m pytest` (fixture in `tests/fixtures/firms`, rebuilt by `make_fixture.py`);

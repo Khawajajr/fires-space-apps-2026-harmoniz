@@ -13,7 +13,8 @@ from tests.contract.cases import CASES, FILE_CASES, file_fingerprint, fingerprin
 GOLDEN = json.loads(Path(__file__).with_name("golden.json").read_text())
 CFG = get_config()
 pytestmark = pytest.mark.skipif(
-    not ((CFG.processed_dir / "fires_recent.feather").exists() and CFG.model_path.exists()),
+    not ((CFG.processed_dir / "fires_recent.feather").exists()
+         and ((CFG.model_dir / "model.txt").exists() or CFG.legacy_model_path.exists())),
     reason="real processed data / model not present")
 
 
@@ -33,3 +34,10 @@ def test_response_matches_v0_prototype(client, path):
     assert r.status_code == 200
     got = (file_fingerprint if path in FILE_CASES else fingerprint)(r.content)
     assert got == GOLDEN[path]
+
+
+def test_meta_describes_data_model_and_attribution(client):
+    m = client.get("/api/meta").json()
+    assert m["name"] == CFG.display_name and "FIRMS" in m["attribution"][0]
+    assert {s["sensor"] for s in m["sensors"]} >= {"Aqua-MODIS", "NOAA-20-VIIRS"}
+    assert m["model"]["version"] == "v1" and m["model"]["num_trees"] > 0

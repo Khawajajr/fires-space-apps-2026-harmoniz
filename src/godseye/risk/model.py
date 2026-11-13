@@ -1,9 +1,6 @@
 """Risk levels and scoring the latest day with a trained model bundle."""
 from __future__ import annotations
 
-import pickle
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 
@@ -22,11 +19,6 @@ LGB_PARAMS = {"objective": "binary", "learning_rate": 0.05, "num_leaves": 63, "m
 
 def risk_level(p: np.ndarray) -> np.ndarray:
     return np.asarray(RISK_LABELS, dtype=object)[np.digitize(p, RISK_BINS)]
-
-
-def load_bundle(path: Path) -> dict:
-    with open(path, "rb") as fh:
-        return pickle.load(fh)
 
 
 def predict_latest(bundle: dict, panel: Panel) -> pd.DataFrame:

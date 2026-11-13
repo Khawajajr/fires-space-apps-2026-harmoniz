@@ -25,22 +25,26 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 from godseye.api import calendar as calendar_api
 from godseye.api import climatology as climatology_api
 from godseye.calendar.harmonized import build_chain
 from godseye.calendar.store import CalendarStore, in_bbox
+from godseye.clean.io import find_table
 from godseye.clean.io import read_table as _read_table
 from godseye.clean.schema import CONF_RANK
 from godseye.config import get_config
 from godseye.harmonize import pipeline as harmonize_pipeline
-from godseye.risk.model import load_bundle, predict_latest
+from godseye.harmonize.link import display_method
+from godseye.risk import artifact
+from godseye.risk.model import predict_latest
 from godseye.risk.panel import Panel, load_grid
 
 CONFIG = get_config()
 LOG = logging.getLogger("godseye.api")
 PROCESSED = CONFIG.processed_dir
-MODEL_PATH = CONFIG.model_path
+MODEL_DIR = CONFIG.model_dir
 STATE: dict = {}
 
 
@@ -50,8 +54,12 @@ def read_table(stem: str) -> pd.DataFrame:
 
 def load_predictions() -> tuple[pd.DataFrame, dict]:
     """Score the latest grid day with the trained model; fall back to the CSV written at training time."""
-    if MODEL_PATH.exists():
-        bundle = load_bundle(MODEL_PATH)
+    if not artifact.exists(MODEL_DIR) and CONFIG.legacy_model_path.exists():
+        artifact.migrate_pickle(CONFIG.legacy_model_path, MODEL_DIR, find_table(PROCESSED, "fires_daily_grid"),
+                                CONFIG.root)
+        LOG.warning("migrated %s to %s", CONFIG.legacy_model_path.name, MODEL_DIR)
+    if artifact.exists(MODEL_DIR):
+        bundle = artifact.load(MODEL_DIR)
         preds = predict_latest(bundle, Panel(load_grid(), bundle["grid_deg"]))
         meta = {k: bundle[k] for k in ("grid_deg", "horizon_days", "risk_bins", "risk_labels",
                                        "trained_through", "validation")}
@@ -263,6 +271,72 @@ def risk_at(
         },
     }
 
+
+
+class SensorCoverage(BaseModel):
+    sensor: str
+    first_day: str | None
+    last_day: str | None
+    days: dict[str, int] = Field(description="days per availability status in the data range")
+
+
+class MetaResponse(BaseModel):
+    name: str
+    api_version: str
+    challenge: str
+    data_range: list[str] | None
+    sensors: list[SensorCoverage]
+    model: dict | None = Field(description="risk model artifact: name, version, created_at, git_sha, data_sha256, ...")
+    harmonization: list[dict] = Field(description="sensor links: source, target, method, provisional")
+    aois: list[str]
+    attribution: list[str]
+
+
+MODEL_INFO_FIELDS = ("name", "version", "created_at", "trained_through", "git_sha", "data_sha256", "num_trees",
+                     "migrated_from", "migrated_at", "note")
+
+
+def model_info() -> dict | None:
+    """From the committed metadata file, so it never waits for (or races with) the background scoring."""
+    meta = artifact.read_meta(MODEL_DIR)
+    return None if meta is None else {k: meta.get(k) for k in MODEL_INFO_FIELDS}
+
+
+ATTRIBUTION = [
+    "Fire data: NASA FIRMS (MODIS C6.1 MCD14ML; VIIRS 375 m C2 VNP14IMG, VJ114IMG, VJ214IMG). We acknowledge the use "
+    "of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS), part of NASA's Earth "
+    "Science Data and Information System (ESDIS).",
+    "Boundaries: Made with Natural Earth (public domain).",
+    "Map: Leaflet (BSD-2-Clause). Globe: gods-eye-view by Bilawal Sidhu (MIT).",
+    "Full list: docs/REFERENCES.md.",
+]
+
+
+@app.get("/api/meta", response_model=MetaResponse)
+def meta():
+    store = calendar_api.STORE.get("calendar")
+    sensors, data_range = [], None
+    if store is not None:
+        data_range = [store.first.strftime("%Y-%m-%d"), store.last.strftime("%Y-%m-%d")]
+        names = {0: "ok", 1: "partial", 2: "gap"}
+        for i, name in enumerate(store.sensors):
+            st = store.status[i]
+            has = np.flatnonzero(st != 2)
+            sensors.append(SensorCoverage(
+                sensor=name,
+                first_day=str(store.dates[has[0]].date()) if len(has) else None,
+                last_day=str(store.dates[has[-1]].date()) if len(has) else None,
+                days={names[k]: int((st == k).sum()) for k in names}))
+    links = []
+    if store is not None and store.chain is not None:
+        chain = store.chain
+        for k in [c for c in chain.continuity.values() if c is not None] + [chain.headline]:
+            links.append({"source": k.source, "target": k.target, "method": display_method(k),
+                          "provisional": k.provisional})
+    return MetaResponse(name=CONFIG.display_name, api_version=app.version,
+                        challenge="NASA Space Apps 2026: Harmonization of MODIS and VIIRS Hot Spots",
+                        data_range=data_range, sensors=sensors, model=model_info(),
+                        harmonization=links, aois=sorted(CONFIG.aois), attribution=ATTRIBUTION)
 
 
 # Mounted last so /api/* routes take precedence.
