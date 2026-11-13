@@ -40,3 +40,4 @@ Times are Asia/Amman.
 - Ticket 11a committed (68e5bb9). Ticket 12: v2 served (config switch), schema contract test, 'Next 7 days' panel.
 - Ticket 11b: test block scored once. Calibrated v2 ROC-AUC 0.867 vs persistence 0.749, Brier skill +0.197;
   new-activity BSS +0.089; MODEL_CARD.md generated. Ticket 12 review fixes.
+- Ticket 13: get_burning_calendar globe tool + proxy route (fork 09b62da), fire-only share-link preset, integration README.
