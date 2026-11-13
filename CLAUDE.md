@@ -5,10 +5,16 @@ Entry for "Harmonization of MODIS and VIIRS Hot Spots". Mission brief: `CLAUDE_C
 Display name lives in one config value; the Python package stays `godseye` (internal).
 
 ## Run
-- Backend: `.venv\Scripts\python -m uvicorn backend.main:app --port 8000` → `curl localhost:8000/api/health`
+- Install: `.venv\Scripts\python -m pip install -e ".[dev]"` (package `src/godseye`, config in `configs/*.yaml`)
+- Backend: `.venv\Scripts\python -m godseye api` (port 8000) → `curl localhost:8000/api/health`.
+  `uvicorn backend.main:app` still works (thin wrapper).
 - Leaflet dashboard: served by the backend at `http://localhost:8000/`
 - Globe: `cd gods-eye-view; npm run dev` → `http://localhost:4173` (needs `GODS_EYE_API_URL=http://127.0.0.1:8000`)
-- Pipeline: `.venv\Scripts\python scripts\clean_fire_data.py` (~7 min), then `scripts\train_model.py` (~25 s)
+- Pipeline: `python -m godseye clean` (~7 min, reads `data/raw`), then `python -m godseye train` (~25 s).
+  `scripts/*.py` are deprecated wrappers.
+- Tests: `.venv\Scripts\python -m pytest` (fixture in `tests/fixtures/firms`, rebuilt by `make_fixture.py`);
+  `.venv\Scripts\ruff check src tests scripts backend`. The contract test compares the 4 prototype endpoints with
+  `tests/contract/golden.json` (captured from v0-prototype) and is skipped without real data.
 - Globe tests: `cd gods-eye-view; npm test`. One known failure, not ours: `src/tooling/nominatimOutlineRoute.test.mjs:687`
   ("the disk cache survives a restart…", Windows file permissions). Don't edit upstream tests to fix it.
 

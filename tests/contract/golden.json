@@ -1,0 +1,13 @@
+{
+  "/api/health": "af260218a9ae80240c90b3bf5186566ee9796f095691eb1e5d31c72903b54395",
+  "/api/fires/recent": "08c4080fb865480086f60ae29ec6a2ced10662bd518443117291c75208e2e133",
+  "/api/fires/recent?format=firms&hours=24&min_confidence=nominal&limit=200000": "ccd1be43f9a5dcb741d4bd446e779bc2c57f24d65a9eb2379d7c0118e6756004",
+  "/api/fires/recent?bbox=170,-60,-170,60&hours=168": "4d6f6f33df01b10fa718bdb34817dbd6fa785ec83db824c4a0637d1c2e174de6",
+  "/api/fires/recent?instrument=MODIS&min_confidence=high&limit=500": "6354787ab802b9ae044990f030de6472b6c4a7a5620049c4a8670867a72bea6f",
+  "/api/fires/recent?instrument=VIIRS&bbox=34,29,42.5,37.5&hours=168": "abe00fe46394e78c5ca73b5a3142fa3f8d1bbe04cf1d7709fdef7b6f9215cc4a",
+  "/api/predictions/risk-map?min_risk=0.02": "f4318b6a3bcfb8a032016f975fe047137972d0a710a5583abd7a4f1758098f17",
+  "/api/predictions/risk-map?format=geojson&bbox=34,29,42.5,37.5": "e6a77181336dc7cee52010fae556bf307af1b7a805bde0141241bdaac3823a3f",
+  "/api/predictions/risk-at?lat=-24&lon=31.5&radius_km=50&top=5": "dec90dc838296ba07db8517b7a3427b3235986d8d1da2f3c593a1994970ed89b",
+  "/api/predictions/risk-at?lat=31.95&lon=35.93": "e005d8540ce2a4ec5363c446af62691a151df37b41f337f897021f2f5f7e9999",
+  "/api/fires/recent.geojson": "8345c6c914fb4b1450d0336e642a957c202e888d84b4e982b025352d6ccbb74c"
+}

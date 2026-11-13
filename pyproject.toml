@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "godseye"
+version = "0.2.0"
+description = "F.I.R.E.S.: harmonized MODIS + VIIRS burning activity calendar and 7-day fire risk (NASA Space Apps 2026)"
+readme = "CLAUDE.md"
+requires-python = ">=3.12"
+license = "MIT"
+# Direct dependencies only; the full environment is pinned in requirements.lock.
+dependencies = [
+    "fastapi==0.162.0",
+    "uvicorn==0.54.0",
+    "pandas==3.0.5",
+    "numpy==2.5.1",
+    "pyarrow==26.0.1",
+    "lightgbm==4.7.0",
+    "pydantic==2.14.3",
+    "PyYAML==6.0.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.2.0", "ruff==0.17.5", "httpx==0.28.1"]
+
+[project.scripts]
+godseye = "godseye.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["gods-eye-view", "data", "models", "logs", ".scratch"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E731"]  # small named lambdas are used as local readers

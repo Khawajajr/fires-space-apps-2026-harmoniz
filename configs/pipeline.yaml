@@ -1,0 +1,31 @@
+# One source of truth for the pipeline. Paths are relative to the repo root.
+# Env overrides: GODSEYE_DATA_DIR (replaces paths.data_dir), FIRMS_MAP_KEY.
+display_name: F.I.R.E.S.
+
+paths:
+  data_dir: data            # raw/ and processed/ live under it
+  models_dir: models
+  frontend_dir: frontend
+
+clean:
+  min_confidence: nominal   # low | nominal | high
+  grid_deg: 0.25
+  recent_days: 7
+  chunk_rows: 1000000
+  table_format: feather     # ADR 0002: feather/zstd, not parquet
+
+risk:
+  grid_deg: 0.25
+  horizon_days: 7
+  min_history_days: 30
+  risk_bins: [0.10, 0.30, 0.50, 0.70]
+  risk_labels: [low, moderate, high, very_high, extreme]
+  step_days: 7
+  val_weeks: 6
+  n_estimators: 600
+  model_file: gods_eye_risk_model.pkl
+  predictions_file: risk_predictions.csv
+
+api:
+  host: 127.0.0.1
+  port: 8000

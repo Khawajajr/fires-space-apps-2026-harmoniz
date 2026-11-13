@@ -11,3 +11,6 @@ Times are Asia/Amman.
 - Skills set up (local markdown tracker, single-context docs). `/grill-with-docs` rounds 1–2: GLOSSARY.md + ADRs 0001–0006
   (Aqua-equivalent headline, feather, web app primary, NOAA-20 risk label, validation blocks, activity gate).
 - /to-spec + /to-tickets: spec and 14 tickets in .scratch/space-apps-2026/ (build order + cut order agreed). ADR 0006 gained the 5-year history minimum. Phase 0 done; starting ticket 01.
+- Ticket 01 done: `godseye` package (config, CLI, clean/, risk/, api/), thin wrappers, FIRMS fixture, 40 tests, ruff clean.
+  Contract test: the 4 endpoints are byte-for-byte identical to v0-prototype; retrain reproduces v1 exactly. Next: 03.
+- Archive requests cover 2018→now: calibration window 2018–2021 (auto-extends to 2013–2021), simulated-switchover figure; ADR 0001, spec, glossary, tickets 07/08 updated.

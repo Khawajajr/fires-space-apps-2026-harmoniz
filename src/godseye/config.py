@@ -1,0 +1,75 @@
+"""Configuration: configs/*.yaml plus environment overrides. The single source of truth for paths and constants."""
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass, field
+from functools import lru_cache
+from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+@dataclass(frozen=True)
+class AOI:
+    name: str
+    label: str
+    bbox: tuple[float, float, float, float]  # west, south, east, north
+
+
+@dataclass(frozen=True)
+class Config:
+    root: Path
+    display_name: str
+    data_dir: Path
+    models_dir: Path
+    frontend_dir: Path
+    clean: dict
+    risk: dict
+    api: dict
+    aois: dict[str, AOI] = field(default_factory=dict)
+    firms_map_key: str | None = None
+
+    @property
+    def raw_dir(self) -> Path:
+        return self.data_dir / "raw"
+
+    @property
+    def processed_dir(self) -> Path:
+        return self.data_dir / "processed"
+
+    @property
+    def model_path(self) -> Path:
+        return self.models_dir / self.risk["model_file"]
+
+    @property
+    def predictions_path(self) -> Path:
+        return self.processed_dir / self.risk["predictions_file"]
+
+
+def load_config(config_dir: Path | None = None, env: dict | None = None) -> Config:
+    env = os.environ if env is None else env
+    config_dir = Path(config_dir or env.get("GODSEYE_CONFIG_DIR") or ROOT / "configs")
+    root = config_dir.parent
+    pipeline = yaml.safe_load((config_dir / "pipeline.yaml").read_text(encoding="utf-8"))
+    aois_raw = yaml.safe_load((config_dir / "aois.yaml").read_text(encoding="utf-8")) or {}
+    paths = pipeline["paths"]
+    resolve = lambda p: (root / p).resolve()
+    return Config(
+        root=root,
+        display_name=pipeline["display_name"],
+        data_dir=Path(env["GODSEYE_DATA_DIR"]).resolve() if env.get("GODSEYE_DATA_DIR") else resolve(paths["data_dir"]),
+        models_dir=resolve(paths["models_dir"]),
+        frontend_dir=resolve(paths["frontend_dir"]),
+        clean=pipeline["clean"],
+        risk=pipeline["risk"],
+        api=pipeline["api"],
+        aois={name: AOI(name, a["label"], tuple(float(v) for v in a["bbox"])) for name, a in aois_raw.items()},
+        firms_map_key=env.get("FIRMS_MAP_KEY") or None,
+    )
+
+
+@lru_cache(maxsize=1)
+def get_config() -> Config:
+    return load_config()
