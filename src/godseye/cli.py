@@ -68,6 +68,30 @@ def _harmonize(args) -> None:
     pipeline.run(cfg, Path(args.processed or cfg.processed_dir), cfg.root / "reports")
 
 
+def _demo(args) -> None:
+    """Fresh-clone demo: build the committed FIRMS fixture into data/demo and serve the calendar app."""
+    import os
+
+    from godseye import config
+
+    demo = config.ROOT / "data" / "demo"
+    os.environ["GODSEYE_DATA_DIR"] = str(demo)
+    config.get_config.cache_clear()
+    cfg = get_config()
+    fixture = cfg.root / "tests" / "fixtures" / "firms"
+    from godseye.clean import pipeline as clean
+    from godseye.ingest import pipeline as ingest
+
+    clean.run([str(fixture)], cfg.processed_dir, min_confidence=cfg.clean["min_confidence"],
+              grid_deg=cfg.clean["grid_deg"], recent_days=cfg.clean["recent_days"],
+              table_format=cfg.clean["table_format"])
+    ingest.run(cfg, cfg.processed_dir, cfg.processed_dir, demo / "coverage.png")
+    print()
+    print(f"Demo data in {demo}. Open http://{args.host}:{args.port}/app/ (fixture data: a few hundred detections; "
+          "risk endpoints answer 503 because the demo has no trained model).")
+    _api(args)
+
+
 def _api(args) -> None:
     import uvicorn
 
@@ -121,6 +145,12 @@ def build_parser() -> argparse.ArgumentParser:
     h = sub.add_parser("harmonize", help="fit the sensor links in configs/pipeline.yaml (cross-validated)")
     h.add_argument("--processed", help=f"sensor grid + availability directory (default: {cfg.processed_dir})")
     h.set_defaults(func=_harmonize)
+
+    d = sub.add_parser("demo", help="fresh-clone demo: build the test fixture into data/demo and serve the app")
+    d.add_argument("--host", default=cfg.api["host"])
+    d.add_argument("--port", type=int, default=cfg.api["port"])
+    d.add_argument("--reload", action="store_true")
+    d.set_defaults(func=_demo)
 
     a = sub.add_parser("api", help="serve the HTTP API and the dashboard")
     a.add_argument("--host", default=cfg.api["host"])
