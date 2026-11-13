@@ -19,7 +19,9 @@ def run(cfg: Config, clean_dir: Path, out_dir: Path, figure: Path) -> dict:
     cells = fire_cells(det, cfg.sensors, fine)
     del det
     grid = sensor_grid(cells, fine, coarse)
-    avail = availability(cells, cfg.sensors, cfg.aggregate["partial_fraction"])
+    avail = availability(cells, cfg.sensors, cfg.aggregate["partial_fraction"],
+                         cross_sensor_fraction=cfg.aggregate["cross_sensor_fraction"],
+                         cross_sensor_instruments=tuple(cfg.aggregate["cross_sensor_instruments"]))
     out_dir.mkdir(parents=True, exist_ok=True)
     paths = [write_table(cells, out_dir / "sensor_fire_cells", "feather"),
              write_table(grid, out_dir / "sensor_grid_daily", "feather"),

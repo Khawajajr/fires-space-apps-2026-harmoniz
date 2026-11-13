@@ -11,6 +11,8 @@ All counts are of detections kept by `clean` (nominal+ confidence, vegetation fi
 """
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -80,19 +82,27 @@ def sensor_grid(cells: pd.DataFrame, fine_deg: float, coarse_deg: float) -> pd.D
 
 
 def availability(cells: pd.DataFrame, sensors: dict[str, Sensor], partial_fraction: float,
-                 first: pd.Timestamp | None = None, last: pd.Timestamp | None = None) -> pd.DataFrame:
+                 first: pd.Timestamp | None = None, last: pd.Timestamp | None = None,
+                 cross_sensor_fraction: float | None = None,
+                 cross_sensor_instruments: tuple[str, ...] = ("VIIRS",)) -> pd.DataFrame:
     """
     Per sensor and day over [first, last] (default: the data's range), from GLOBAL detections:
       not_operational  outside the sensor's configured start/end (start unset: before its first data day)
       no_data          zero detections worldwide (an outage: the world always has fires)
-      partial          fewer than partial_fraction x the sensor's centred 31-day median
+      partial          fewer than partial_fraction x the sensor's centred 31-day median, or (cross-sensor check,
+                       when cross_sensor_fraction is set) its ratio to the median of its same-instrument peers that
+                       day is below cross_sensor_fraction x that ratio's centred 31-day median: sensors of one
+                       instrument on the same orbit see nearly the same fires, so a sudden shortfall against them
+                       is missing granules (only for cross_sensor_instruments: Terra and Aqua differ too much)
       ok               otherwise
     """
     daily = cells.groupby(["sensor", "acq_date"], observed=True).n_detections.sum()
     first = pd.Timestamp(first if first is not None else cells.acq_date.min())
     last = pd.Timestamp(last if last is not None else cells.acq_date.max())
     dates = pd.date_range(first, last, freq="D")
-    frames = []
+    rolling_median = lambda v: pd.Series(v).rolling(31, center=True, min_periods=7).median().to_numpy()
+
+    counts, statuses = {}, {}
     for name, s in sensors.items():
         n = (daily.xs(name, level="sensor") if name in daily.index.get_level_values(0) else pd.Series(dtype=float))
         n = n.reindex(dates.to_numpy().astype("datetime64[D]"), fill_value=0).to_numpy()
@@ -102,15 +112,34 @@ def availability(cells: pd.DataFrame, sensors: dict[str, Sensor], partial_fracti
             operational &= dates >= start
         if s.end is not None:
             operational &= dates <= pd.Timestamp(s.end)
-        median = pd.Series(np.where(operational, n, np.nan)).rolling(31, center=True, min_periods=7).median()
-        status = np.select(
-            [~operational, n == 0, n < partial_fraction * median.to_numpy()],
-            ["not_operational", "no_data", "partial"], default="ok")
-        frames.append(pd.DataFrame({"sensor": name, "acq_date": dates.to_numpy().astype("datetime64[D]"),
-                                    "n_detections_global": n.astype(np.int64), "status": status}))
-    out = pd.concat(frames, ignore_index=True)
+        median = rolling_median(np.where(operational, n, np.nan))
+        counts[name] = n
+        statuses[name] = np.select([~operational, n == 0, n < partial_fraction * median],
+                                   ["not_operational", "no_data", "partial"], default="ok").astype(object)
+
+    if cross_sensor_fraction is not None:
+        first_pass = {k: v.copy() for k, v in statuses.items()}
+        for name, s in sensors.items():
+            peers = [p for p, ps in sensors.items() if p != name and ps.instrument == s.instrument]
+            if s.instrument not in cross_sensor_instruments or not peers:
+                continue
+            peer_counts = np.vstack([np.where(first_pass[p] == "ok", counts[p], np.nan) for p in peers])
+            with np.errstate(all="ignore"), warnings.catch_warnings():
+                warnings.simplefilter("ignore", RuntimeWarning)          # all-NaN days: no healthy peer
+                peer = np.nanmedian(peer_counts, axis=0)
+            with np.errstate(divide="ignore", invalid="ignore"):
+                ratio = np.where((first_pass[name] == "ok") & (peer > 0), counts[name] / peer, np.nan)
+            short = ratio < cross_sensor_fraction * rolling_median(ratio)
+            statuses[name] = np.where(short, "partial", statuses[name])
+
+    basic = first_pass if cross_sensor_fraction is not None else statuses
+    out = pd.concat([pd.DataFrame({"sensor": name, "acq_date": dates.to_numpy().astype("datetime64[D]"),
+                                   "n_detections_global": counts[name].astype(np.int64), "status": statuses[name],
+                                   "status_own_rule": basic[name]})
+                     for name in sensors], ignore_index=True)
     out["sensor"] = pd.Categorical(out.sensor, categories=list(sensors))
     out["status"] = pd.Categorical(out.status, categories=STATUSES)
+    out["status_own_rule"] = pd.Categorical(out.status_own_rule, categories=STATUSES)   # before the cross-sensor check
     out["is_coverage_gap"] = out.status.isin(COVERAGE_GAP)
     out["basis"] = "global"
     return out

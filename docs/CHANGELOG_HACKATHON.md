@@ -18,3 +18,7 @@ Times are Asia/Amman.
   Found 14 S-NPP outage days in 2026 that would otherwise read as zero fire. Added docs/REFERENCES.md. Next: 04 (calendar tracer bullet).
 - Ticket 04 done: `/api/calendar` + `/api/aois` (pydantic, seam-3 tests), `web/` calendar app at /app/ (offline, vendored
   Leaflet 1.9.4, Natural Earth basemap). Server ready in 1.5 s (was 9.2 s). Next: 05 (VIIRS continuity link).
+
+## 2026-11-14 (before the 09:00 start)
+- Ticket 04 committed (6a91c9c). Ticket 05 done: VIIRS continuity link, cross-validated. NOAA-20 ~ S-NPP within 1% (no correction),
+  NOAA-21 x 1.027; bands cover 90.4–90.7% out of fold. Cross-sensor check finds S-NPP partial-delivery days. ADR 0007.

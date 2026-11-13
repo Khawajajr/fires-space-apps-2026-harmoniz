@@ -20,7 +20,7 @@ A ~1 km (0.01°) grid cell with at least one detection from a given sensor on a 
 _Avoid_: Fire, fire day
 
 **Coverage gap**:
-A sensor-day when the sensor was not delivering full data: not operational (pre-launch or retired), no data (zero detections worldwide: an outage), or partial (far fewer detections worldwide than usual). Not-operational and no-data days are shown as "no data", never as zero activity. Partial days keep their count but are always flagged, never presented as complete. Cloud cover is a known, unmapped limitation, not a coverage gap.
+A sensor-day when the sensor was not delivering full data: not operational (pre-launch or retired), no data (zero detections worldwide: an outage), or partial (far fewer detections worldwide than usual, or, for VIIRS, far fewer than the other VIIRS satellites saw that day). Not-operational and no-data days are shown as "no data", never as zero activity. Partial days keep their count but are always flagged, never presented as complete. Cloud cover is a known, unmapped limitation, not a coverage gap.
 _Avoid_: Zero, missing fire
 
 **Kept detection**:

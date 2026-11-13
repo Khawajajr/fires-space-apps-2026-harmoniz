@@ -1,0 +1,449 @@
+{
+  "links": [
+    {
+      "source": "NOAA-20-VIIRS",
+      "target": "S-NPP-VIIRS",
+      "method": "identity",
+      "provisional": false,
+      "unit": "region x week totals of fire cell-days on days both sensors delivered full data",
+      "region_deg": 10,
+      "weeks": 44,
+      "region_weeks": 9489,
+      "first_week": "2025-12-29",
+      "last_week": "2026-10-26",
+      "folds": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10"
+      ],
+      "cv_scores": {
+        "identity": {
+          "region_month_wape": 0.0317,
+          "region_month_mape_y50": 0.0798,
+          "region_month_mae": 102.664,
+          "region_month_corr": 0.9996,
+          "region_week_wape": 0.0633,
+          "region_week_corr": 0.9982,
+          "weekly_global_wape": 0.0164,
+          "weekly_global_corr": 0.9982,
+          "monthly_global_wape": 0.0108,
+          "monthly_global_corr": 0.9982
+        },
+        "global_ratio": {
+          "region_month_wape": 0.0322,
+          "region_month_mape_y50": 0.0784,
+          "region_month_mae": 104.41,
+          "region_month_corr": 0.9995,
+          "region_week_wape": 0.0634,
+          "region_week_corr": 0.9981,
+          "weekly_global_wape": 0.0177,
+          "weekly_global_corr": 0.998,
+          "monthly_global_wape": 0.013,
+          "monthly_global_corr": 0.9977
+        },
+        "region_month_shrunk_ratio": {
+          "region_month_wape": 0.0345,
+          "region_month_mape_y50": 0.0779,
+          "region_month_mae": 111.557,
+          "region_month_corr": 0.9994,
+          "region_week_wape": 0.0646,
+          "region_week_corr": 0.998,
+          "weekly_global_wape": 0.0195,
+          "weekly_global_corr": 0.9977,
+          "monthly_global_wape": 0.0151,
+          "monthly_global_corr": 0.9973
+        },
+        "quantile_map_region_season": {
+          "region_month_wape": 0.1567,
+          "region_month_mape_y50": 0.1897,
+          "region_month_mae": 507.513,
+          "region_month_corr": 0.9773,
+          "region_week_wape": 0.2055,
+          "region_week_corr": 0.953,
+          "weekly_global_wape": 0.1112,
+          "weekly_global_corr": 0.9218,
+          "monthly_global_wape": 0.0976,
+          "monthly_global_corr": 0.9294
+        }
+      },
+      "versus_global_ratio": "ties the global ratio within the 2% noise tolerance (0.0317 vs 0.0322, -1.6%); shipped because it is simpler",
+      "global_ratio_bootstrap_90": [
+        0.9834,
+        0.9934,
+        1.0006
+      ],
+      "band": [
+        {
+          "yhat_from": 0.0,
+          "yhat_to": 0.0,
+          "n": 289,
+          "lo_factor": 0.0,
+          "hi_factor": 0.0,
+          "hi_add": 3.6
+        },
+        {
+          "yhat_from": 0.0,
+          "yhat_to": 5.0,
+          "n": 1390,
+          "lo_factor": 0.0,
+          "hi_factor": 3.0,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 5.0,
+          "yhat_to": 20.0,
+          "n": 1266,
+          "lo_factor": 0.354,
+          "hi_factor": 1.811,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 20.0,
+          "yhat_to": 100.0,
+          "n": 2424,
+          "lo_factor": 0.5714,
+          "hi_factor": 1.4444,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 100.0,
+          "yhat_to": 500.0,
+          "n": 2286,
+          "lo_factor": 0.7307,
+          "hi_factor": 1.2521,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 500.0,
+          "yhat_to": Infinity,
+          "n": 1834,
+          "lo_factor": 0.8184,
+          "hi_factor": 1.1495,
+          "hi_add": 0.0
+        }
+      ],
+      "band_coverage_out_of_fold": 0.9093,
+      "monthly_drift": [
+        {
+          "month": "2026-01",
+          "ratio_y_over_x": 0.9816,
+          "x": 844925,
+          "y": 829414
+        },
+        {
+          "month": "2026-02",
+          "ratio_y_over_x": 1.0064,
+          "x": 656162,
+          "y": 660344
+        },
+        {
+          "month": "2026-03",
+          "ratio_y_over_x": 0.9969,
+          "x": 573003,
+          "y": 571248
+        },
+        {
+          "month": "2026-04",
+          "ratio_y_over_x": 1.002,
+          "x": 683506,
+          "y": 684891
+        },
+        {
+          "month": "2026-05",
+          "ratio_y_over_x": 0.9953,
+          "x": 440536,
+          "y": 438463
+        },
+        {
+          "month": "2026-06",
+          "ratio_y_over_x": 0.9976,
+          "x": 574344,
+          "y": 572942
+        },
+        {
+          "month": "2026-07",
+          "ratio_y_over_x": 0.9945,
+          "x": 992061,
+          "y": 986637
+        },
+        {
+          "month": "2026-08",
+          "ratio_y_over_x": 0.9991,
+          "x": 1182248,
+          "y": 1181189
+        },
+        {
+          "month": "2026-09",
+          "ratio_y_over_x": 1.0102,
+          "x": 1010704,
+          "y": 1021058
+        },
+        {
+          "month": "2026-10",
+          "ratio_y_over_x": 0.9552,
+          "x": 921608,
+          "y": 880347
+        }
+      ],
+      "shrinkage_k": null,
+      "caveats": [
+        "2026-10: monthly ratio 0.955 differs from the overall 0.993 by more than 3%",
+        "calibration days depend on the cross-sensor check: without it the global ratio moves -1.5% (the skipped days are partial deliveries, so the checked value is used)"
+      ],
+      "paired_days": 281,
+      "note": "VIIRS continuity: same instrument, same orbit plane, no orbit drift; S-NPP read low in Oct 2026",
+      "sensitivity_without_cross_sensor_check": {
+        "paired_days_own_rule": 291,
+        "global_ratio_cross_checked": 0.9933,
+        "global_ratio_own_rule": 0.9786,
+        "relative_change": -0.0148
+      },
+      "aoi_band_coverage": {
+        "jordan": {
+          "weeks": 43,
+          "coverage": 0.9302,
+          "weekly_wape": 0.1828
+        },
+        "levant": {
+          "weeks": 44,
+          "coverage": 0.9545,
+          "weekly_wape": 0.1135
+        },
+        "argentina": {
+          "weeks": 44,
+          "coverage": 0.9091,
+          "weekly_wape": 0.0571
+        }
+      }
+    },
+    {
+      "source": "NOAA-21-VIIRS",
+      "target": "S-NPP-VIIRS",
+      "method": "global_ratio",
+      "provisional": false,
+      "unit": "region x week totals of fire cell-days on days both sensors delivered full data",
+      "region_deg": 10,
+      "weeks": 44,
+      "region_weeks": 9505,
+      "first_week": "2025-12-29",
+      "last_week": "2026-10-26",
+      "folds": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10"
+      ],
+      "cv_scores": {
+        "identity": {
+          "region_month_wape": 0.0425,
+          "region_month_mape_y50": 0.0797,
+          "region_month_mae": 134.97,
+          "region_month_corr": 0.9996,
+          "region_week_wape": 0.0731,
+          "region_week_corr": 0.9977,
+          "weekly_global_wape": 0.0275,
+          "weekly_global_corr": 0.999,
+          "monthly_global_wape": 0.0262,
+          "monthly_global_corr": 0.9994
+        },
+        "global_ratio": {
+          "region_month_wape": 0.0326,
+          "region_month_mape_y50": 0.0791,
+          "region_month_mae": 103.55,
+          "region_month_corr": 0.9995,
+          "region_week_wape": 0.0684,
+          "region_week_corr": 0.9977,
+          "weekly_global_wape": 0.0133,
+          "weekly_global_corr": 0.999,
+          "monthly_global_wape": 0.0071,
+          "monthly_global_corr": 0.9993
+        },
+        "region_month_shrunk_ratio": {
+          "region_month_wape": 0.0344,
+          "region_month_mape_y50": 0.0796,
+          "region_month_mae": 109.334,
+          "region_month_corr": 0.9995,
+          "region_week_wape": 0.0692,
+          "region_week_corr": 0.9976,
+          "weekly_global_wape": 0.0137,
+          "weekly_global_corr": 0.9989,
+          "monthly_global_wape": 0.0083,
+          "monthly_global_corr": 0.9993
+        },
+        "quantile_map_region_season": {
+          "region_month_wape": 0.1547,
+          "region_month_mape_y50": 0.1905,
+          "region_month_mae": 491.251,
+          "region_month_corr": 0.9779,
+          "region_week_wape": 0.2022,
+          "region_week_corr": 0.9543,
+          "weekly_global_wape": 0.1021,
+          "weekly_global_corr": 0.9308,
+          "monthly_global_wape": 0.0816,
+          "monthly_global_corr": 0.9394
+        }
+      },
+      "versus_global_ratio": "the chosen method is the global-ratio baseline itself",
+      "global_ratio_bootstrap_90": [
+        1.0209,
+        1.0269,
+        1.0314
+      ],
+      "band": [
+        {
+          "yhat_from": 0.0,
+          "yhat_to": 0.0,
+          "n": 323,
+          "lo_factor": 0.0,
+          "hi_factor": 0.0,
+          "hi_add": 3.0
+        },
+        {
+          "yhat_from": 0.0,
+          "yhat_to": 5.0,
+          "n": 1235,
+          "lo_factor": 0.0,
+          "hi_factor": 3.2967,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 5.0,
+          "yhat_to": 20.0,
+          "n": 1413,
+          "lo_factor": 0.3616,
+          "hi_factor": 1.8086,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 20.0,
+          "yhat_to": 100.0,
+          "n": 2443,
+          "lo_factor": 0.5895,
+          "hi_factor": 1.4805,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 100.0,
+          "yhat_to": 500.0,
+          "n": 2255,
+          "lo_factor": 0.7391,
+          "hi_factor": 1.2731,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 500.0,
+          "yhat_to": Infinity,
+          "n": 1836,
+          "lo_factor": 0.8019,
+          "hi_factor": 1.1661,
+          "hi_add": 0.0
+        }
+      ],
+      "band_coverage_out_of_fold": 0.9052,
+      "monthly_drift": [
+        {
+          "month": "2026-01",
+          "ratio_y_over_x": 1.0291,
+          "x": 805968,
+          "y": 829414
+        },
+        {
+          "month": "2026-02",
+          "ratio_y_over_x": 1.0363,
+          "x": 637200,
+          "y": 660344
+        },
+        {
+          "month": "2026-03",
+          "ratio_y_over_x": 1.0442,
+          "x": 547043,
+          "y": 571248
+        },
+        {
+          "month": "2026-04",
+          "ratio_y_over_x": 1.0277,
+          "x": 637648,
+          "y": 655305
+        },
+        {
+          "month": "2026-05",
+          "ratio_y_over_x": 1.0241,
+          "x": 428128,
+          "y": 438463
+        },
+        {
+          "month": "2026-06",
+          "ratio_y_over_x": 1.0256,
+          "x": 558621,
+          "y": 572942
+        },
+        {
+          "month": "2026-07",
+          "ratio_y_over_x": 1.0244,
+          "x": 963150,
+          "y": 986637
+        },
+        {
+          "month": "2026-08",
+          "ratio_y_over_x": 1.0295,
+          "x": 1101548,
+          "y": 1134083
+        },
+        {
+          "month": "2026-09",
+          "ratio_y_over_x": 1.0306,
+          "x": 990760,
+          "y": 1021058
+        },
+        {
+          "month": "2026-10",
+          "ratio_y_over_x": 1.0044,
+          "x": 904574,
+          "y": 908586
+        }
+      ],
+      "shrinkage_k": null,
+      "caveats": [
+        "calibration days depend on the cross-sensor check: without it the global ratio moves -1.4% (the skipped days are partial deliveries, so the checked value is used)"
+      ],
+      "paired_days": 280,
+      "note": "VIIRS continuity: same instrument, same orbit plane, no orbit drift; S-NPP read low in Oct 2026",
+      "sensitivity_without_cross_sensor_check": {
+        "paired_days_own_rule": 291,
+        "global_ratio_cross_checked": 1.0269,
+        "global_ratio_own_rule": 1.0129,
+        "relative_change": -0.0136
+      },
+      "aoi_band_coverage": {
+        "jordan": {
+          "weeks": 43,
+          "coverage": 0.9302,
+          "weekly_wape": 0.2035
+        },
+        "levant": {
+          "weeks": 44,
+          "coverage": 0.9091,
+          "weekly_wape": 0.0993
+        },
+        "argentina": {
+          "weeks": 44,
+          "coverage": 0.9773,
+          "weekly_wape": 0.059
+        }
+      }
+    }
+  ]
+}

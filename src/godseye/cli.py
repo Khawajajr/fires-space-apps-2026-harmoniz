@@ -45,6 +45,13 @@ def _manifest(args) -> None:
     print(f"  wrote {out}: {len(m['files'])} files, {sum(f['rows'] for f in m['files']):,} rows")
 
 
+def _harmonize(args) -> None:
+    from godseye.harmonize import pipeline
+
+    cfg = get_config()
+    pipeline.run(cfg, Path(args.processed or cfg.processed_dir), cfg.root / "reports")
+
+
 def _api(args) -> None:
     import uvicorn
 
@@ -85,6 +92,10 @@ def build_parser() -> argparse.ArgumentParser:
     m.add_argument("inputs", nargs="*", help=f"files or directories (default: {cfg.raw_dir})")
     m.add_argument("--out", help=f"manifest path (default: {cfg.data_dir / 'manifest.json'})")
     m.set_defaults(func=_manifest)
+
+    h = sub.add_parser("harmonize", help="fit the sensor links in configs/pipeline.yaml (cross-validated)")
+    h.add_argument("--processed", help=f"sensor grid + availability directory (default: {cfg.processed_dir})")
+    h.set_defaults(func=_harmonize)
 
     a = sub.add_parser("api", help="serve the HTTP API and the dashboard")
     a.add_argument("--host", default=cfg.api["host"])

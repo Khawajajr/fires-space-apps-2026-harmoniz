@@ -28,6 +28,19 @@ sensors:
 aggregate:
   fine_deg: 0.01            # fire cell-day unit (~1 km); the coarse grid is clean.grid_deg
   partial_fraction: 0.2     # global day < this x the sensor's 31-day median -> "partial" coverage
+  cross_sensor_fraction: 0.85  # day's ratio to same-instrument peers < this x its 31-day median -> "partial"
+  cross_sensor_instruments: [VIIRS]  # not MODIS: Terra and Aqua pass at different times of day, so their daily
+                                     # ratio is too noisy (the check flagged ~20% of MODIS days in 2026)
+
+# Cross-sensor harmonization (ADR 0001). Each link maps `source` onto `target`'s scale.
+harmonize:
+  metric: n_fire_cells      # fire cell-days; detections are harmonized the same way when asked
+  region_deg: 10            # region blocks for the region x month candidate and for cross-validation
+  links:
+    - {source: NOAA-20-VIIRS, target: S-NPP-VIIRS, provisional: false,
+       note: "VIIRS continuity: same instrument, same orbit plane, no orbit drift; S-NPP read low in Oct 2026"}
+    - {source: NOAA-21-VIIRS, target: S-NPP-VIIRS, provisional: false,
+       note: "VIIRS continuity: same instrument, same orbit plane, no orbit drift; S-NPP read low in Oct 2026"}
 
 risk:
   grid_deg: 0.25

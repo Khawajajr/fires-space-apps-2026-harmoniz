@@ -125,3 +125,21 @@ def test_aggregate_is_idempotent(fixture_dir, tmp_path):
     for table in ("sensor_fire_cells", "sensor_grid_daily", "sensor_availability"):
         read = lambda run: pd.read_feather(tmp_path / run / f"{table}.feather")
         pd.testing.assert_frame_equal(read("a"), read("b"))
+
+
+def test_cross_sensor_check_flags_missing_granules_that_the_global_rule_misses():
+    sensors = {n: SENSORS[n] for n in ("S-NPP-VIIRS", "NOAA-20-VIIRS", "NOAA-21-VIIRS")}
+    days = pd.date_range("2026-03-01", "2026-03-31").to_numpy().astype("datetime64[D]")
+    rows = []
+    for i, d in enumerate(days):
+        world = 30000 + 3000 * np.sin(i / 3)                         # the world's fire varies day to day
+        rows += [("NOAA-20-VIIRS", d, world), ("NOAA-21-VIIRS", d, 0.97 * world),
+                 ("S-NPP-VIIRS", d, (0.40 if i == 12 else 0.99) * world)]   # S-NPP lost 60% of granules on day 13
+    cells = pd.DataFrame(rows, columns=["sensor", "acq_date", "n_detections"])
+    cells["sensor"] = pd.Categorical(cells.sensor, categories=list(sensors))
+    plain = availability(cells, sensors, 0.2)
+    cross = availability(cells, sensors, 0.2, cross_sensor_fraction=0.85)
+    day13 = lambda a: a[(a.sensor == "S-NPP-VIIRS") & (a.acq_date == days[12])].status.astype(str).item()
+    assert day13(plain) == "ok"            # 40% is above the 20%-of-median rule
+    assert day13(cross) == "partial"
+    assert (cross.status.astype(str) == "partial").sum() == 1
