@@ -8,3 +8,5 @@ Times are Asia/Amman.
 - gods-eye-view: our changes committed on branch `space-apps-2026` (4 commits on upstream c56d5f2).
 - Added CLAUDE.md.
 - Next: Matt Pocock skills setup, `/grill-with-docs` → GLOSSARY + ADRs 001–005 → tickets. Submit the FIRMS archive requests.
+- Skills set up (local markdown tracker, single-context docs). `/grill-with-docs` rounds 1–2: GLOSSARY.md + ADRs 0001–0006
+  (Aqua-equivalent headline, feather, web app primary, NOAA-20 risk label, validation blocks, activity gate).

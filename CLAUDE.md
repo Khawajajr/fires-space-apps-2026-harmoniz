@@ -1,5 +1,6 @@
 # F.I.R.E.S. — NASA Space Apps 2026
 
+Team **Space Jo** (NASA Space Apps Amman): Ahmad Khawaja, Alina Abandah, Omar Sawalmeh, Zaid Ghaith, Joud Musa.
 Entry for "Harmonization of MODIS and VIIRS Hot Spots". Mission brief: `CLAUDE_CODE_PROMPT.md`.
 Display name lives in one config value; the Python package stays `godseye` (internal).
 
