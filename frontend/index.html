@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>God's Eye</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root {
+      --bg: #0f1115; --panel: rgba(20, 23, 30, 0.92); --text: #e7e9ee; --muted: #9aa1ad;
+      --line: #2a2f3a; --accent: #ff7a1a; --accent-ink: #1a0d00;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text);
+                 font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    #map { position: absolute; inset: 0; }
+    .panel { position: absolute; z-index: 1000; top: 12px; left: 12px; width: 300px; max-width: calc(100vw - 24px);
+             background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+             backdrop-filter: blur(6px); }
+    h1 { margin: 0 0 2px; font-size: 18px; letter-spacing: 0.2px; }
+    .sub { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+    .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 8px;
+           overflow: hidden; margin-bottom: 12px; }
+    .seg button { background: transparent; color: var(--text); border: 0; padding: 8px 4px; cursor: pointer; font: inherit; }
+    .seg button + button { border-left: 1px solid var(--line); }
+    .seg button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+    label { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 6px 0;
+            color: var(--muted); font-size: 13px; }
+    select, input[type=range] { accent-color: var(--accent); }
+    select { background: #1b1f27; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; }
+    .group { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 8px; }
+    .group[hidden] { display: none; }
+    .stat { font-size: 12px; color: var(--muted); margin-top: 6px; min-height: 1.4em; }
+    .stat b { color: var(--text); font-weight: 600; }
+    .legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); margin-top: 6px; }
+    .bar { flex: 1; height: 8px; border-radius: 4px; }
+    .bar.risk { background: linear-gradient(90deg, #2c7bb6, #abd9e9, #ffffbf, #fdae61, #d7191c); }
+    .bar.frp { background: linear-gradient(90deg, #ffd166, #ff7a1a, #e63946, #9d0208); }
+    .leaflet-popup-content { font-size: 12px; line-height: 1.5; }
+    @media (max-width: 480px) { .panel { top: auto; bottom: 12px; left: 16px; right: 16px; width: auto; } }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+
+<div class="panel">
+  <h1>God's Eye</h1>
+  <div class="sub">NASA FIRMS MODIS + VIIRS · 7-day wildfire risk</div>
+
+  <div class="seg" role="tablist" aria-label="Map layer">
+    <button data-mode="fires" class="on">Active fires</button>
+    <button data-mode="risk">Risk map</button>
+    <button data-mode="both">Both</button>
+  </div>
+
+  <div class="group" id="fireControls">
+    <label>Window
+      <select id="hours">
+        <option value="24" selected>Last 24 h</option><option value="48">Last 48 h</option>
+        <option value="72">Last 72 h</option><option value="168">Last 7 days</option>
+      </select>
+    </label>
+    <label>Sensor
+      <select id="instrument">
+        <option value="">All</option><option value="VIIRS">VIIRS (375 m)</option><option value="MODIS">MODIS (1 km)</option>
+      </select>
+    </label>
+    <label>Confidence
+      <select id="conf">
+        <option value="nominal" selected>Nominal +</option><option value="high">High only</option>
+      </select>
+    </label>
+    <div class="legend">FRP <span class="bar frp"></span> 5 → 500+ MW</div>
+    <div class="stat" id="fireStat">Loading detections…</div>
+  </div>
+
+  <div class="group" id="riskControls" hidden>
+    <label>Min. risk <span id="minRiskVal">0.10</span></label>
+    <input type="range" id="minRisk" min="0" max="0.7" step="0.05" value="0.10" style="width:100%">
+    <div class="legend">P(fire, 7 days) <span class="bar risk"></span> 0 → 1</div>
+    <div class="stat" id="riskStat"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script>
+  // Same origin when served by FastAPI; fall back to the local dev server when opened as a file.
+  const API = location.protocol.startsWith("http") ? "" : "http://localhost:8000";
+  const $ = (id) => document.getElementById(id);
+
+  const map = L.map("map", { preferCanvas: true, worldCopyJump: true, minZoom: 2 }).setView([15, 10], 3);
+  // Keyless base maps. CARTO's basemaps.cartocdn.com now serves an "API KEY REQUIRED" placeholder
+  // tile for every request without a key, so it is no longer usable here.
+  const FIRMS_CREDIT = " | Fire data: NASA FIRMS";
+  const baseMaps = {
+    "Dark (Esri)": L.tileLayer(
+      "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+        attribution: "Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors" + FIRMS_CREDIT,
+        maxNativeZoom: 16, maxZoom: 18,
+      }),
+    "OpenStreetMap": L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' + FIRMS_CREDIT,
+      maxZoom: 19,
+    }),
+  };
+  baseMaps["Dark (Esri)"].addTo(map);
+  L.control.layers(baseMaps, null, { position: "topright" }).addTo(map);
+
+  const fireLayer = L.layerGroup();
+  let riskLayer = null;
+  let mode = "fires";
+
+  const frpColor = (frp) => frp >= 500 ? "#9d0208" : frp >= 100 ? "#e63946" : frp >= 20 ? "#ff7a1a" : "#ffd166";
+
+  function viewBbox() {
+    const b = map.getBounds();
+    const west = Math.max(-180, b.getWest()), east = Math.min(180, b.getEast());
+    return east - west >= 359 ? null : [west, Math.max(-90, b.getSouth()), east, Math.min(90, b.getNorth())].map(v => v.toFixed(3)).join(",");
+  }
+
+  async function getJSON(path, params) {
+    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== null && v !== ""));
+    const res = await fetch(`${API}${path}?${qs}`);
+    if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+    return res.json();
+  }
+
+  let fireReq = 0;
+  async function loadFires() {
+    const id = ++fireReq;
+    $("fireStat").textContent = "Loading detections…";
+    try {
+      const data = await getJSON("/api/fires/recent", {
+        hours: $("hours").value, instrument: $("instrument").value, min_confidence: $("conf").value,
+        bbox: viewBbox(), limit: 30000,
+      });
+      if (id !== fireReq) return;  // a newer request superseded this one
+      fireLayer.clearLayers();
+      for (const f of data.features) {
+        const [lon, lat] = f.geometry.coordinates, p = f.properties;
+        L.circleMarker([lat, lon], {
+          radius: p.res === 375 ? 3 : 4.5, weight: 0, fillOpacity: 0.85, fillColor: frpColor(p.frp),
+        }).bindPopup(`<b>${p.frp} MW</b> FRP<br>${p.t.replace("T", " ")} UTC (${p.dn === "D" ? "day" : "night"})<br>` +
+                     `${p.sat} · ${p.res === 375 ? "VIIRS 375 m" : "MODIS 1 km"}<br>Confidence: ${p.conf}`)
+          .addTo(fireLayer);
+      }
+      const m = data.metadata;
+      $("fireStat").innerHTML = `<b>${m.count.toLocaleString()}</b> detections in view` +
+        (m.truncated ? ` (top ${m.count.toLocaleString()} of ${m.matched.toLocaleString()} by FRP — zoom in for all)` : "") +
+        `<br>Latest: ${m.newest.slice(0, 16).replace("T", " ")} UTC`;
+    } catch (e) {
+      $("fireStat").textContent = `Could not load fires: ${e.message}`;
+    }
+  }
+
+  async function loadRisk() {
+    $("riskStat").textContent = "Loading risk map…";
+    try {
+      const data = await getJSON("/api/predictions/risk-map", { min_risk: $("minRisk").value });
+      if (riskLayer) map.removeLayer(riskLayer);
+      riskLayer = L.heatLayer(data.points, {
+        radius: 14, blur: 12, max: 1, minOpacity: 0.25,
+        gradient: { 0.1: "#2c7bb6", 0.3: "#abd9e9", 0.5: "#ffffbf", 0.7: "#fdae61", 0.9: "#d7191c" },
+      });
+      if (mode !== "fires") riskLayer.addTo(map);
+      $("riskStat").innerHTML = `<b>${data.count.toLocaleString()}</b> cells (${data.cell_deg}°) ≥ ${(+$("minRisk").value).toFixed(2)}` +
+        `<br>Forecast ${data.issued} → ${data.valid_through}`;
+    } catch (e) {
+      $("riskStat").textContent = `Could not load risk map: ${e.message}`;
+    }
+  }
+
+  function setMode(next) {
+    mode = next;
+    document.querySelectorAll(".seg button").forEach(b => b.classList.toggle("on", b.dataset.mode === mode));
+    const showFires = mode !== "risk", showRisk = mode !== "fires";
+    $("fireControls").hidden = !showFires;
+    $("riskControls").hidden = !showRisk;
+    showFires ? fireLayer.addTo(map) : map.removeLayer(fireLayer);
+    if (riskLayer) showRisk ? riskLayer.addTo(map) : map.removeLayer(riskLayer);
+    if (showRisk && !riskLayer) loadRisk();
+  }
+
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+  ["hours", "instrument", "conf"].forEach(id => $(id).addEventListener("change", loadFires));
+  $("minRisk").addEventListener("input", () => $("minRiskVal").textContent = (+$("minRisk").value).toFixed(2));
+  $("minRisk").addEventListener("change", loadRisk);
+  let moveTimer;
+  map.on("moveend", () => { clearTimeout(moveTimer); moveTimer = setTimeout(() => mode !== "risk" && loadFires(), 300); });
+
+  setMode("fires");
+  loadFires();
+</script>
+</body>
+</html>

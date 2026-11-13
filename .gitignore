@@ -1,0 +1,34 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Data: contents ignored, READMEs and manifest kept
+data/**
+!data/
+!data/*/
+!data/README.md
+!data/*/README.md
+!data/manifest.json
+
+# Model binaries (metadata JSON is committed)
+models/*.pkl
+models/*.txt
+models/*.bin
+
+# Logs
+logs/
+
+# Node
+node_modules/
+
+# The globe is its own repo (fork of bilawalsidhu/gods-eye-view, branch space-apps-2026)
+gods-eye-view/
+
+# Secrets
+.env
+.env.*
+!.env.example

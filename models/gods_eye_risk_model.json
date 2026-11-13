@@ -1,0 +1,86 @@
+{
+  "features": [
+    "fire_days_7",
+    "fire_days_14",
+    "fire_days_30",
+    "fire_days_90",
+    "fire_freq_hist",
+    "det_7",
+    "det_30",
+    "frp_sum_7",
+    "frp_sum_30",
+    "frp_mean_30",
+    "frp_max_30",
+    "night_ratio_30",
+    "days_since_fire",
+    "fire_streak",
+    "accel_7_30",
+    "bt31_mean_7",
+    "nbr_fire_days_7",
+    "nbr_fire_days_30",
+    "cell_lat",
+    "cell_lon",
+    "doy_sin",
+    "doy_cos"
+  ],
+  "grid_deg": 0.25,
+  "horizon_days": 7,
+  "risk_bins": [
+    0.1,
+    0.3,
+    0.5,
+    0.7
+  ],
+  "risk_labels": [
+    "low",
+    "moderate",
+    "high",
+    "very_high",
+    "extreme"
+  ],
+  "trained_through": "2026-11-06",
+  "validation": [
+    {
+      "model": "LightGBM",
+      "roc_auc": 0.8837,
+      "pr_auc": 0.7974,
+      "brier": 0.1136
+    },
+    {
+      "model": "baseline: burned in last 7 days",
+      "roc_auc": 0.7693,
+      "pr_auc": 0.5348,
+      "brier": 0.1901
+    },
+    {
+      "model": "baseline: historical fire frequency",
+      "roc_auc": 0.7928,
+      "pr_auc": 0.5813,
+      "brier": 0.2015
+    }
+  ],
+  "feature_importance_gain": {
+    "fire_days_14": 7562210.9,
+    "fire_days_30": 3339301.9,
+    "nbr_fire_days_7": 1448933.9,
+    "nbr_fire_days_30": 907852.8,
+    "days_since_fire": 891851.3,
+    "cell_lat": 292703.4,
+    "fire_freq_hist": 250349.3,
+    "cell_lon": 195717.0,
+    "doy_cos": 166090.4,
+    "frp_sum_30": 162525.9,
+    "det_7": 138459.7,
+    "doy_sin": 128256.1,
+    "det_30": 71340.0,
+    "fire_days_90": 34843.6,
+    "fire_days_7": 24670.1,
+    "fire_streak": 23762.3,
+    "frp_max_30": 22385.4,
+    "night_ratio_30": 21970.6,
+    "frp_mean_30": 16394.7,
+    "frp_sum_7": 16125.8,
+    "bt31_mean_7": 14801.0,
+    "accel_7_30": 2189.2
+  }
+}
