@@ -10,3 +10,4 @@ Times are Asia/Amman.
 - Next: Matt Pocock skills setup, `/grill-with-docs` → GLOSSARY + ADRs 001–005 → tickets. Submit the FIRMS archive requests.
 - Skills set up (local markdown tracker, single-context docs). `/grill-with-docs` rounds 1–2: GLOSSARY.md + ADRs 0001–0006
   (Aqua-equivalent headline, feather, web app primary, NOAA-20 risk label, validation blocks, activity gate).
+- /to-spec + /to-tickets: spec and 14 tickets in .scratch/space-apps-2026/ (build order + cut order agreed). ADR 0006 gained the 5-year history minimum. Phase 0 done; starting ticket 01.

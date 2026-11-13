@@ -7,3 +7,5 @@ A week counts toward anomalies and critical periods only if it passes the AOI's 
 3. **Floor:** if the AOI averages < 1 Aqua-equivalent fire cell-day per week over its record, no gate is applied and no critical periods are defined. The UI shows "too little detected activity to define critical periods". The calendar and anomalies (vs p90 / z ≥ 2) are still shown.
 
 The ingest report prints, per AOI, the number of weeks per year that pass each gate and which rule was applied.
+
+**History minimum (applies before rules 1–3):** climatology, anomalies and critical periods need at least **5 years** of history for the AOI. Below that, those panels show "needs ≥5 years of history (currently N)" rather than a climatology built from one or two years. The calendar itself is always shown.
