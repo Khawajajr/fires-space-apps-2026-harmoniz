@@ -112,8 +112,8 @@ def test_relative_gate_takes_exactly_the_top_share_even_with_ties():
 def test_week_reference_and_percentile_for_this_week_vs_history():
     from godseye.calendar.climatology import percentile_of, week_reference
     v, cov, days = grid(summer_season)
-    ref = week_reference(YEARS, v, cov, days, week=27, exclude_year=2025)
-    assert len(ref) == 3 * 7                           # 7 other years x 3 pooled weeks
+    ref, n_years = week_reference(YEARS, v, cov, days, week=27, reference_years=[y for y in YEARS if y != 2025])
+    assert len(ref) == 3 * 7 and n_years == 7          # 7 other years x 3 pooled weeks
     assert percentile_of(400.0, ref) == 100.0 and percentile_of(0.0, ref) == 0.0
     assert percentile_of(float(np.median(ref)), ref) == pytest.approx(50, abs=5)
     assert percentile_of(np.nan, ref) is None

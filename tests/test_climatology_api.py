@@ -15,12 +15,12 @@ from godseye.config import get_config, load_config
 SENSORS = list(load_config(env={}).sensors)
 
 
-def multi_year_store() -> CalendarStore:
-    days = pd.date_range("2018-01-01", "2025-12-31")
+def multi_year_store(end: str = "2025-12-31", spike_year: int = 2023) -> CalendarStore:
+    days = pd.date_range("2018-01-01", end)
     rng = np.random.default_rng(7)
     week = days.isocalendar().week.to_numpy()
     cells = np.where((week >= 20) & (week <= 34), rng.poisson(15, len(days)), rng.poisson(0.05, len(days)))
-    cells[(days.year == 2023) & (week == 30)] *= 5                     # one unusual week
+    cells[(days.year == spike_year) & (week == 30)] *= 5               # one unusual week
     grid = pd.DataFrame({"sensor": "NOAA-20-VIIRS", "acq_date": days, "cell_lat": 31.875, "cell_lon": 35.875,
                          "n_detections": cells, "n_fire_cells": cells})
     grid = grid[grid.n_fire_cells > 0]
@@ -97,3 +97,56 @@ def test_bad_series_and_empty_box(client):
     assert client.get("/api/calendar/climatology", params={"aoi": "jordan", "series": "Landsat"}).status_code == 422
     r = client.get("/api/calendar/anomalies", params={"bbox": "35.01,31.01,35.02,31.02", "series": "NOAA-20-VIIRS"})
     assert r.status_code == 422
+
+
+def test_this_week_vs_history_on_an_unusual_current_week():
+    calendar_api.STORE["calendar"] = multi_year_store(end="2025-07-27", spike_year=2025)   # ends with ISO week 30
+    try:
+        with make_client("relative") as c:
+            b = c.get("/api/calendar/now", params=Q).json()
+    finally:
+        calendar_api.STORE.clear()
+    assert b["status"] == "ok" and (b["year"], b["week"]) == (2025, 30)
+    assert b["level"] == "unusually high" and b["percentile"] >= 90 and b["in_season"] is True
+    assert b["reference_years"] == 7 and "Week 30" in b["summary"] and "unusually high" in b["summary"]
+    assert "of 21 values from 7 past years" in b["summary"] and "th percentile" in b["summary"]
+    calendar_api.STORE["calendar"] = multi_year_store(end="2025-07-27", spike_year=2025)
+    try:
+        with make_client("relative") as c:
+            first = c.get("/api/calendar/anomalies", params=Q).json()["anomalies"][0]
+    finally:
+        calendar_api.STORE.clear()
+    assert (first["year"], first["week"]) == (2025, 30)      # the incomplete current year still gets anomalies
+
+
+def test_this_week_vs_history_needs_five_other_years():
+    calendar_api.STORE["calendar"] = multi_year_store(end="2021-07-25")
+    try:
+        with make_client("relative") as c:
+            b = c.get("/api/calendar/now", params=Q).json()
+    finally:
+        calendar_api.STORE.clear()
+    assert b["status"] == "insufficient_history" and b["reference_years"] == 3 and b["level"] is None
+    assert "currently 3" in b["message"]
+
+
+def test_level_bands():
+    from godseye.api.climatology import level_of
+    assert [level_of(p) for p in (95, 80, 50, 20, 5)] == [
+        "unusually high", "above usual", "about usual", "below usual", "unusually low"]
+
+
+def test_ordinals():
+    from godseye.api.climatology import ordinal
+    assert [ordinal(n) for n in (1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 100)] == [
+        "1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st", "22nd", "23rd", "100th"]
+
+
+def test_partial_latest_week_is_flagged_in_the_summary():
+    calendar_api.STORE["calendar"] = multi_year_store(end="2025-07-25")   # ISO week 30 has 5 of 7 days
+    try:
+        with make_client("relative") as c:
+            b = c.get("/api/calendar/now", params=Q).json()
+    finally:
+        calendar_api.STORE.clear()
+    assert b["week"] == 30 and b["data_days"] == 5 and "from 5 of 7 days scaled to a full week" in b["summary"]

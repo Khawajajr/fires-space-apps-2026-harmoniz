@@ -113,12 +113,14 @@ def percentile_of(value: float, reference: np.ndarray) -> float | None:
 
 
 def week_reference(years: list[int], values: np.ndarray, coverage: np.ndarray, data_days: np.ndarray, week: int,
-                   exclude_year: int | None = None) -> np.ndarray:
-    """Usable values of ISO week `week` (pooled +-POOL) in every year except `exclude_year`: the "same week in past
-    years" reference used by "this week vs history" (ticket 10)."""
+                   reference_years: list[int]) -> tuple[np.ndarray, int]:
+    """Usable values of ISO week `week` (pooled +-POOL) in `reference_years` (the history years other than the one
+    being judged), and how many of those years contribute: the reference for "this week vs history" (ticket 10)."""
     u = _fold53(usable(values, coverage, data_days))
-    keep = np.array([y != exclude_year for y in years])
-    return _window(u[keep], min(week, WEEKS) - 1)
+    rows = u[[i for i, y in enumerate(years) if y in set(reference_years)]]
+    cols = [(min(week, WEEKS) - 1 + k) % WEEKS for k in range(-POOL, POOL + 1)]
+    contributing = int((~np.isnan(rows[:, cols])).any(axis=1).sum()) if len(rows) else 0
+    return _window(rows, min(week, WEEKS) - 1), contributing
 
 
 def gate(clim: list[dict], mean_weekly: float) -> tuple[str, list[int], dict]:
@@ -188,8 +190,10 @@ def analyse(years: list[int], values: np.ndarray, coverage: np.ndarray, data_day
     message = "too little detected activity to define critical periods" if rule == "floor" else None
 
     anomalies = []
-    for i, y in enumerate(history_years):
-        others = np.delete(H, i, axis=0)                 # leave-one-year-out reference
+    for i, y in enumerate(years):                        # every year, incl. an incomplete current one
+        if np.isnan(u[i]).all():
+            continue
+        others = H[[k for k, hy in enumerate(history_years) if hy != y]]   # leave-one-year-out reference
         if rule == "floor":                              # ADR 0006: no season, so compare with the whole record
             whole = _stats(others[~np.isnan(others)])
             ref = dict.fromkeys(range(WEEKS), whole)
@@ -198,7 +202,7 @@ def analyse(years: list[int], values: np.ndarray, coverage: np.ndarray, data_day
             weeks = [w - 1 for w in gated]
             ref = {w: _stats(_window(others, w)) for w in weeks}
         for w in weeks:
-            v, r = H[i, w], ref[w]
+            v, r = u[i, w], ref[w]
             if np.isnan(v) or r["n"] < 3:
                 continue
             if v < active:                               # an anomaly must at least be activity

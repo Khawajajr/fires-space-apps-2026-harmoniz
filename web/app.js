@@ -326,8 +326,8 @@ async function loadSeason(params, ctrl) {
   try {
     const get = (ep) => fetch(`${API}/calendar/${ep}?${q}`, { signal: ctrl.signal })
       .then(async (r) => (r.ok ? r.json() : { error: (await r.json().catch(() => ({}))).detail || r.statusText }));
-    const [clim, crit, anom] = await Promise.all(["climatology", "critical-periods", "anomalies"].map(get));
-    state.season = { clim, crit, anom };
+    const [clim, crit, anom, now] = await Promise.all(["climatology", "critical-periods", "anomalies", "now"].map(get));
+    state.season = { clim, crit, anom, now };
   } catch (err) {
     if (err.name === "AbortError") return;
     state.season = { error: err.message };
@@ -339,6 +339,7 @@ function renderSeason() {
   const s = state.season;
   if (!s) return;
   const empty = (msg) => `<p class="empty">${esc(msg)}</p>`;
+  renderNow(s.now, empty);
   const failed = s.error || [s.clim, s.crit, s.anom].find((x) => x.error);
   if (failed) {
     const msg = s.error || failed.error;
@@ -364,6 +365,25 @@ function renderSeason() {
         `(from ${esc(a.week_start)}): ${fmt.format(a.value)} vs usual ${fmt.format(a.median)}` +
         `${a.z !== null ? ` (z ${fmt.format(a.z)})` : ""}</li>`).join("")}</ul>`
     : empty("No unusual weeks in the record.");
+}
+
+function renderNow(n, empty) {
+  if (!n || n.error) { $("now").innerHTML = empty((n && n.error) || "Not available."); return; }
+  const when = n.week ? `Week ${n.week} of ${n.year} (${esc(n.week_start)} to ${esc(n.week_end)})` : "";
+  if (n.status !== "ok") {
+    $("now").innerHTML = `${when ? `<p class="now-summary">${when}: ${fmt.format(n.value)} ` +
+      `${n.series === "harmonized" ? "Aqua-equivalent " : ""}fire cell-days${n.data_days < 7 ? ` (${n.data_days} of 7 days, scaled)` : ""}.</p>` : ""}` +
+      empty(n.message);
+    return;
+  }
+  const top = Math.max(n.p90, n.value) * 1.15 || 1;
+  const pos = (v) => `${Math.min(100, (100 * v) / top).toFixed(1)}%`;
+  $("now").innerHTML = `<p class="now-level">${esc(n.level[0].toUpperCase() + n.level.slice(1))}</p>
+    <p class="now-summary">${esc(n.summary)}</p>
+    <div class="now-scale" role="img" aria-label="Usual range ${fmt.format(n.p10)} to ${fmt.format(n.p90)}; this week ${fmt.format(n.value)}">
+      <div class="range" style="left:${pos(n.p10)};width:calc(${pos(n.p90)} - ${pos(n.p10)})"></div>
+      <div class="mark" style="left:${pos(n.value)}"></div></div>
+    <p class="hint">Bar: usual range in past years (p10–p90) · line: this week.</p>`;
 }
 
 function renderProfile(c) {

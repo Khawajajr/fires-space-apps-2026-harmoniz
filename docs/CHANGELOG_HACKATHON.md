@@ -32,3 +32,4 @@ Times are Asia/Amman.
   'active' = ≥10% of the AOI's peak weekly median.
 - Ticket 09 review fixes: ADR 0006 amendment moved back to PROPOSED (config switch, approved rule is default),
   anomaly/gate/floor fixes, helpers for 10. User asleep: FOR_ME_TObeDONE.md lists decisions and manual steps.
+- Ticket 10 built: /api/calendar/now + 'This week vs history' card; incomplete current year now gets anomalies.
