@@ -9,8 +9,9 @@ import pandas as pd
 
 from godseye.clean.io import read_table, write_table
 from godseye.config import Config
+from godseye.harmonize import archive
 from godseye.harmonize.figures import plot_links
-from godseye.harmonize.headline import held_out_weekly, plot_fallback
+from godseye.harmonize.headline import held_out_weekly, plot_fallback, plot_switchover, switchover_series
 from godseye.harmonize.link import Link, fit_link
 from godseye.harmonize.methods import GlobalRatio
 from godseye.harmonize.series import paired_days, region_of, weekly_pairs
@@ -29,7 +30,20 @@ def run(cfg: Config, processed: Path, reports_dir: Path) -> list[Link]:
         src, tgt = spec["source"], spec["target"]
         days = paired_days(avail, src, tgt)
         df = weekly_pairs(grid, days, src, tgt, h["region_deg"], h["metric"])
-        link = fit_link(df, src, tgt, bool(spec.get("provisional", False)), h["region_deg"])
+        archive_info = None
+        if spec.get("prefer_archive"):                      # ticket 08: Aqua's pre-drift years, when ingested
+            adf, used = archive.pre_drift_pairs(cfg, processed, spec, h["metric"])
+            if archive.enough(adf):
+                df, archive_info = adf, archive.summary(adf, used, spec["prefer_archive"]["window"])
+        provisional = bool(spec.get("provisional", False)) and archive_info is None
+        link = fit_link(df, src, tgt, provisional, h["region_deg"])
+        if archive_info is not None:
+            link = archive.regionless(link)
+            link.report.update(archive_info)
+            link.report["drift_check"] = archive.drift_check(cfg, processed, link, h["metric"],
+                                                             spec["prefer_archive"]["window"][1] + 1)
+        elif spec.get("prefer_archive"):
+            link.report["calibration_source"] = "2026 global (provisional: no archive years ingested yet)"
         link.report["paired_days"] = len(days)
         link.report["note"] = spec.get("note", "")
         link.report["sensitivity_without_cross_sensor_check"] = sensitivity(grid, avail, src, tgt, h, df)
@@ -47,11 +61,14 @@ def run(cfg: Config, processed: Path, reports_dir: Path) -> list[Link]:
     if headline is not None:
         headline.report["overpass_local_solar_time"] = overpass_times(processed)
     save(links, processed, reports_dir)
-    if headline is not None:
+    if headline is not None and headline.provisional:          # 2026 only: "same fires, different camera"
         weeks = {cfg.aois[a].label.split(" (")[0]: held_out_weekly(grid, avail, headline, cfg.aois[a], h["region_deg"],
                                                                    h["metric"])
                  for a in h["headline"]["figure_aois"]}
         print(f"  wrote {plot_fallback(weeks, headline, cfg.figures_dir / 'headline_same_fires_different_camera.png')}")
+    elif headline is not None:                                 # archive years: the switchover figure (ticket 08)
+        fig = switchover_figure(cfg, processed, links)
+        print(f"  wrote {fig}" if fig else "  no ingested AOI covers the figure AOIs: switchover figure skipped")
     fig = plot_links(links, cfg.figures_dir / "harmonization_links.png",
                      "Sensor links, 2026: monthly ratio on days both sensors delivered full data")
     print(f"  wrote {fig}")
@@ -101,6 +118,29 @@ def overpass_times(processed: Path) -> dict:
     hours = (t.dt.hour + t.dt.minute / 60 + c.longitude.astype(float) / 15) % 24
     minutes = (hours.groupby(c.satellite.astype(str), observed=True).median() * 60).round().astype(int) % (24 * 60)
     return {k: f"{m // 60:02d}:{m % 60:02d}" for k, m in minutes.items()}
+
+
+def switchover_figure(cfg: Config, processed: Path, links: list[Link]) -> Path | None:
+    from godseye.calendar.harmonized import build_chain
+    from godseye.calendar.store import CalendarStore
+
+    h = cfg.harmonize
+    chain = build_chain(h["headline"], links, h["region_deg"])
+    stores, real_2012 = {}, True
+    ingested = {d.name: d for d in archive.archive_dirs(cfg, processed)}
+    for name in h["headline"]["figure_aois"]:
+        if name in ingested:
+            d = ingested[name]
+            store = CalendarStore(read_table(d, "sensor_grid_daily"), read_table(d, "sensor_availability"),
+                                  cfg.clean["grid_deg"])
+            real_2012 &= store.first.year <= 2011
+            stores[name] = store
+    if not stores:
+        return None
+    switch_after = 2011 if real_2012 else pd.Timestamp(h["headline"]["observed_until"]).year
+    data = {cfg.aois[name].label.split(" (")[0]: switchover_series(store, chain, cfg.aois[name].bbox, switch_after)
+            for name, store in stores.items()}
+    return plot_switchover(data, switch_after, real_2012, cfg.figures_dir / "headline_switchover.png")
 
 
 def save(links: list[Link], processed: Path, reports_dir: Path) -> None:

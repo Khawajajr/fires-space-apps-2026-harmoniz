@@ -7,6 +7,7 @@ sensors delivered full data, so the right-hand panel shows out-of-sample agreeme
 """
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
 import matplotlib
@@ -86,6 +87,57 @@ def plot_fallback(weeks: dict[str, pd.DataFrame], link: Link, path: Path) -> Pat
             ax.legend(fontsize=8, frameon=False, loc="upper left")
     tag = "PROVISIONAL: calibrated on 2026 (Aqua's orbit has drifted). " if link.provisional else ""
     fig.suptitle(f"{tag}Weekly fire cell-days on days both sensors delivered full data", fontsize=11)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=120)
+    plt.close(fig)
+    return path
+
+
+def switchover_series(store, chain, bbox, switch_after: int) -> pd.DataFrame:
+    """Weekly series for one AOI: the naive record (Aqua-MODIS raw up to `switch_after`, then S-NPP-VIIRS raw), the
+    harmonized headline with its band, and S-NPP mapped to Aqua-equivalent in every year (the agreement check)."""
+    import dataclasses
+
+    from godseye.calendar.store import CalendarStore  # noqa: F401  (type of `store`)
+
+    cal = store.calendar(bbox, "cell_days", "week")
+    aqua, snpp = (cal.values[store.sensors.index(s)] for s in (chain.target, chain.reference))
+    store.attach_chain(chain)
+    h = store.harmonized(bbox, "week")
+    store.attach_chain(dataclasses.replace(chain, observed_until=None))   # VIIRS estimate in every year
+    est = store.harmonized(bbox, "week")
+    store.attach_chain(chain)
+    rows = []
+    for yi, year in enumerate(cal.years):
+        for w in range(52):
+            try:
+                day = date.fromisocalendar(year, w + 1, 4)
+            except ValueError:
+                continue
+            naive = aqua[yi, w] if year <= switch_after else snpp[yi, w]
+            rows.append({"date": pd.Timestamp(day), "naive": naive, "harmonized": h.values[yi, w],
+                         "lo": h.lo[yi, w], "hi": h.hi[yi, w], "aqua": aqua[yi, w], "snpp_as_aqua": est.values[yi, w]})
+    return pd.DataFrame(rows)
+
+
+def plot_switchover(series: dict[str, pd.DataFrame], switch_after: int, real_2012: bool, path: Path) -> Path:
+    fig, axes = plt.subplots(len(series), 1, figsize=(12, 3.4 * len(series)), constrained_layout=True, squeeze=False)
+    for ax, (label, s) in zip(axes[:, 0], series.items()):
+        m = s.set_index("date").resample("MS").sum(min_count=1)          # monthly totals read better over years
+        ax.fill_between(m.index, m.lo, m.hi, color="#1baf7a", alpha=0.18, lw=0, label="harmonized 90% range")
+        ax.plot(m.index, m.naive, color="#e34948", lw=1.6,
+                label=f"naive record: Aqua-MODIS raw to {switch_after}, then S-NPP-VIIRS raw")
+        ax.plot(m.index, m.harmonized, color="#1baf7a", lw=2.2, label="harmonized: Aqua-equivalent")
+        early = m[m.index.year <= switch_after]
+        ax.plot(early.index, early.snpp_as_aqua, color="#2a78d6", lw=1.2, ls="--",
+                label="S-NPP mapped to Aqua-equivalent (agreement check)")
+        ax.axvline(pd.Timestamp(f"{switch_after + 1}-01-01"), color="#77756f", lw=1, ls=":")
+        ax.set_title(f"{label}: monthly fire cell-days", fontsize=10, loc="left")
+        ax.grid(alpha=0.3)
+        ax.legend(fontsize=8, frameon=False, loc="upper left")
+    kind = "The 2012 MODIS-to-VIIRS transition" if real_2012 else \
+        f"Simulated sensor switchover (MODIS until {switch_after}, VIIRS from {switch_after + 1})"
+    fig.suptitle(f"{kind}: the jump is the satellite, not the fire", fontsize=11)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=120)
     plt.close(fig)
