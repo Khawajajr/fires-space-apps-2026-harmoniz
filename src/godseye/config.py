@@ -47,6 +47,7 @@ class Config:
     sensors: dict[str, Sensor] = field(default_factory=dict)
     aois: dict[str, AOI] = field(default_factory=dict)
     firms_map_key: str | None = None
+    archive_dir: Path | None = None
 
     @property
     def raw_dir(self) -> Path:
@@ -90,6 +91,7 @@ def load_config(config_dir: Path | None = None, env: dict | None = None) -> Conf
         frontend_dir=resolve(paths["frontend_dir"]),
         web_dir=resolve(paths["web_dir"]),
         figures_dir=resolve(paths["figures_dir"]),
+        archive_dir=Path(env.get("GODSEYE_ARCHIVE_DIR") or paths.get("archive_dir") or root / "data" / "archive"),
         clean=pipeline["clean"],
         risk=pipeline["risk"],
         api=pipeline["api"],

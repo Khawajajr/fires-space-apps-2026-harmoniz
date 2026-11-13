@@ -109,6 +109,20 @@ class AOIListItem(BaseModel):
     bbox: list[float]
 
 
+def contains(outer: tuple, inner: tuple) -> bool:
+    w, s, e, n = outer
+    iw, is_, ie, in_ = inner
+    return w <= e and iw <= ie and w <= iw and ie <= e and s <= is_ and in_ <= n
+
+
+def pick_store(store: CalendarStore, bbox: tuple) -> CalendarStore:
+    """An ingested AOI's multi-year store when the request lies inside that AOI (ticket 07), else the global one."""
+    for aoi_bbox, aoi_store in STORE.get("aoi", {}).values():
+        if contains(aoi_bbox, bbox):
+            return aoi_store
+    return store
+
+
 def get_store() -> CalendarStore:
     if "calendar" not in STORE:
         raise HTTPException(503, "calendar data not loaded - run `godseye aggregate`")
@@ -150,6 +164,7 @@ def calendar(
     cfg: Config = Depends(get_config),
 ):
     area = resolve_aoi(aoi, bbox, cfg)
+    store = pick_store(store, area.bbox)
     cells, snapped = grid_cells(area.bbox, store.grid_deg)
     if cells == 0:
         raise HTTPException(422, f"the box contains no {store.grid_deg}° grid cell centre; draw a larger box")

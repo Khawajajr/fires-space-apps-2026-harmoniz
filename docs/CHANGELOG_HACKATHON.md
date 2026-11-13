@@ -44,3 +44,4 @@ Times are Asia/Amman.
 - Phase 7: README (hero figure, quickstart, results with baselines, limitations), ARCHITECTURE (mermaid), DATA_CARD, METHODOLOGY, AI_USAGE, LICENSE, CI (ruff + pytest + fresh-clone demo), secret scan clean; fresh clone -> demo verified.
 - CI green on GitHub (lint, tests, fresh-clone demo). Phase 8: SUBMISSION.md (all fields, 30 s video + 7 slides),
   DEMO_SCRIPT.md (3 min), FOR_ME_TObeDONE.md updated. Waiting on archive files for 07/08.
+- Ticket 07 code ready ahead of the data: godseye ingest --aoi, multi-year AOI stores, API routing; synthetic e2e tests.

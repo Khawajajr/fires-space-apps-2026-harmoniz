@@ -8,7 +8,7 @@ import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from godseye.api.calendar import AOIOut, get_store, resolve_aoi
+from godseye.api.calendar import AOIOut, get_store, pick_store, resolve_aoi
 from godseye.calendar import climatology as C
 from godseye.calendar.store import CalendarStore, grid_cells
 from godseye.config import Config, get_config
@@ -119,6 +119,7 @@ def _series(area, series: str, store: CalendarStore) -> dict:
 def analysis(aoi: str | None, bbox: str | None, series: str, store: CalendarStore, cfg: Config):
     """(Analysis, common response fields, the series itself) for one AOI and series."""
     area = resolve_aoi(aoi, bbox, cfg)
+    store = pick_store(store, area.bbox)
     cells, snapped = grid_cells(area.bbox, store.grid_deg)
     if cells == 0:
         raise HTTPException(422, f"the box contains no {store.grid_deg}° grid cell centre; draw a larger box")

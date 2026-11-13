@@ -106,6 +106,7 @@ async def lifespan(app: FastAPI):
             store.attach_chain(build_chain(CONFIG.harmonize["headline"], harmonize_pipeline.load(PROCESSED),
                                            CONFIG.harmonize["region_deg"]))
         calendar_api.STORE["calendar"] = store
+        calendar_api.STORE["aoi"] = load_aoi_stores(store.chain)
     print(f"loaded {len(fires):,} recent detections and the calendar in {time.time() - t0:.1f}s; "
           "scoring risk in the background")
     # Scoring the latest day takes ~8 s; do it off the startup path so the calendar is up at once.
@@ -117,6 +118,19 @@ async def lifespan(app: FastAPI):
     executor.shutdown(wait=True)
     STATE.clear()
     calendar_api.STORE.clear()
+
+
+def load_aoi_stores(chain) -> dict:
+    """Multi-year stores built by `godseye ingest --aoi` (data/processed/aoi/<name>/), keyed by AOI name."""
+    out = {}
+    for d in sorted((PROCESSED / "aoi").glob("*/")):
+        if d.name in CONFIG.aois and (d / "sensor_grid_daily.feather").exists():
+            s = CalendarStore(_read_table(d, "sensor_grid_daily"), _read_table(d, "sensor_availability"),
+                              CONFIG.clean["grid_deg"])
+            s.attach_chain(chain)
+            out[d.name] = (CONFIG.aois[d.name].bbox, s)
+            LOG.warning("multi-year calendar for %s: %s to %s", d.name, s.first.date(), s.last.date())
+    return out
 
 
 def risk_state() -> tuple[pd.DataFrame, dict]:

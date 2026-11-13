@@ -52,6 +52,13 @@ def _aggregate(args) -> None:
                  Path(args.figure or cfg.figures_dir / "coverage_sensor_date.png"))
 
 
+def _ingest(args) -> None:
+    from godseye.ingest import aoi
+
+    cfg = get_config()
+    aoi.run(cfg, args.aoi, Path(args.archive or cfg.archive_dir))
+
+
 def _manifest(args) -> None:
     from godseye.ingest.manifest import write_manifest
 
@@ -136,6 +143,11 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--out", help=f"output directory (default: {cfg.processed_dir})")
     g.add_argument("--figure", help=f"coverage chart path (default: {cfg.figures_dir / 'coverage_sensor_date.png'})")
     g.set_defaults(func=_aggregate)
+
+    i = sub.add_parser("ingest", help="multi-year record for one AOI from the FIRMS archive downloads (ticket 07)")
+    i.add_argument("--aoi", required=True, help="named AOI from configs/aois.yaml")
+    i.add_argument("--archive", help=f"archive folder, read in place (default: {cfg.archive_dir})")
+    i.set_defaults(func=_ingest)
 
     m = sub.add_parser("manifest", help="record every FIRMS input file (source, dates, rows, sha256)")
     m.add_argument("inputs", nargs="*", help=f"files or directories (default: {cfg.raw_dir})")

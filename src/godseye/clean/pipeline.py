@@ -25,6 +25,12 @@ from godseye.clean.io import iter_csvs, resolve_table_format, write_geojson, wri
 from godseye.clean.schema import CATEGORICAL, compact, harmonize_schema
 
 
+def inside_bbox(lat: pd.Series, lon: pd.Series, bbox: tuple[float, float, float, float]) -> pd.Series:
+    west, south, east, north = bbox
+    lon_ok = lon.between(west, east) if west <= east else (lon >= west) | (lon <= east)
+    return lat.between(south, north) & lon_ok
+
+
 def daily_grid(df: pd.DataFrame, deg: float) -> pd.DataFrame:
     """Aggregate detections to (cell, day): the label table for a spatial fire-occurrence model."""
     g = pd.DataFrame({
@@ -59,8 +65,9 @@ def slim_recent(df: pd.DataFrame, days: int) -> pd.DataFrame:
 
 def run(inputs: list[str], out_dir: Path, *, min_confidence: str = "nominal", grid_deg: float = 0.25,
         recent_days: int = 7, keep_static: bool = False, chunk_rows: int = 1_000_000,
-        table_format: str = "feather") -> dict:
-    """Clean FIRMS downloads into out_dir; returns the cleaning report."""
+        table_format: str = "feather", bbox: tuple[float, float, float, float] | None = None) -> dict:
+    """Clean FIRMS downloads into out_dir; returns the cleaning report. With `bbox` (west, south, east, north;
+    west > east crosses the antimeridian) only detections inside it are kept, before any other step."""
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     table_format = resolve_table_format(table_format)
@@ -68,6 +75,12 @@ def run(inputs: list[str], out_dir: Path, *, min_confidence: str = "nominal", gr
     report, frames, per_file = {"input_rows": 0}, [], {}
     for name, raw in iter_csvs(inputs, chunk_rows):
         h = harmonize_schema(raw, name)
+        if bbox is not None:
+            inside = inside_bbox(h.latitude, h.longitude, bbox)
+            report["rows_outside_aoi"] = report.get("rows_outside_aoi", 0) + int((~inside).sum())
+            h = h[inside]
+            if h.empty:
+                continue
         report["input_rows"] += len(h)
         s = per_file.setdefault(name, {"rows": 0, "instrument": set(), "product": set(), "min": "9", "max": "0"})
         s["rows"] += len(h)
