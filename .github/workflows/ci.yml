@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check src tests scripts backend
+      - name: Test (fixture only; the real-data contract tests skip without data)
+        run: python -m pytest
+      - name: Fresh-clone demo builds
+        run: |
+          python - <<'PY'
+          import os, subprocess, sys, time, urllib.request
+          p = subprocess.Popen([sys.executable, "-m", "godseye", "demo", "--port", "8010"])
+          try:
+              for _ in range(60):
+                  try:
+                      urllib.request.urlopen("http://127.0.0.1:8010/api/calendar?aoi=jordan", timeout=2)
+                      break
+                  except Exception:
+                      time.sleep(1)
+              else:
+                  sys.exit("demo did not come up")
+              assert urllib.request.urlopen("http://127.0.0.1:8010/app/").status == 200
+          finally:
+              p.terminate()
+          PY

@@ -23,6 +23,6 @@ Everything this project uses that we did not write. The submission's References 
 
 ## AI tools
 
-- **Claude** (Anthropic), through Claude Code: pair-programming, code review and documentation. See `docs/AI_USAGE.md` (to be written).
+- **Claude** (Anthropic), through Claude Code: pair-programming, code review and documentation. See `docs/AI_USAGE.md`.
 - **Gemini** (Google): used in the prototype phase.
 - **Matt Pocock's agent skills**, MIT licence. https://github.com/mattpocock/skills . Used for the engineering workflow (grilling, glossary/ADRs, spec, tickets, TDD, code review).

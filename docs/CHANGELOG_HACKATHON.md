@@ -41,3 +41,4 @@ Times are Asia/Amman.
 - Ticket 11b: test block scored once. Calibrated v2 ROC-AUC 0.867 vs persistence 0.749, Brier skill +0.197;
   new-activity BSS +0.089; MODEL_CARD.md generated. Ticket 12 review fixes.
 - Ticket 13: get_burning_calendar globe tool + proxy route (fork 09b62da), fire-only share-link preset, integration README.
+- Phase 7: README (hero figure, quickstart, results with baselines, limitations), ARCHITECTURE (mermaid), DATA_CARD, METHODOLOGY, AI_USAGE, LICENSE, CI (ruff + pytest + fresh-clone demo), secret scan clean; fresh clone -> demo verified.

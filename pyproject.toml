@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "godseye"
 version = "0.2.0"
 description = "F.I.R.E.S.: harmonized MODIS + VIIRS burning activity calendar and 7-day fire risk (NASA Space Apps 2026)"
-readme = "CLAUDE.md"
+readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
 # Direct dependencies only; the full environment is pinned in requirements.lock.
