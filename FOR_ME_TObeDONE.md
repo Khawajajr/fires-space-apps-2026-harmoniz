@@ -12,7 +12,17 @@ Updated 2026-11-14, early morning. Everything Claude could do is done and pushed
 
 ## 2. Data (as soon as possible: hard cutoff Sat 14 Nov 18:00 Amman)
 
-Put the FIRMS archive files (zips or CSVs, as delivered) in `C:\Users\muham\Downloads\firms_archive\`. Tell Claude when they're there, or restart the session and ask it to run ticket 07 (then 08).
+Put the FIRMS archive files (zips or CSVs, as delivered) in `C:\Users\muham\Downloads\firms_archive\`. The code for tickets 07 and 08 is done and tested; it only needs running. Ask Claude, or run it yourself (about 10–20 minutes):
+
+```
+.venv\Scripts\python -m godseye ingest --aoi levant
+.venv\Scripts\python -m godseye ingest --aoi argentina
+.venv\Scripts\python -m godseye harmonize          # refits the headline link on 2018-2021; writes headline_switchover.png
+.venv\Scripts\python -m godseye manifest data\raw C:\Users\muham\Downloads\firms_archive
+.venv\Scripts\python -m godseye api                # restart; Levant/Jordan/Argentina now show 2018-2026
+```
+
+Then swap the README hero image to `reports/figures/headline_switchover.png` and update its caption with the numbers from `reports/harmonization_report.json`.
 - **With them:** the 2018–2021 stable-orbit calibration replaces the provisional one, the calendar gets 9 years, the season, anomaly and "this week vs history" panels switch on, and the headline figure becomes the "simulated switchover".
 - **Without them:** the provisional version ships. It is fully built and honest.
 

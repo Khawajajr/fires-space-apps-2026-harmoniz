@@ -45,3 +45,4 @@ Times are Asia/Amman.
 - CI green on GitHub (lint, tests, fresh-clone demo). Phase 8: SUBMISSION.md (all fields, 30 s video + 7 slides),
   DEMO_SCRIPT.md (3 min), FOR_ME_TObeDONE.md updated. Waiting on archive files for 07/08.
 - Ticket 07 code ready ahead of the data: godseye ingest --aoi, multi-year AOI stores, API routing; synthetic e2e tests.
+- Ticket 08 code ready ahead of the data: archive pre-drift calibration (leave-one-year-out, not provisional), drift check from 2022, switchover figure; synthetic e2e tests. Archive day = 5 commands (FOR_ME_TObeDONE.md).
