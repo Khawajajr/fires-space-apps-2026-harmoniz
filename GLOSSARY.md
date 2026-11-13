@@ -29,7 +29,7 @@ _Avoid_: Zero, missing fire
 Dates when two sensors both delivered data, so their series can be compared directly.
 
 **Calibration window**:
-The part of an overlap period used to fit the mapping between two sensors (2013–2021 for Aqua-MODIS vs S-NPP-VIIRS).
+The part of an overlap period used to fit the mapping between two sensors (for Aqua-MODIS vs S-NPP-VIIRS: the overlap years before Aqua's drift).
 
 **Aqua-equivalent**:
 A value expressed on the scale of Aqua-MODIS at its nominal ~13:30 afternoon overpass. The scale of the headline series across the whole record.
