@@ -1,0 +1,10 @@
+# Hackathon changelog
+
+Times are Asia/Amman.
+
+## 2026-11-13 (pre-event prep)
+- Inventoried the FIRMS data: 51,019,714 rows, global, 2026-01-01 → 2026-11-06 only. No multi-year archives on disk yet.
+- `git init`; tagged the pre-event prototype as `v0-prototype`.
+- gods-eye-view: our changes committed on branch `space-apps-2026` (4 commits on upstream c56d5f2).
+- Added CLAUDE.md.
+- Next: Matt Pocock skills setup, `/grill-with-docs` → GLOSSARY + ADRs 001–005 → tickets. Submit the FIRMS archive requests.
