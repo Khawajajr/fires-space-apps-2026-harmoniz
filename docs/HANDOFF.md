@@ -6,8 +6,8 @@ Last updated: 2026-11-14, before the 09:00 start. Read this first, then `CLAUDE.
 
 - The mission brief is `CLAUDE_CODE_PROMPT.md`. The design decisions are in `GLOSSARY.md` and `docs/adr/0001`–`0007`.
 - The work plan is `.scratch/space-apps-2026/spec.md`. It includes the agreed **build order and cut order**. The tickets are in `.scratch/space-apps-2026/issues/`, and each says `Status: done` or `ready-for-agent`, with notes at the bottom.
-- **Done and pushed** (`main` on `Khawajajr/fires-space-apps-2026`, private): tickets 01, 03, 04 and 05. The latest commit is `9e94920`. The `git log` messages give the numbers.
-- **Next in the build order:** 06 (provisional Aqua-equivalent in the calendar + fallback headline figure), then 09 → 10, then 11a → 12, then 07/08 when the archives land, then 11b, then 13. Ticket 02 runs alongside, before 11a.
+- **Done and pushed** (`main` on `Khawajajr/fires-space-apps-2026`, private): tickets 01, 03, 04, 05 and 06. The latest ticket commit is `3bb9808`. The `git log` messages give the numbers.
+- **Next in the build order:** 09 (climatology, activity gate, anomalies, critical periods; test on a synthetic multi-year fixture), then 10, then 11a → 12, then 07/08 when the archives land, then 11b, then 13. Ticket 02 runs alongside, before 11a.
 - **Never cut:** 05, 06, 09. **Cut order if short of time:** 13 → per-cell contributions in 12 → spatial blocks in 11b → 10.
 
 ## Things that will bite
@@ -16,12 +16,11 @@ Last updated: 2026-11-14, before the 09:00 start. Read this first, then `CLAUDE.
   - Read them in place; never move or copy them.
   - Ticket 07 runs as soon as files appear. Its notes cover the AOI-basis availability rule and the dedupe against the 2026 files.
   - Hard cutoff for 08: **Sat 14 Nov 18:00 Amman** (ADR 0001).
-- **Ticket 06 must solve link chaining.**
-  - The chain is NOAA-21 → S-NPP (×1.027) → Aqua-eq (provisional, fitted on 2026, which is a drifted-orbit year).
-  - It needs a combined band, which `harmonize()` doesn't yet provide (see the notes at the end of ticket 05).
-  - The band is magnitude-binned at 10° region-week level; it was checked at AOI scale for the VIIRS links (91–98% coverage).
-  - If a regional method wins, apply ratios per cell before summing over the AOI.
-  - For Aqua vs VIIRS use **daytime** passes: `n_fire_cells_daytime` exists in `sensor_grid_daily`. Record the acq_time gap as a caveat.
+- **The harmonized headline (06) is done:** `src/godseye/calendar/harmonized.py`.
+  - Aqua observed is the headline until `observed_until` (2021-12-31); after that, a VIIRS estimate via the links.
+  - The `/api/calendar` `harmonized` block carries values, lo, hi, coverage, data_days, estimated_days, substituted_days and caveats.
+  - 09 should build climatology on `harmonized.values` per ISO week, using `data_days` to scale or exclude partial weeks and honouring ADR 0006.
+  - 08 still owes the agreement series (story 11) and the switchover figure.
 - **Calendar API shape:** harmonized values go in a new top-level `harmonized` block (values, lo, hi, coverage, provisional). Partial periods carry `data_days`, and climatology (09) must exclude or scale them.
 - **Availability:**
   - Statuses are `ok | partial | no_data | not_operational`. `status_own_rule` is the status before the VIIRS cross-sensor check.

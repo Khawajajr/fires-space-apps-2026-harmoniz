@@ -26,3 +26,4 @@ Times are Asia/Amman.
 - Ticket 06 done: provisional Aqua-equivalent in the calendar (region-ratio link S-NPP->Aqua, -10.6% vs global ratio),
   Aqua overpass measured at 15:24 local (drift), chain via VIIRS continuity links, held-out headline figure
   (Levant 1.03, Argentina 0.96 estimate/observed). Next: 09.
+- Ticket 06 committed (3bb9808) after review fixes (ADR 0001 era switch, no day-view band, honest method/caveats). Handoff updated.
