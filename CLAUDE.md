@@ -37,3 +37,17 @@ Display name lives in one config value; the Python package stays `godseye` (inte
 - Credit everything in `docs/REFERENCES.md` (datasets, libs, gods-eye-view, Gemini, Claude, Matt Pocock skills).
 - English everywhere. Small commits; run the tests before each one. Ask before deleting, force-pushing or anything irreversible.
 - Log progress in `docs/CHANGELOG_HACKATHON.md`.
+
+## Agent skills
+
+### Issue tracker
+
+Local markdown under `.scratch/<feature>/` (spec + one file per ticket). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five roles (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`) as `Status:` lines. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
