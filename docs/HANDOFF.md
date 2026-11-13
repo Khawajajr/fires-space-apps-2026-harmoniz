@@ -7,7 +7,7 @@ Last updated: 2026-11-14, before the 09:00 start. Read this first, then `CLAUDE.
 - The mission brief is `CLAUDE_CODE_PROMPT.md`. The design decisions are in `GLOSSARY.md` and `docs/adr/0001`–`0007`.
 - The work plan is `.scratch/space-apps-2026/spec.md`. It includes the agreed **build order and cut order**. The tickets are in `.scratch/space-apps-2026/issues/`, and each says `Status: done` or `ready-for-agent`, with notes at the bottom.
 - **Done and pushed:** tickets 01, 02, 03, 04, 05, 06, 09, 10, 11a, 11b, 12 and 13, plus Phase 7 (docs, CI green, quickstart) and Phase 8 (`docs/SUBMISSION.md`, `docs/DEMO_SCRIPT.md`). See `git log`.
-- **Open:** 07 and 08 (they need the FIRMS archive files), and the user's manual steps in `FOR_ME_TObeDONE.md`.
+- **Open:** 07 and 08 are coded and tested but need the FIRMS archive files: run the 5 commands in `FOR_ME_TObeDONE.md` §2. The user's manual steps are in the same file.
 - **Served model:** risk v2, calibrated. Test block: ROC-AUC 0.867 vs persistence 0.749 (`docs/MODEL_CARD.md`).
 
 ## Things that will bite

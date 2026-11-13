@@ -780,8 +780,9 @@
         "one year of data: region x month ratios can't be validated, so only region ratios (shrunk to the global ratio) ship; month effects return with multi-year folds",
         "calibration days depend on the cross-sensor check: without it the global ratio moves +1.9% (the skipped days are partial deliveries, so the checked value is used)"
       ],
+      "calibration_source": "2026 global (provisional: no archive years ingested yet)",
       "paired_days": 281,
-      "note": "Headline link (ADR 0001). Provisional: fitted on 2026, when Aqua's orbit has drifted; refit on 2018-2021",
+      "note": "Headline link (ADR 0001): fitted on the AOI archives' pre-drift years when ingested (ticket 08), else on 2026 (provisional)",
       "sensitivity_without_cross_sensor_check": {
         "paired_days_own_rule": 290,
         "global_ratio_cross_checked": 0.2158,
