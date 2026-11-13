@@ -123,6 +123,17 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--border); text-align: r
 th:first-child, td:first-child { text-align: left; }
 thead th { position: sticky; top: 0; background: var(--surface-1); color: var(--text-secondary); }
 
+.season { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+.season-card { border: 1px solid var(--border); border-radius: 8px; padding: 12px; min-width: 0; }
+.season-card.wide { grid-column: 1 / -1; }
+@media (max-width: 860px) { .season { grid-template-columns: 1fr; } }
+.season ol, .season ul { margin: 6px 0 0; padding-left: 20px; font-size: 13px; }
+.season li { margin: 4px 0; }
+.season .empty { color: var(--text-muted); font-size: 12px; margin: 6px 0 0; }
+.chart .band { fill: var(--fire-2); opacity: 0.25; }
+.chart .gated { fill: var(--text-muted); opacity: 0.08; }
+.chart .median { fill: none; stroke: var(--fire-4); stroke-width: 2; }
+.chart .latest { fill: none; stroke: var(--text-primary); stroke-width: 1.5; stroke-dasharray: 4 3; }
 .notes { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
 .notes ul { margin: 6px 0 0; padding-left: 18px; color: var(--text-secondary); font-size: 12px; }
 

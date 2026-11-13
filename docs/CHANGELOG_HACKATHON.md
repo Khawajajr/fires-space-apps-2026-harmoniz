@@ -27,3 +27,8 @@ Times are Asia/Amman.
   Aqua overpass measured at 15:24 local (drift), chain via VIIRS continuity links, held-out headline figure
   (Levant 1.03, Argentina 0.96 estimate/observed). Next: 09.
 - Ticket 06 committed (3bb9808) after review fixes (ADR 0001 era switch, no day-view band, honest method/caveats). Handoff updated.
+- Ticket 09 built: climatology / ADR 0006 gate / anomalies (leave-one-year-out) / critical periods, API + UI panels.
+  Real data shows 'needs ≥5 years (currently 1)'; checked populated on a synthetic 8-year store. ADR 0006 amended:
+  'active' = ≥10% of the AOI's peak weekly median.
+- Ticket 09 review fixes: ADR 0006 amendment moved back to PROPOSED (config switch, approved rule is default),
+  anomaly/gate/floor fixes, helpers for 10. User asleep: FOR_ME_TObeDONE.md lists decisions and manual steps.

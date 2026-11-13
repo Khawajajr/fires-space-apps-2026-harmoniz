@@ -45,9 +45,9 @@ function segmented(el, options, current, onPick) {
 }
 function renderFilters() {
   const sensors = state.data ? state.data.sensors.map((s) => [s.sensor, s.sensor]) : [[state.sensor, state.sensor]];
-  segmented($("view-seg"), VIEWS, state.view, (v) => { state.view = v; writeHash(); renderFilters(); renderAll(); });
+  segmented($("view-seg"), VIEWS, state.view, (v) => { state.view = v; load(); });
   $("sensor-seg").hidden = harmonizedView();
-  segmented($("sensor-seg"), sensors, state.sensor, (v) => { state.sensor = v; writeHash(); renderFilters(); renderAll(); });
+  segmented($("sensor-seg"), sensors, state.sensor, (v) => { state.sensor = v; load(); });
   segmented($("unit-seg"), UNITS, state.unit, (v) => { state.unit = v; load(); });
   segmented($("metric-seg"), METRICS, state.metric, (v) => { state.metric = v; load(); });
 }
@@ -136,6 +136,7 @@ async function load() {
     setStatus("");
     showAoi(body.aoi.grid_bbox || body.aoi.bbox);
     writeHash(); renderFilters(); renderAll();
+    loadSeason(params, ctrl);
   } catch (err) {
     if (err.name !== "AbortError") setStatus(`Could not load the calendar: ${err.message}`);
   }
@@ -318,6 +319,87 @@ function renderLegend(thresholds, d) {
     <span class="item"><svg width="22" height="12" aria-hidden="true"><rect width="22" height="12" rx="2" style="fill:var(--fire-3)"/><rect width="22" height="3" style="fill:var(--text-primary)"/></svg>Partial coverage</span>`;
 }
 
+// ---------- season panels (climatology, critical periods, unusual weeks) ----------
+async function loadSeason(params, ctrl) {
+  const q = new URLSearchParams({ series: harmonizedView() ? "harmonized" : state.sensor });
+  if (params.get("bbox")) q.set("bbox", params.get("bbox")); else q.set("aoi", params.get("aoi"));
+  try {
+    const get = (ep) => fetch(`${API}/calendar/${ep}?${q}`, { signal: ctrl.signal })
+      .then(async (r) => (r.ok ? r.json() : { error: (await r.json().catch(() => ({}))).detail || r.statusText }));
+    const [clim, crit, anom] = await Promise.all(["climatology", "critical-periods", "anomalies"].map(get));
+    state.season = { clim, crit, anom };
+  } catch (err) {
+    if (err.name === "AbortError") return;
+    state.season = { error: err.message };
+  }
+  renderSeason();
+}
+
+function renderSeason() {
+  const s = state.season;
+  if (!s) return;
+  const empty = (msg) => `<p class="empty">${esc(msg)}</p>`;
+  const failed = s.error || [s.clim, s.crit, s.anom].find((x) => x.error);
+  if (failed) {
+    const msg = s.error || failed.error;
+    for (const id of ["season-chart", "periods", "anomalies"]) $(id).innerHTML = empty(msg);
+    $("season-sub").textContent = "";
+    return;
+  }
+  const c = s.clim;
+  $("season-sub").textContent = `${c.series_label}. History: ${c.history_years.length} year(s)` +
+    (c.history_years.length ? ` (${[...new Set([c.history_years[0], c.history_years[c.history_years.length - 1]])].join("–")})` : "") +
+    (c.gate_rule ? `. Season rule: ${c.gate_rule}` : "") + ".";
+  if (c.status !== "ok") {
+    for (const id of ["season-chart", "periods", "anomalies"]) $(id).innerHTML = empty(c.message);
+    return;
+  }
+  renderProfile(c);
+  $("periods").innerHTML = s.crit.periods.length
+    ? `<ol>${s.crit.periods.slice(0, 5).map((p) => `<li><strong>${esc(p.label)}</strong> · ${p.weeks} weeks · ` +
+        `${Math.round(p.share_of_year * 100)}% of a typical year's activity · peak week ${p.peak_week}</li>`).join("")}</ol>`
+    : empty(s.crit.message || "No critical period.");
+  $("anomalies").innerHTML = s.anom.anomalies.length
+    ? `<ul>${s.anom.anomalies.slice(0, 8).map((a) => `<li><strong>${a.year}, week ${a.week}</strong> ` +
+        `(from ${esc(a.week_start)}): ${fmt.format(a.value)} vs usual ${fmt.format(a.median)}` +
+        `${a.z !== null ? ` (z ${fmt.format(a.z)})` : ""}</li>`).join("")}</ul>`
+    : empty("No unusual weeks in the record.");
+}
+
+function renderProfile(c) {
+  const ns = "http://www.w3.org/2000/svg";
+  const W = Math.max(320, $("season-chart").clientWidth || 700), H = 180, left = 40, right = 8, top = 10, bottom = 22;
+  const x = (w) => left + ((w - 1) / 51) * (W - left - right);
+  const ser = series();
+  // The climatology is weekly fire cell-days: only overlay the latest year when the calendar shows the same thing.
+  const comparable = state.data.unit === "week" && state.data.metric === "cell_days";
+  // Same scaling as the climatology: partial weeks with >= 5 data days scaled to 7, thinner weeks left out.
+  const li = ser.values.length - 1;
+  const latestRow = !comparable || li < 0 ? [] : ser.values[li].map((v, w) => {
+    const cov = ser.coverage[li][w], days = ser.data_days[li][w];
+    if (v === null || cov === "none" || cov === "absent") return null;
+    if (cov === "partial") return days >= 5 ? (v * 7) / days : null;
+    return v;
+  });
+  const latestYear = state.data.years[state.data.years.length - 1];
+  const ymax = Math.max(1, ...c.weeks.map((w) => w.p90 || 0), ...latestRow.slice(0, 52).map((v) => v || 0));
+  const y = (v) => top + (1 - v / ymax) * (H - top - bottom);
+  // Break the line at missing weeks: a gap is not zero and is not interpolated.
+  const path = (pts) => pts.map((p, i) => p[1] === null ? "" :
+    `${i && pts[i - 1][1] !== null ? "L" : "M"}${p[0].toFixed(1)},${y(p[1]).toFixed(1)}`).join("");
+  const band = c.weeks.filter((w) => w.p10 !== null);
+  const bandPath = band.length ? `M${band.map((w) => `${x(w.week).toFixed(1)},${y(w.p90).toFixed(1)}`).join("L")}` +
+    `L${band.slice().reverse().map((w) => `${x(w.week).toFixed(1)},${y(w.p10).toFixed(1)}`).join("L")}Z` : "";
+  const gated = c.gated_weeks.map((w) => `<rect class="gated" x="${x(w) - (W - left - right) / 104}" y="${top}" width="${(W - left - right) / 52}" height="${H - top - bottom}"/>`).join("");
+  const ticks = MONTH_START_DOY.map((doy, i) => `<text class="axis" x="${x(Math.floor((doy - 1) / 7) + 1)}" y="${H - 6}">${MONTHS[i]}</text>`).join("");
+  const yt = [0, ymax / 2, ymax].map((v) => `<text class="axis" x="0" y="${y(v) + 4}">${fmt.format(v)}</text>`).join("");
+  $("season-chart").innerHTML = `<svg xmlns="${ns}" width="${W}" height="${H}" role="img" aria-label="Weekly median with p10 to p90 range; dashed line is ${latestYear}">
+    ${gated}<path class="band" d="${bandPath}"/>
+    <path class="median" d="${path(c.weeks.map((w) => [x(w.week), w.median]))}"/>
+    <path class="latest" d="${path(latestRow.slice(0, 52).map((v, i) => [x(i + 1), v]))}"/>${ticks}${yt}</svg>
+    <p class="hint">Solid: weekly median · band: p10–p90${comparable ? ` · dashed: ${latestYear}` : ""} · shaded: in-season weeks.</p>`;
+}
+
 // ---------- table view ----------
 function renderTable() {
   const d = state.data, s = series();
@@ -347,7 +429,10 @@ $("aoi-select").addEventListener("change", (e) => {
   if (e.target.value === "__custom") return;
   state.aoi = e.target.value; state.bbox = null; syncAoiSelect(); load();
 });
-window.addEventListener("resize", () => { clearTimeout(window._rz); window._rz = setTimeout(renderChart, 150); });
+window.addEventListener("resize", () => {
+  clearTimeout(window._rz);
+  window._rz = setTimeout(() => { renderChart(); if (state.season && state.season.clim && state.season.clim.status === "ok") renderProfile(state.season.clim); }, 150);
+});
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
   if (countriesLayer) countriesLayer.setStyle(countryStyle);
   if (state.data) showAoi(state.data.aoi.grid_bbox || state.data.aoi.bbox);

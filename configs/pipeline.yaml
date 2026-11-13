@@ -53,6 +53,11 @@ harmonize:
     viirs_priority: [S-NPP-VIIRS, NOAA-20-VIIRS, NOAA-21-VIIRS]
     figure_aois: [levant, argentina]   # headline figure (README, slides, video)
 
+climatology:
+  # ADR 0006: "absolute" = a week is active with >= 1 fire cell-day (as approved). "relative" = >= 10% of the AOI's
+  # peak weekly median: PROPOSED amendment, waiting for the team's sign-off; switch here once agreed.
+  activity: absolute
+
 risk:
   grid_deg: 0.25
   horizon_days: 7

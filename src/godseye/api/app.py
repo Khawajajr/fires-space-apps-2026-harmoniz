@@ -27,6 +27,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from godseye.api import calendar as calendar_api
+from godseye.api import climatology as climatology_api
 from godseye.calendar.harmonized import build_chain
 from godseye.calendar.store import CalendarStore, in_bbox
 from godseye.clean.io import read_table as _read_table
@@ -111,6 +112,7 @@ def risk_state() -> tuple[pd.DataFrame, dict]:
 app = FastAPI(title=f"{CONFIG.display_name} API", version="0.2.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"], allow_headers=["*"])
 app.include_router(calendar_api.router)
+app.include_router(climatology_api.router)
 
 
 def parse_bbox(bbox: str | None) -> tuple[float, float, float, float] | None:
