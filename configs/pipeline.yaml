@@ -71,6 +71,17 @@ risk:
   legacy_model_file: gods_eye_risk_model.pkl  # v1 pickle, migrated once into model_dir
   predictions_file: risk_predictions.csv
 
+# Risk model v2 (ADRs 0004, 0005): NOAA-20 reference label/features, three blocks separated by the horizon.
+risk_v2:
+  model_dir: risk_v2
+  reference_sensor: NOAA-20-VIIRS
+  step_days: 7
+  min_history_days: 30
+  train_end: 2026-08-21
+  validation: [2026-08-28, 2026-09-25]
+  test: [2026-10-02, 2026-10-30]
+  n_estimators: 600
+
 api:
   host: 127.0.0.1
   port: 8000

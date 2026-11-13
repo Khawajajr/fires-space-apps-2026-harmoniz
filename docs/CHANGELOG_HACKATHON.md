@@ -35,3 +35,5 @@ Times are Asia/Amman.
 - Ticket 10 built: /api/calendar/now + 'This week vs history' card; incomplete current year now gets anomalies.
 - Ticket 10 committed (6b6413b). Ticket 02 built: native LightGBM model + metadata (pickle migrated, identical
   predictions), GET /api/meta.
+- Ticket 02 committed (c504eb8). Ticket 11a: risk v2 (NOAA-20 label, 3 blocks, no refit); validation ROC-AUC 0.905
+  vs persistence 0.782; test block untouched until 11b.

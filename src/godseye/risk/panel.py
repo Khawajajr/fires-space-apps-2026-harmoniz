@@ -38,6 +38,16 @@ def load_grid(path: Path | None = None) -> pd.DataFrame:
     return grid
 
 
+def neighbour_sum(values: np.ndarray, rows: np.ndarray, cols: np.ndarray, grid_deg: float) -> np.ndarray:
+    """Sum of `values` over the 8 surrounding grid cells (self excluded)."""
+    h, w = int(round(180 / grid_deg)), int(round(360 / grid_deg))
+    g = np.zeros((h + 2, w + 2), np.float32)
+    g[rows + 1, cols + 1] = values
+    total = sum(g[1 + dr:h + 1 + dr, 1 + dc:w + 1 + dc]
+                for dr in (-1, 0, 1) for dc in (-1, 0, 1) if (dr, dc) != (0, 0))
+    return total[rows, cols]
+
+
 class Panel:
     """Dense (cell x day) matrices built from the sparse daily grid."""
 
@@ -75,13 +85,7 @@ class Panel:
         return self.cs[key][:, t + 1] - self.cs[key][:, max(0, t + 1 - w)]
 
     def neighbours(self, values: np.ndarray) -> np.ndarray:
-        """Sum of `values` over the 8 surrounding grid cells (self excluded)."""
-        h, w = int(round(180 / self.grid_deg)), int(round(360 / self.grid_deg))
-        g = np.zeros((h + 2, w + 2), np.float32)
-        g[self.rows + 1, self.cols + 1] = values
-        total = sum(g[1 + dr:h + 1 + dr, 1 + dc:w + 1 + dc]
-                    for dr in (-1, 0, 1) for dc in (-1, 0, 1) if (dr, dc) != (0, 0))
-        return total[self.rows, self.cols]
+        return neighbour_sum(values, self.rows, self.cols, self.grid_deg)
 
     def features(self, t: int) -> pd.DataFrame:
         """Feature table for every cell that has burned on or before day index t."""

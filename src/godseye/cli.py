@@ -28,6 +28,14 @@ def _train(args) -> None:
               min_history_days=cfg.risk["min_history_days"])
 
 
+def _train_v2(args) -> None:
+    from godseye.risk import train_v2
+
+    cfg = get_config()
+    out = Path(args.out or cfg.models_dir / cfg.risk_v2["model_dir"])
+    train_v2.run(cfg, Path(args.processed or cfg.processed_dir), out, args.n_estimators or cfg.risk_v2["n_estimators"])
+
+
 def _aggregate(args) -> None:
     from godseye.ingest import pipeline
 
@@ -81,6 +89,12 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--val-weeks", type=int, default=cfg.risk["val_weeks"], help="most recent issue dates held out")
     t.add_argument("--n-estimators", type=int, default=cfg.risk["n_estimators"])
     t.set_defaults(func=_train)
+
+    t2 = sub.add_parser("train-v2", help="train risk model v2 (NOAA-20 label, train/validation/test blocks)")
+    t2.add_argument("--processed", help="directory with the sensor grid and availability")
+    t2.add_argument("--out", help="model directory (default: models/<risk_v2.model_dir>)")
+    t2.add_argument("--n-estimators", type=int)
+    t2.set_defaults(func=_train_v2)
 
     g = sub.add_parser("aggregate", help="cleaned detections -> per-sensor fire cells, grid, availability, chart")
     g.add_argument("--clean-dir", help=f"directory holding fires_clean (default: {cfg.processed_dir})")
