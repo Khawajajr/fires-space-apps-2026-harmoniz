@@ -177,7 +177,14 @@ def bootstrap_global_ratio(df: pd.DataFrame, n: int = 500, seed: int = 0) -> lis
 
 
 def drift(df: pd.DataFrame) -> list[dict]:
-    """Monthly y / x of the paired totals: a change over time is drift, not noise."""
+    """Monthly y / x of the paired totals (raw sensor ratio; seasonal changes show up here too)."""
     m = df.groupby("month")[["x", "y"]].sum()
     return [{"month": k, "ratio_y_over_x": round(float(r.y / r.x), 4), "x": int(r.x), "y": int(r.y)}
+            for k, r in m.iterrows()]
+
+
+def residual_drift(cv: pd.DataFrame, method: str) -> list[dict]:
+    """Monthly observed / predicted of the chosen method, held out: what the model does NOT explain over time."""
+    m = cv.groupby("month")[["y", method]].sum()
+    return [{"month": k, "observed_over_predicted": round(float(r.y / r[method]), 4) if r[method] else None}
             for k, r in m.iterrows()]

@@ -36,7 +36,7 @@ Dates when two sensors both delivered data, so their series can be compared dire
 The part of an overlap period used to fit the mapping between two sensors (for Aqua-MODIS vs S-NPP-VIIRS: the overlap years before Aqua's drift).
 
 **Aqua-equivalent**:
-A value expressed on the scale of Aqua-MODIS at its nominal ~13:30 afternoon overpass. The scale of the headline series across the whole record.
+A value expressed on the scale of Aqua-MODIS at its nominal ~13:30 afternoon overpass. The scale of the headline series across the whole record: Aqua observed while its orbit was stable, an estimate from VIIRS after.
 _Avoid_: MODIS-equivalent, combined MODIS, Terra+Aqua
 
 **Harmonized value**:
@@ -44,7 +44,7 @@ An Aqua-equivalent estimate derived from another sensor's observations, always a
 _Avoid_: Corrected fires, total fires
 
 **Uncertainty band**:
-The 90% interval around a harmonized value, from resampling the calibration years.
+The 90% range around a harmonized value, built from the link's out-of-sample errors (held-out months or years) and checked for coverage on data it was not built from.
 
 **Provisional calibration**:
 A VIIRS → Aqua-equivalent mapping fitted on drifting-orbit years. Usable, but always labelled as provisional.

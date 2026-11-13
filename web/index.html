@@ -31,6 +31,7 @@
 
     <section class="panel main" aria-label="Burning activity calendar">
       <div class="filters" role="toolbar" aria-label="Calendar options">
+        <div class="seg" role="radiogroup" aria-label="View" id="view-seg"></div>
         <div class="seg" role="radiogroup" aria-label="Sensor" id="sensor-seg"></div>
         <div class="seg" role="radiogroup" aria-label="Time unit" id="unit-seg"></div>
         <div class="seg" role="radiogroup" aria-label="Metric" id="metric-seg"></div>
@@ -40,6 +41,7 @@
         <h2 id="chart-title">Loading…</h2>
         <p id="chart-sub" class="hint"></p>
       </div>
+      <div id="badge" class="badge" hidden></div>
       <div id="status" class="status" role="status" aria-live="polite"></div>
       <div id="chart" class="chart"></div>
       <div id="legend" class="legend" aria-label="Legend"></div>

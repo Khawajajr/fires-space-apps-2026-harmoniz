@@ -92,9 +92,23 @@ class CalendarStore:
         a_day = (avail.acq_date.to_numpy().astype("datetime64[D]")
                  - np.datetime64(self.first.date(), "D")).astype(np.int64)
         a_status = _codes(avail.status, STATUSES)
+        self.chain, self.harmonizer = None, None
         status[a_code, a_day] = np.select([a_status == STATUSES.index("ok"), a_status == STATUSES.index("partial")],
                                           [OK, PARTIAL], GAP)
         self.status = status
+
+    def attach_chain(self, chain) -> None:
+        """Enable the harmonized series (see calendar.harmonized); chain=None disables it."""
+        from godseye.calendar.harmonized import HarmonizedSeries
+
+        self.chain = chain
+        self.harmonizer = None if chain is None else HarmonizedSeries(chain, self)
+
+    def harmonized(self, bbox: tuple[float, float, float, float], unit: str):
+        if self.harmonizer is None:
+            return None
+        inside = in_bbox(self.lat, self.lon, bbox)
+        return self.harmonizer.calendar(inside, self.day, self.dates, self.status, unit)
 
     def daily(self, bbox: tuple[float, float, float, float], metric: str) -> np.ndarray:
         """(sensors, days) sum of the metric over the AOI's cells; NaN on coverage-gap days."""

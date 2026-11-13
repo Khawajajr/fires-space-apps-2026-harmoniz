@@ -13,6 +13,17 @@ from godseye.harmonize.link import Link  # noqa: E402
 
 
 def plot_links(links: list[Link], path: Path, title: str) -> Path:
+    """One panel per target sensor (ratios differ by orders of magnitude between targets)."""
+    targets = list(dict.fromkeys(k.target for k in links))
+    if len(targets) > 1:
+        for t in targets:
+            plot_links([k for k in links if k.target == t], path.with_name(f"{path.stem}_{t}{path.suffix}"),
+                       f"{title} ({t})")
+        return path.with_name(f"{path.stem}_{targets[0]}{path.suffix}")
+    return _plot(links, path, title)
+
+
+def _plot(links: list[Link], path: Path, title: str) -> Path:
     """Monthly ratio target / source on paired days, with the shipped link and its bootstrap interval."""
     fig, ax = plt.subplots(figsize=(9, 4), constrained_layout=True)
     colors = ["#2a78d6", "#eb6834", "#1baf7a", "#6250d6"]

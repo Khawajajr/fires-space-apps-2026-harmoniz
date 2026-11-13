@@ -41,6 +41,17 @@ harmonize:
        note: "VIIRS continuity: same instrument, same orbit plane, no orbit drift; S-NPP read low in Oct 2026"}
     - {source: NOAA-21-VIIRS, target: S-NPP-VIIRS, provisional: false,
        note: "VIIRS continuity: same instrument, same orbit plane, no orbit drift; S-NPP read low in Oct 2026"}
+    - {source: S-NPP-VIIRS, target: Aqua-MODIS, provisional: true,
+       note: "Headline link (ADR 0001). Provisional: fitted on 2026, when Aqua's orbit has drifted; refit on 2018-2021"}
+  # The calendar's harmonized series: VIIRS in S-NPP units (first sensor in `viirs_priority` with full data that day,
+  # converted with the links above), mapped to the headline target.
+  headline:
+    target: Aqua-MODIS
+    label: Aqua-equivalent (Aqua-MODIS, afternoon overpass)
+    observed_until: 2021-12-31   # ADR 0001: Aqua observed is the headline until its orbit drifts
+    reference: S-NPP-VIIRS
+    viirs_priority: [S-NPP-VIIRS, NOAA-20-VIIRS, NOAA-21-VIIRS]
+    figure_aois: [levant, argentina]   # headline figure (README, slides, video)
 
 risk:
   grid_deg: 0.25

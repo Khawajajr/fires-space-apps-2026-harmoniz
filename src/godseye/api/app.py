@@ -27,10 +27,12 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from godseye.api import calendar as calendar_api
+from godseye.calendar.harmonized import build_chain
 from godseye.calendar.store import CalendarStore, in_bbox
 from godseye.clean.io import read_table as _read_table
 from godseye.clean.schema import CONF_RANK
 from godseye.config import get_config
+from godseye.harmonize import pipeline as harmonize_pipeline
 from godseye.risk.model import load_bundle, predict_latest
 from godseye.risk.panel import Panel, load_grid
 
@@ -73,8 +75,12 @@ async def lifespan(app: FastAPI):
     fires["acq_hhmm"] = (minutes.str[11:13] + minutes.str[14:16]).to_numpy()
     STATE["fires"] = fires
     if (PROCESSED / "sensor_grid_daily.feather").exists():
-        calendar_api.STORE["calendar"] = CalendarStore(read_table("sensor_grid_daily"),
-                                                       read_table("sensor_availability"), CONFIG.clean["grid_deg"])
+        store = CalendarStore(read_table("sensor_grid_daily"), read_table("sensor_availability"),
+                              CONFIG.clean["grid_deg"])
+        if (PROCESSED / harmonize_pipeline.REPORT).exists():
+            store.attach_chain(build_chain(CONFIG.harmonize["headline"], harmonize_pipeline.load(PROCESSED),
+                                           CONFIG.harmonize["region_deg"]))
+        calendar_api.STORE["calendar"] = store
     print(f"loaded {len(fires):,} recent detections and the calendar in {time.time() - t0:.1f}s; "
           "scoring risk in the background")
     # Scoring the latest day takes ~8 s; do it off the startup path so the calendar is up at once.

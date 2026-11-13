@@ -10,9 +10,11 @@ import pandas as pd
 from godseye.clean.io import read_table, write_table
 from godseye.config import Config
 from godseye.harmonize.figures import plot_links
-from godseye.harmonize.link import Link, fit_link, harmonize
+from godseye.harmonize.headline import held_out_weekly, plot_fallback
+from godseye.harmonize.link import Link, fit_link
 from godseye.harmonize.methods import GlobalRatio
-from godseye.harmonize.series import paired_days, weekly_pairs
+from godseye.harmonize.series import paired_days, region_of, weekly_pairs
+from godseye.harmonize.validate import apply_band
 
 COEFFICIENTS = "harmonization_coefficients"
 REPORT = "harmonization_report.json"
@@ -31,7 +33,7 @@ def run(cfg: Config, processed: Path, reports_dir: Path) -> list[Link]:
         link.report["paired_days"] = len(days)
         link.report["note"] = spec.get("note", "")
         link.report["sensitivity_without_cross_sensor_check"] = sensitivity(grid, avail, src, tgt, h, df)
-        link.report["aoi_band_coverage"] = aoi_band_coverage(grid, days, link, cfg, h["metric"])
+        link.report["aoi_band_coverage_in_sample"] = aoi_band_coverage(grid, days, link, cfg, h["metric"])
         change = link.report["sensitivity_without_cross_sensor_check"]["relative_change"]
         if abs(change) > 0.01:
             link.report["caveats"].append(
@@ -41,9 +43,17 @@ def run(cfg: Config, processed: Path, reports_dir: Path) -> list[Link]:
         s = link.report["cv_scores"][link.method]
         print(f"  {link.source} -> {link.target}: {link.method}, ratio {link.ratios():.4f}, "
               f"region-month WAPE {s['region_month_wape']}, band coverage {link.report['band_coverage_out_of_fold']}")
+    headline = next((k for k in links if k.target == h["headline"]["target"]), None)
+    if headline is not None:
+        headline.report["overpass_local_solar_time"] = overpass_times(processed)
     save(links, processed, reports_dir)
-    fig = plot_links(links, cfg.figures_dir / "harmonization_viirs_continuity.png",
-                     "VIIRS continuity, 2026: monthly ratio on days both sensors delivered full data")
+    if headline is not None:
+        weeks = {cfg.aois[a].label.split(" (")[0]: held_out_weekly(grid, avail, headline, cfg.aois[a], h["region_deg"],
+                                                                   h["metric"])
+                 for a in h["headline"]["figure_aois"]}
+        print(f"  wrote {plot_fallback(weeks, headline, cfg.figures_dir / 'headline_same_fires_different_camera.png')}")
+    fig = plot_links(links, cfg.figures_dir / "harmonization_links.png",
+                     "Sensor links, 2026: monthly ratio on days both sensors delivered full data")
     print(f"  wrote {fig}")
     return links
 
@@ -66,15 +76,31 @@ def aoi_band_coverage(grid, days, link: Link, cfg: Config, metric: str) -> dict:
     out = {}
     for name, aoi in cfg.aois.items():
         g = grid[in_bbox(grid.cell_lat, grid.cell_lon, aoi.bbox) & grid.acq_date.isin(days)]
-        week = g.acq_date - pd.to_timedelta(g.acq_date.dt.weekday, unit="D")
-        w = g.assign(week=week, sensor=g.sensor.astype(str)).pivot_table(
-            index="week", columns="sensor", values=metric, aggfunc="sum", fill_value=0.0)
-        w = w.reindex(columns=[link.source, link.target], fill_value=0.0)
-        value, lo, hi = harmonize(w[link.source].to_numpy(), link)
-        y = w[link.target].to_numpy()
-        out[name] = {"weeks": len(w), "coverage": round(float(np.mean((y >= lo - 1e-9) & (y <= hi + 1e-9))), 4),
+        g = g.assign(week=g.acq_date - pd.to_timedelta(g.acq_date.dt.weekday, unit="D"))
+        src = g[g.sensor.astype(str) == link.source]
+        # Regional links: ratio per cell (its region and month) before summing over the AOI.
+        r = link.ratios(region_of(src.cell_lat.to_numpy(), src.cell_lon.to_numpy(), link.report["region_deg"]),
+                        src.acq_date.dt.month.to_numpy())
+        x = (src[metric].to_numpy() * r)
+        weeks = sorted(set(g.week))
+        mapped = pd.Series(x, index=src.week.to_numpy()).groupby(level=0).sum().reindex(weeks, fill_value=0.0)
+        y = g[g.sensor.astype(str) == link.target].groupby("week")[metric].sum().reindex(weeks, fill_value=0.0)
+        value = mapped.to_numpy()
+        lo, hi = apply_band(value, link.band)
+        y = y.to_numpy()
+        out[name] = {"weeks": len(weeks), "coverage": round(float(np.mean((y >= lo - 1e-9) & (y <= hi + 1e-9))), 4),
                      "weekly_wape": round(float(np.abs(y - value).sum() / max(y.sum(), 1e-9)), 4)}
     return out
+
+
+def overpass_times(processed: Path) -> dict:
+    """Median local solar time (hours) of each satellite's daytime detections: measures orbit drift directly."""
+    c = read_table(processed, "fires_clean", ["satellite", "acq_datetime", "longitude", "daynight"])
+    c = c[c.daynight.astype(str) == "D"]
+    t = c.acq_datetime
+    hours = (t.dt.hour + t.dt.minute / 60 + c.longitude.astype(float) / 15) % 24
+    minutes = (hours.groupby(c.satellite.astype(str), observed=True).median() * 60).round().astype(int) % (24 * 60)
+    return {k: f"{m // 60:02d}:{m % 60:02d}" for k, m in minutes.items()}
 
 
 def save(links: list[Link], processed: Path, reports_dir: Path) -> None:

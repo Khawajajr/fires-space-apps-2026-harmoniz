@@ -6,7 +6,7 @@ The record spans sensors with different pixel sizes and overpass times, so we ex
 - **Jul 2002 – 2021:** Aqua observed is the headline. S-NPP mapped to Aqua-equivalent is plotted from 2012 as the agreement check.
 - **2022 onward:** Aqua's orbit drifts, so the headline is VIIRS (S-NPP, then NOAA-20/21 after S-NPP ended on 2 Nov 2026) mapped to Aqua-equivalent with coefficients fitted on the **calibration window** (see "Data actually available" below). Aqua observed stays visible, labelled "drifting orbit". NOAA-20/21 are first mapped to S-NPP in their own overlap.
 
-Detections are a secondary metric, shown raw per sensor and also harmonized. FRP stays per sensor and is never harmonized. The method (global ratio vs region × month ratio with shrinkage vs quantile mapping) is chosen by leave-one-year-out error, and the uncertainty band comes from bootstrapping over years.
+Detections are a secondary metric, shown raw per sensor (harmonized detections were dropped for the hackathon: the links are fitted and validated on fire cell-days only, and the API says so). FRP stays per sensor and is never harmonized. The method (global ratio vs region × month ratio with shrinkage vs quantile mapping) is chosen by out-of-sample error (leave one year out; one month out while there is a single year) under ADR 0007, and the 90% band comes from the chosen link's out-of-sample errors (the bootstrap over years gives the CI of the ratio).
 
 ## Considered options
 

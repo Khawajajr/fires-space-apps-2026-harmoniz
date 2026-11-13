@@ -49,6 +49,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   margin: 0; background: var(--surface-0); color: var(--text-primary);
   font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -96,6 +97,12 @@ select, .btn {
 
 .chart-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
 .status { color: var(--text-muted); font-size: 12px; min-height: 1em; }
+.badge {
+  border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px;
+  padding: 6px 10px; margin: 4px 0 8px; font-size: 12px; color: var(--text-secondary); background: var(--surface-0);
+}
+.badge strong { color: var(--text-primary); }
+.badge ul { margin: 4px 0 0; padding-left: 18px; }
 .chart { width: 100%; overflow-x: auto; }
 .chart svg { display: block; }
 .chart .axis { fill: var(--text-muted); font-size: 11px; }

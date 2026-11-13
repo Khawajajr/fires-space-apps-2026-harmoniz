@@ -192,9 +192,52 @@
           "y": 880347
         }
       ],
+      "residual_drift": [
+        {
+          "month": "2026-01",
+          "observed_over_predicted": 0.9816
+        },
+        {
+          "month": "2026-02",
+          "observed_over_predicted": 1.0064
+        },
+        {
+          "month": "2026-03",
+          "observed_over_predicted": 0.9969
+        },
+        {
+          "month": "2026-04",
+          "observed_over_predicted": 1.002
+        },
+        {
+          "month": "2026-05",
+          "observed_over_predicted": 0.9953
+        },
+        {
+          "month": "2026-06",
+          "observed_over_predicted": 0.9976
+        },
+        {
+          "month": "2026-07",
+          "observed_over_predicted": 0.9945
+        },
+        {
+          "month": "2026-08",
+          "observed_over_predicted": 0.9991
+        },
+        {
+          "month": "2026-09",
+          "observed_over_predicted": 1.0102
+        },
+        {
+          "month": "2026-10",
+          "observed_over_predicted": 0.9552
+        }
+      ],
       "shrinkage_k": null,
+      "month_effects_validated": false,
       "caveats": [
-        "2026-10: monthly ratio 0.955 differs from the overall 0.993 by more than 3%",
+        "2026-10: held-out observed/predicted 0.955; the chosen method misses this month by more than 3%",
         "calibration days depend on the cross-sensor check: without it the global ratio moves -1.5% (the skipped days are partial deliveries, so the checked value is used)"
       ],
       "paired_days": 281,
@@ -205,7 +248,7 @@
         "global_ratio_own_rule": 0.9786,
         "relative_change": -0.0148
       },
-      "aoi_band_coverage": {
+      "aoi_band_coverage_in_sample": {
         "jordan": {
           "weeks": 43,
           "coverage": 0.9302,
@@ -415,7 +458,50 @@
           "y": 908586
         }
       ],
+      "residual_drift": [
+        {
+          "month": "2026-01",
+          "observed_over_predicted": 1.0024
+        },
+        {
+          "month": "2026-02",
+          "observed_over_predicted": 1.0101
+        },
+        {
+          "month": "2026-03",
+          "observed_over_predicted": 1.0183
+        },
+        {
+          "month": "2026-04",
+          "observed_over_predicted": 1.0009
+        },
+        {
+          "month": "2026-05",
+          "observed_over_predicted": 0.9972
+        },
+        {
+          "month": "2026-06",
+          "observed_over_predicted": 0.9987
+        },
+        {
+          "month": "2026-07",
+          "observed_over_predicted": 0.9972
+        },
+        {
+          "month": "2026-08",
+          "observed_over_predicted": 1.0031
+        },
+        {
+          "month": "2026-09",
+          "observed_over_predicted": 1.0042
+        },
+        {
+          "month": "2026-10",
+          "observed_over_predicted": 0.9753
+        }
+      ],
       "shrinkage_k": null,
+      "month_effects_validated": false,
       "caveats": [
         "calibration days depend on the cross-sensor check: without it the global ratio moves -1.4% (the skipped days are partial deliveries, so the checked value is used)"
       ],
@@ -427,7 +513,7 @@
         "global_ratio_own_rule": 1.0129,
         "relative_change": -0.0136
       },
-      "aoi_band_coverage": {
+      "aoi_band_coverage_in_sample": {
         "jordan": {
           "weeks": 43,
           "coverage": 0.9302,
@@ -443,6 +529,288 @@
           "coverage": 0.9773,
           "weekly_wape": 0.059
         }
+      }
+    },
+    {
+      "source": "S-NPP-VIIRS",
+      "target": "Aqua-MODIS",
+      "method": "region_month_shrunk_ratio",
+      "provisional": true,
+      "unit": "region x week totals of fire cell-days on days both sensors delivered full data",
+      "region_deg": 10,
+      "weeks": 44,
+      "region_weeks": 9188,
+      "first_week": "2025-12-29",
+      "last_week": "2026-10-26",
+      "folds": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06",
+        "2026-07",
+        "2026-08",
+        "2026-09",
+        "2026-10"
+      ],
+      "cv_scores": {
+        "identity": {
+          "region_month_wape": 3.6348,
+          "region_month_mape_y50": 4.4427,
+          "region_month_mae": 2613.726,
+          "region_month_corr": 0.9765,
+          "region_week_wape": 3.6351,
+          "region_week_corr": 0.9664,
+          "weekly_global_wape": 3.6347,
+          "weekly_global_corr": 0.9646,
+          "monthly_global_wape": 3.6347,
+          "monthly_global_corr": 0.9633
+        },
+        "global_ratio": {
+          "region_month_wape": 0.2267,
+          "region_month_mape_y50": 0.3741,
+          "region_month_mae": 163.031,
+          "region_month_corr": 0.9749,
+          "region_week_wape": 0.2692,
+          "region_week_corr": 0.9648,
+          "weekly_global_wape": 0.1038,
+          "weekly_global_corr": 0.9571,
+          "monthly_global_wape": 0.1011,
+          "monthly_global_corr": 0.9519
+        },
+        "region_month_shrunk_ratio": {
+          "region_month_wape": 0.2027,
+          "region_month_mape_y50": 0.3112,
+          "region_month_mae": 145.774,
+          "region_month_corr": 0.9754,
+          "region_week_wape": 0.2509,
+          "region_week_corr": 0.9652,
+          "weekly_global_wape": 0.0986,
+          "weekly_global_corr": 0.9576,
+          "monthly_global_wape": 0.092,
+          "monthly_global_corr": 0.9442
+        },
+        "quantile_map_region_season": {
+          "region_month_wape": 0.2666,
+          "region_month_mape_y50": 0.3789,
+          "region_month_mae": 191.704,
+          "region_month_corr": 0.9582,
+          "region_week_wape": 0.3312,
+          "region_week_corr": 0.9249,
+          "weekly_global_wape": 0.1248,
+          "weekly_global_corr": 0.9367,
+          "monthly_global_wape": 0.1028,
+          "monthly_global_corr": 0.9537
+        }
+      },
+      "versus_global_ratio": "beats the global ratio out of sample: region-month WAPE 0.2027 vs 0.2267 (-10.6%)",
+      "global_ratio_bootstrap_90": [
+        0.2031,
+        0.2153,
+        0.2266
+      ],
+      "band": [
+        {
+          "yhat_from": 0.0,
+          "yhat_to": 0.0,
+          "n": 56,
+          "lo_factor": 0.0,
+          "hi_factor": 0.0,
+          "hi_add": 4.0
+        },
+        {
+          "yhat_from": 0.0,
+          "yhat_to": 5.0,
+          "n": 3065,
+          "lo_factor": 0.0,
+          "hi_factor": 3.4041,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 5.0,
+          "yhat_to": 20.0,
+          "n": 1952,
+          "lo_factor": 0.0,
+          "hi_factor": 2.1205,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 20.0,
+          "yhat_to": 100.0,
+          "n": 2226,
+          "lo_factor": 0.2251,
+          "hi_factor": 1.8268,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 100.0,
+          "yhat_to": 500.0,
+          "n": 1221,
+          "lo_factor": 0.4236,
+          "hi_factor": 1.7217,
+          "hi_add": 0.0
+        },
+        {
+          "yhat_from": 500.0,
+          "yhat_to": Infinity,
+          "n": 668,
+          "lo_factor": 0.5234,
+          "hi_factor": 1.4591,
+          "hi_add": 0.0
+        }
+      ],
+      "band_coverage_out_of_fold": 0.9257,
+      "monthly_drift": [
+        {
+          "month": "2026-01",
+          "ratio_y_over_x": 0.2268,
+          "x": 829414,
+          "y": 188147
+        },
+        {
+          "month": "2026-02",
+          "ratio_y_over_x": 0.2064,
+          "x": 660344,
+          "y": 136305
+        },
+        {
+          "month": "2026-03",
+          "ratio_y_over_x": 0.1903,
+          "x": 571248,
+          "y": 108685
+        },
+        {
+          "month": "2026-04",
+          "ratio_y_over_x": 0.1898,
+          "x": 684891,
+          "y": 130007
+        },
+        {
+          "month": "2026-05",
+          "ratio_y_over_x": 0.1858,
+          "x": 438463,
+          "y": 81449
+        },
+        {
+          "month": "2026-06",
+          "ratio_y_over_x": 0.2443,
+          "x": 572942,
+          "y": 139990
+        },
+        {
+          "month": "2026-07",
+          "ratio_y_over_x": 0.2507,
+          "x": 960453,
+          "y": 240797
+        },
+        {
+          "month": "2026-08",
+          "ratio_y_over_x": 0.2305,
+          "x": 1181189,
+          "y": 272247
+        },
+        {
+          "month": "2026-09",
+          "ratio_y_over_x": 0.2094,
+          "x": 1021058,
+          "y": 213856
+        },
+        {
+          "month": "2026-10",
+          "ratio_y_over_x": 0.1955,
+          "x": 908586,
+          "y": 177652
+        }
+      ],
+      "residual_drift": [
+        {
+          "month": "2026-01",
+          "observed_over_predicted": 1.2094
+        },
+        {
+          "month": "2026-02",
+          "observed_over_predicted": 1.0279
+        },
+        {
+          "month": "2026-03",
+          "observed_over_predicted": 0.9549
+        },
+        {
+          "month": "2026-04",
+          "observed_over_predicted": 0.9574
+        },
+        {
+          "month": "2026-05",
+          "observed_over_predicted": 0.8778
+        },
+        {
+          "month": "2026-06",
+          "observed_over_predicted": 1.1256
+        },
+        {
+          "month": "2026-07",
+          "observed_over_predicted": 1.1368
+        },
+        {
+          "month": "2026-08",
+          "observed_over_predicted": 1.0084
+        },
+        {
+          "month": "2026-09",
+          "observed_over_predicted": 0.9074
+        },
+        {
+          "month": "2026-10",
+          "observed_over_predicted": 0.8632
+        }
+      ],
+      "shrinkage_k": 10.0,
+      "month_effects_validated": false,
+      "caveats": [
+        "2026-01: held-out observed/predicted 1.209; the chosen method misses this month by more than 3%",
+        "2026-03: held-out observed/predicted 0.955; the chosen method misses this month by more than 3%",
+        "2026-04: held-out observed/predicted 0.957; the chosen method misses this month by more than 3%",
+        "2026-05: held-out observed/predicted 0.878; the chosen method misses this month by more than 3%",
+        "2026-06: held-out observed/predicted 1.126; the chosen method misses this month by more than 3%",
+        "2026-07: held-out observed/predicted 1.137; the chosen method misses this month by more than 3%",
+        "2026-09: held-out observed/predicted 0.907; the chosen method misses this month by more than 3%",
+        "2026-10: held-out observed/predicted 0.863; the chosen method misses this month by more than 3%",
+        "provisional: fitted on drifting-orbit years (ADR 0001)",
+        "one year of data: region x month ratios can't be validated, so only region ratios (shrunk to the global ratio) ship; month effects return with multi-year folds",
+        "calibration days depend on the cross-sensor check: without it the global ratio moves +1.9% (the skipped days are partial deliveries, so the checked value is used)"
+      ],
+      "paired_days": 281,
+      "note": "Headline link (ADR 0001). Provisional: fitted on 2026, when Aqua's orbit has drifted; refit on 2018-2021",
+      "sensitivity_without_cross_sensor_check": {
+        "paired_days_own_rule": 290,
+        "global_ratio_cross_checked": 0.2158,
+        "global_ratio_own_rule": 0.22,
+        "relative_change": 0.0194
+      },
+      "aoi_band_coverage_in_sample": {
+        "jordan": {
+          "weeks": 43,
+          "coverage": 0.9767,
+          "weekly_wape": 0.6751
+        },
+        "levant": {
+          "weeks": 44,
+          "coverage": 0.9773,
+          "weekly_wape": 0.2939
+        },
+        "argentina": {
+          "weeks": 44,
+          "coverage": 0.9545,
+          "weekly_wape": 0.1526
+        }
+      },
+      "overpass_local_solar_time": {
+        "Aqua": "15:24",
+        "NOAA-20": "13:30",
+        "NOAA-21": "13:26",
+        "Suomi-NPP": "13:34",
+        "Terra": "09:09"
       }
     }
   ]

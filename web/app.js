@@ -10,8 +10,9 @@ const METRICS = [["cell_days", "Fire cell-days"], ["detections", "Detections"]];
 const RAMP_STEPS = 6;
 const MIN_BOX_DEG = 0.25;
 
-const state = { aois: [], aoi: "levant", bbox: null, sensor: "NOAA-20-VIIRS", unit: "week", metric: "cell_days",
-                data: null, request: null };
+const VIEWS = [["harmonized", "Aqua-equivalent"], ["raw", "By sensor"]];
+const state = { aois: [], aoi: "levant", bbox: null, view: "harmonized", sensor: "NOAA-20-VIIRS", unit: "week",
+                metric: "cell_days", data: null, request: null };
 const $ = (id) => document.getElementById(id);
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const fmt = new Intl.NumberFormat("en", { maximumFractionDigits: 1 });
@@ -22,12 +23,12 @@ function readHash() {
   const p = new URLSearchParams(location.hash.slice(1));
   if (p.get("bbox")) { state.bbox = p.get("bbox").split(",").map(Number); state.aoi = null; }
   else if (p.get("aoi")) state.aoi = p.get("aoi");
-  for (const k of ["sensor", "unit", "metric"]) if (p.get(k)) state[k] = p.get(k);
+  for (const k of ["view", "sensor", "unit", "metric"]) if (p.get(k)) state[k] = p.get(k);
 }
 function writeHash() {
   const p = new URLSearchParams();
   if (state.bbox) p.set("bbox", state.bbox.join(",")); else p.set("aoi", state.aoi);
-  p.set("sensor", state.sensor); p.set("unit", state.unit); p.set("metric", state.metric);
+  p.set("view", state.view); p.set("sensor", state.sensor); p.set("unit", state.unit); p.set("metric", state.metric);
   history.replaceState(null, "", "#" + p.toString());
 }
 
@@ -44,7 +45,9 @@ function segmented(el, options, current, onPick) {
 }
 function renderFilters() {
   const sensors = state.data ? state.data.sensors.map((s) => [s.sensor, s.sensor]) : [[state.sensor, state.sensor]];
-  segmented($("sensor-seg"), sensors, state.sensor, (v) => { state.sensor = v; writeHash(); renderFilters(); renderChart(); });
+  segmented($("view-seg"), VIEWS, state.view, (v) => { state.view = v; writeHash(); renderFilters(); renderAll(); });
+  $("sensor-seg").hidden = harmonizedView();
+  segmented($("sensor-seg"), sensors, state.sensor, (v) => { state.sensor = v; writeHash(); renderFilters(); renderAll(); });
   segmented($("unit-seg"), UNITS, state.unit, (v) => { state.unit = v; load(); });
   segmented($("metric-seg"), METRICS, state.metric, (v) => { state.metric = v; load(); });
 }
@@ -165,12 +168,46 @@ const binOf = (v, thresholds) => thresholds.filter((t) => v > t).length;
 // With fewer bins than ramp steps, spread the bins across the whole ramp (cells and legend use this one rule).
 const binColor = (bin, nBins) => `var(--fire-${1 + Math.round((bin * (RAMP_STEPS - 1)) / Math.max(1, nBins - 1))})`;
 
+// ---------- which series is on screen ----------
+const harmonizedView = () => state.view === "harmonized" && !!(state.data && state.data.harmonized);
+function series() {
+  const d = state.data;
+  if (harmonizedView()) {
+    const h = d.harmonized;
+    return { name: h.label, values: h.values, coverage: h.coverage, data_days: h.data_days, lo: h.lo, hi: h.hi,
+             estimated: h.estimated_days, substituted: h.substituted_days, sources: h.sources, harmonized: true };
+  }
+  const s = d.sensors.find((x) => x.sensor === state.sensor) || d.sensors[0];
+  state.sensor = s.sensor;
+  return { ...s, name: s.sensor, harmonized: false };
+}
+
+function renderBadge() {
+  const d = state.data, b = $("badge");
+  if (state.view === "harmonized" && !d.harmonized) {
+    b.innerHTML = `<strong>Aqua-equivalent not available here:</strong> ${esc(d.harmonized_unavailable)}. Showing ${esc(state.sensor)}.`;
+    b.hidden = false; return;
+  }
+  if (harmonizedView()) {
+    const h = d.harmonized;
+    b.innerHTML = `<strong>${h.provisional ? "Provisional estimate" : "Harmonized estimate"}:</strong> ${esc(h.label)}, ` +
+      `method: ${esc(h.method)}. ${esc(h.band_note)}.<ul>${h.caveats.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>`;
+    b.hidden = false; return;
+  }
+  const s = series();
+  b.hidden = !s.note;
+  if (s.note) b.innerHTML = `<strong>${esc(s.sensor)}:</strong> ${esc(s.note)}`;
+}
+
 // ---------- chart ----------
 function renderAll() {
   const d = state.data;
   const label = d.aoi.name ? d.aoi.label : "Custom box";
-  $("chart-title").textContent = `${label}: ${METRICS.find((m) => m[0] === d.metric)[1].toLowerCase()} per ${d.unit}`;
+  const what = harmonizedView() ? "Aqua-equivalent fire cell-days" : `${METRICS.find((m) => m[0] === d.metric)[1].toLowerCase()}, ${state.sensor}`;
+  $("chart-title").textContent = `${label}: ${what} per ${d.unit}`;
   $("chart-sub").textContent = `${d.metric_label}. Data ${d.data_range[0]} to ${d.data_range[1]}.`;
+  renderFilters();
+  renderBadge();
   $("aoi-summary").textContent = `${fmt.format(d.aoi.cells)} grid cells of 0.25°` +
     (d.aoi.grid_bbox ? ` · [${d.aoi.grid_bbox.join(", ")}]` : " · box contains no grid cell centre");
   $("notes").innerHTML = d.notes.map((n) => `<li>${esc(n)}</li>`).join("");
@@ -180,7 +217,7 @@ function renderAll() {
 function renderChart() {
   const d = state.data;
   if (!d) return;
-  const s = d.sensors.find((x) => x.sensor === state.sensor);
+  const s = series();
   const thresholds = binsFor(s.values);
   const week = d.unit === "week";
   const left = 44, top = 22;
@@ -195,7 +232,7 @@ function renderChart() {
   svg.setAttribute("width", W); svg.setAttribute("height", H);
   svg.setAttribute("role", "img");
   if (!week) svg.setAttribute("shape-rendering", "crispEdges");
-  svg.setAttribute("aria-label", `${state.sensor} ${d.metric_label} by ${d.unit} and year. Use "Show as table" for the values.`);
+  svg.setAttribute("aria-label", `${s.name} ${d.metric_label} by ${d.unit} and year. Use "Show as table" for the values.`);
   svg.innerHTML = `<defs><pattern id="hatch" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
       <rect width="5" height="5" style="fill:var(--surface-1)"/><line x1="0" y1="0" x2="0" y2="5" style="stroke:var(--hatch);stroke-width:1.4"/></pattern></defs>`;
 
@@ -246,45 +283,55 @@ function hover(e, s, d) {
   if (!cell) { tip.hidden = true; return; }
   const yi = +cell.dataset.y, p = +cell.dataset.p;
   const v = s.values[yi][p], cov = s.coverage[yi][p];
-  const unitLabel = METRICS.find((m) => m[0] === d.metric)[1].toLowerCase();
+  const unitLabel = s.harmonized ? "Aqua-equivalent fire cell-days" : METRICS.find((m) => m[0] === d.metric)[1].toLowerCase();
+  const estimated = s.harmonized && s.estimated[yi][p] > 0;
+  const zeroText = s.harmonized ? (estimated ? "(estimated: VIIRS detected no fire)" : "(observed, no fire)")
+                                : "(observed, no fire)";
   const valueLine = v === null
     ? "<strong>No data</strong> <span class=muted>(sensor gap or outside the data range; not zero)</span>"
-    : `<strong>${fmt.format(v)}</strong> ${unitLabel}${v === 0 ? " <span class=muted>(observed, no fire)</span>" : ""}`;
+    : `<strong>${fmt.format(v)}</strong> ${unitLabel}${v === 0 ? ` <span class=muted>${zeroText}</span>` : ""}` +
+      (s.harmonized ? `<br><span class=muted>${estimated ? `estimate (${s.estimated[yi][p]} of ${s.data_days[yi][p]} day(s) from VIIRS)` : "Aqua-MODIS observed"}</span>` : "");
   const covLine = cov === "partial"
     ? `<br><span class=muted>Partial coverage: ${s.data_days[yi][p]} of ${d.period_days} day(s) with data; not a complete total</span>` : "";
-  tip.innerHTML = `${esc(periodLabel(d.unit, d.years[yi], p))}<br>${valueLine}${covLine}<br><span class=muted>${esc(s.sensor)}</span>`;
+  const bandLine = s.harmonized && v !== null
+    ? (s.lo[yi][p] === null ? "" : `<br><span class=muted>90% range ${fmt.format(s.lo[yi][p])} – ${fmt.format(s.hi[yi][p])}</span>`) +
+      (s.substituted[yi][p] ? `<br><span class=muted>${s.substituted[yi][p]} day(s) from ${esc(s.sources.slice(1).join(" / "))} (${esc(s.sources[0])} missing)</span>` : "")
+    : "";
+  tip.innerHTML = `${esc(periodLabel(d.unit, d.years[yi], p))}<br>${valueLine}${bandLine}${covLine}<br><span class=muted>${esc(s.name)}</span>`;
   tip.hidden = false;
   const x = Math.min(window.innerWidth - tip.offsetWidth - 8, e.clientX + 14);
   tip.style.left = `${x}px`; tip.style.top = `${e.clientY + 14}px`;
 }
 
 function renderLegend(thresholds, d) {
-  const unitLabel = METRICS.find((m) => m[0] === d.metric)[1].toLowerCase();
+  const s = series();
+  const unitLabel = s.harmonized ? "Aqua-equivalent fire cell-days" : METRICS.find((m) => m[0] === d.metric)[1].toLowerCase();
   const n = thresholds.length + 1;
   const lows = [0, ...thresholds];
   const steps = lows.map((lo, i) => `<span class="step"><span class="sw" style="background:${binColor(i, n)}"></span>` +
     `<span class="tick">${i === 0 ? "&gt;0" : "&gt;" + fmt.format(lo)}</span></span>`).join("");
-  const anyFire = d.sensors.find((x) => x.sensor === state.sensor).values.flat().some((v) => v > 0);
+  const anyFire = s.values.flat().some((v) => v > 0);
   $("legend").innerHTML = (anyFire ? `
-    <span class="item"><span class="ramp">${steps}</span></span><span class="item muted">${esc(unitLabel)}, ${esc(state.sensor)}</span>` : "") + `
-    <span class="item"><span class="sw" style="background:var(--zero)"></span>0: observed, no fire</span>
+    <span class="item"><span class="ramp">${steps}</span></span><span class="item muted">${esc(unitLabel)}${s.harmonized ? "" : ", " + esc(state.sensor)}</span>` : "") + `
+    <span class="item"><span class="sw" style="background:var(--zero)"></span>0: no fire ${s.harmonized ? "(observed or estimated)" : "observed"}</span>
     <span class="item"><svg width="22" height="12" aria-hidden="true"><rect width="22" height="12" rx="2" fill="url(#hatch)"/></svg>No data (not zero)</span>
     <span class="item"><svg width="22" height="12" aria-hidden="true"><rect width="22" height="12" rx="2" style="fill:var(--fire-3)"/><rect width="22" height="3" style="fill:var(--text-primary)"/></svg>Partial coverage</span>`;
 }
 
 // ---------- table view ----------
 function renderTable() {
-  const d = state.data, s = d.sensors.find((x) => x.sensor === state.sensor);
+  const d = state.data, s = series();
   const rows = [];
   for (let p = 0; p < d.periods; p++) {
     const cells = d.years.map((_, yi) => s.values[yi][p]);
     if (cells.every((v) => v === null)) continue;
     const name = d.unit === "week" ? `Week ${p + 1}` : `Day ${p + 1}`;
     rows.push(`<tr><td>${name}</td>${cells.map((v, yi) => `<td>${v === null ? (s.coverage[yi][p] === "absent" ? "" : "no data") : fmt.format(v)}${
+      v !== null && s.harmonized && s.lo[yi][p] !== null ? ` (${fmt.format(s.lo[yi][p])}–${fmt.format(s.hi[yi][p])})` : ""}${
       v !== null && s.coverage[yi][p] === "partial" ? " *" : ""}</td>`).join("")}</tr>`);
   }
   $("table-wrap").innerHTML = `<table><caption class="hint" style="caption-side:bottom;text-align:left;padding:4px 8px">
-    ${esc(state.sensor)}, ${esc(d.metric_label)}. * partial coverage.</caption>
+    ${esc(s.name)}, ${esc(d.metric_label)}.${s.harmonized ? " Brackets: 90% range." : ""} * partial coverage.</caption>
     <thead><tr><th>${d.unit === "week" ? "ISO week" : "Day"}</th>${d.years.map((y) => `<th>${y}</th>`).join("")}</tr></thead>
     <tbody>${rows.join("") || `<tr><td colspan="${d.years.length + 1}">No data for this sensor.</td></tr>`}</tbody></table>`;
 }

@@ -23,3 +23,6 @@ Times are Asia/Amman.
 - Ticket 04 committed (6a91c9c). Ticket 05 done: VIIRS continuity link, cross-validated. NOAA-20 ~ S-NPP within 1% (no correction),
   NOAA-21 x 1.027; bands cover 90.4–90.7% out of fold. Cross-sensor check finds S-NPP partial-delivery days. ADR 0007.
 - Ticket 05 committed (9e94920) after review fixes (honest baseline statement, zero-aware band, whole-fold bootstrap, cross-check sensitivity -1.4%). docs/HANDOFF.md written. Next: 06.
+- Ticket 06 done: provisional Aqua-equivalent in the calendar (region-ratio link S-NPP->Aqua, -10.6% vs global ratio),
+  Aqua overpass measured at 15:24 local (drift), chain via VIIRS continuity links, held-out headline figure
+  (Levant 1.03, Argentina 0.96 estimate/observed). Next: 09.

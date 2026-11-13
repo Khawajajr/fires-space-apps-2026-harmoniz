@@ -172,3 +172,109 @@ def test_unusable_boxes_are_422(client, bbox):
 def test_antimeridian_box_with_centres_on_one_side_only():
     cells, snapped = grid_cells((179.9, -1, -179.6, 1), 0.25)
     assert cells == 16 and snapped == [-180.0, -1.0, -179.5, 1.0]   # 8 lat x 2 lon centres, all east
+
+
+# ---- harmonized block (ticket 06) ----
+
+from godseye.calendar.harmonized import Chain, row_ratios  # noqa: E402
+from godseye.harmonize.link import Link  # noqa: E402
+
+
+def ratio_link(source, target, ratio, provisional=False, regional=None):
+    rows = [("global", "*", 0, ratio)] + [("region", r, 0, v) for r, v in (regional or {}).items()]
+    coef = pd.DataFrame(rows, columns=["level", "region", "month", "ratio"])
+    band = pd.DataFrame({"yhat_from": [0.0, 0.0], "yhat_to": [0.0, np.inf], "n": [10, 100], "lo_factor": [0.0, 0.5],
+                         "hi_factor": [0.0, 2.0], "hi_add": [1.0, 0.0]})
+    return Link(source, target, "global_ratio" if not regional else "region_month_shrunk_ratio", coef, band,
+                provisional, {"caveats": []})
+
+
+def chain(regional=None):
+    return Chain("Aqua-MODIS", "Aqua-MODIS-equivalent (afternoon overpass)", "S-NPP-VIIRS",
+                 ["S-NPP-VIIRS", "NOAA-20-VIIRS"], {"S-NPP-VIIRS": None,
+                                                    "NOAA-20-VIIRS": ratio_link("NOAA-20-VIIRS", "S-NPP-VIIRS", 1.0)},
+                 ratio_link("S-NPP-VIIRS", "Aqua-MODIS", 0.2, provisional=True, regional=regional), 10.0)
+
+
+@pytest.fixture(scope="module")
+def hclient():
+    app = FastAPI()
+    app.include_router(calendar_api.router)
+    store = synthetic_store()
+    store.attach_chain(chain())
+    calendar_api.STORE["calendar"] = store
+    with TestClient(app) as c:
+        yield c
+    calendar_api.STORE.clear()
+
+
+def test_harmonized_block_uses_the_reference_and_substitutes_on_outage_days(hclient):
+    h = hclient.get("/api/calendar", params={"aoi": "jordan"}).json()["harmonized"]
+    assert h["target"] == "Aqua-MODIS" and h["provisional"] is True
+    assert h["sources"] == ["S-NPP-VIIRS", "NOAA-20-VIIRS"]
+    # week 2: S-NPP on 6 days (3 cells) + NOAA-20 on its outage day (4 cells), x0.2
+    assert h["values"][0][1] == pytest.approx((6 * 3 + 4) * 0.2)
+    assert h["substituted_days"][0][1:3] == [1, 0]
+    assert h["coverage"][0][1:3] == ["full", "full"]          # every day had a full-data source
+    assert h["values"][0][2] == pytest.approx(7 * 3 * 0.2)
+
+
+def test_harmonized_band_widens_on_substituted_weeks(hclient):
+    h = hclient.get("/api/calendar", params={"aoi": "jordan"}).json()["harmonized"]
+    v2, v3 = h["values"][0][1], h["values"][0][2]
+    rel = lambda i, v: (h["hi"][0][i] / v, v / h["lo"][0][i])
+    assert rel(2, v3) == pytest.approx((2.0, 2.0))             # headline band only
+    assert rel(1, v2)[0] > 2.0 and rel(1, v2)[1] > 2.0         # plus the continuity band, weighted 1/7
+
+
+def test_harmonized_is_null_for_detections_and_without_a_chain(client, hclient):
+    body = hclient.get("/api/calendar", params={"aoi": "jordan", "metric": "detections"}).json()
+    assert body["harmonized"] is None and "fire cell-days only" in body["harmonized_unavailable"]
+    calendar_api.STORE["calendar"].attach_chain(None)
+    try:
+        body = hclient.get("/api/calendar", params={"aoi": "jordan"}).json()
+        assert body["harmonized"] is None and "godseye harmonize" in body["harmonized_unavailable"]
+    finally:
+        calendar_api.STORE["calendar"].attach_chain(chain())
+
+
+def test_sensor_notes_flag_the_orbits_that_are_not_comparable(hclient):
+    notes = {s["sensor"]: s["note"] for s in hclient.get("/api/calendar", params={"aoi": "jordan"}).json()["sensors"]}
+    assert "Morning orbit" in notes["Terra-MODIS"] and "Drifting orbit" in notes["Aqua-MODIS"]
+    assert notes["NOAA-20-VIIRS"] is None
+
+
+def test_regional_headline_ratios_are_applied_per_cell():
+    link = ratio_link("S-NPP-VIIRS", "Aqua-MODIS", 0.2, regional={"30,30": 0.1, "-20,170": 0.3})
+    lat = np.array([31.875, 31.875, -16.375, 5.0])
+    lon = np.array([35.875, 35.875, 179.875, 5.0])
+    r = row_ratios(link, lat, lon, np.array([1, 7, 1, 1]), 10.0)
+    assert r.tolist() == pytest.approx([0.1, 0.1, 0.3, 0.2])     # unknown region falls back to the global ratio
+
+
+def test_target_observed_is_the_headline_until_observed_until():
+    store = synthetic_store()
+    c = chain()
+    c.observed_until = pd.Timestamp("2026-01-11")             # end of ISO week 2
+    store.attach_chain(c)
+    h = store.harmonized((34.9, 29.1, 39.4, 33.4), "week")  # Jordan
+    assert h.values[0, 1] == 7                                # Aqua observed: 1 cell a day, exact
+    assert h.lo[0, 1] == h.hi[0, 1] == 7 and h.estimated_days[0, 1] == 0
+    assert h.values[0, 2] == pytest.approx(7 * 3 * 0.2) and h.estimated_days[0, 2] == 7   # estimate after
+    assert h.lo[0, 2] < h.values[0, 2] < h.hi[0, 2]
+
+
+def test_day_view_has_no_band(hclient):
+    h = hclient.get("/api/calendar", params={"aoi": "jordan", "unit": "day"}).json()["harmonized"]
+    assert all(v is None for row in h["lo"] for v in row) and "weekly totals" in h["band_note"]
+    assert h["values"][0][4] is not None
+
+
+def test_chain_requires_the_reference_first():
+    from godseye.calendar.harmonized import build_chain
+
+    links = [ratio_link("S-NPP-VIIRS", "Aqua-MODIS", 0.2)]
+    cfg = {"reference": "S-NPP-VIIRS", "target": "Aqua-MODIS", "label": "x",
+           "viirs_priority": ["NOAA-20-VIIRS", "S-NPP-VIIRS"]}
+    with pytest.raises(ValueError):
+        build_chain(cfg, links, 10.0)

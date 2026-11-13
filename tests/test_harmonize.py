@@ -158,3 +158,36 @@ def test_caveats_flag_drifting_months_and_provisional_links():
     link = fit_link(df, "A", "B", provisional=True)
     assert any(c.startswith("2026-06") for c in link.report["caveats"])
     assert any("provisional" in c for c in link.report["caveats"])
+
+
+def test_month_effects_are_not_shipped_when_folds_cannot_validate_them():
+    df = synthetic({"0,30": 0.6, "10,30": 1.2, "-20,20": 0.9}, weeks=40)     # one year: folds are months
+    link = fit_link(df, "A", "B", provisional=True)
+    assert link.method == "region_month_shrunk_ratio"
+    assert "region_month" not in set(link.coefficients.level)
+    assert link.report["month_effects_validated"] is False
+    years = synthetic({"0,30": 0.6, "10,30": 1.2, "-20,20": 0.9}, weeks=160)  # 3+ years: folds are years
+    assert fit_link(years, "A", "B", provisional=False).report["month_effects_validated"] is True
+
+
+def test_headline_estimate_is_held_out_and_recovers_a_known_ratio(tmp_path):
+    from godseye.config import AOI
+    from godseye.harmonize.headline import held_out_weekly, plot_fallback
+
+    days = pd.date_range("2026-01-05", "2026-04-26")
+    rng = np.random.default_rng(3)
+    rows = []
+    for d in days:
+        for lat, lon in [(31.875, 35.875), (32.125, 36.125), (-34.625, -58.375)]:
+            x = rng.poisson(200)
+            rows += [("S-NPP-VIIRS", d, lat, lon, x), ("Aqua-MODIS", d, lat, lon, rng.poisson(0.25 * x))]
+    grid = pd.DataFrame(rows, columns=["sensor", "acq_date", "cell_lat", "cell_lon", "n_fire_cells"])
+    avail = pd.DataFrame([(s, d, "ok") for d in days for s in ("S-NPP-VIIRS", "Aqua-MODIS")],
+                         columns=["sensor", "acq_date", "status"])
+    pairs = weekly_pairs(grid, paired_days(avail, "S-NPP-VIIRS", "Aqua-MODIS"), "S-NPP-VIIRS", "Aqua-MODIS", 10.0)
+    link = fit_link(pairs, "S-NPP-VIIRS", "Aqua-MODIS", provisional=True, region_deg=10.0)
+    w = held_out_weekly(grid, avail, link, AOI("t", "Test", (35, 31, 37, 33)), 10.0)
+    assert len(w) == 16
+    assert w.estimate.sum() / w.target.sum() == pytest.approx(1.0, abs=0.03)
+    assert ((w.target >= w.lo) & (w.target <= w.hi)).mean() >= 0.8
+    assert plot_fallback({"Test": w}, link, tmp_path / "f.png").stat().st_size > 0

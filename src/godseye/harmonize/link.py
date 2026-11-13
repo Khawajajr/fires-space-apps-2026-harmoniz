@@ -18,6 +18,14 @@ from godseye.harmonize import validate as V
 RATIO_METHODS = {"identity", "global_ratio", "region_month_shrunk_ratio"}
 
 
+def display_method(link: "Link") -> str:
+    """What actually ships, in words (month effects are dropped when the folds could not validate them)."""
+    if link.method == "region_month_shrunk_ratio" and not link.report.get("month_effects_validated", True):
+        return "region ratios (shrunk to the global ratio; month effects not validated)"
+    return {"identity": "no correction", "global_ratio": "one global ratio",
+            "region_month_shrunk_ratio": "region x month ratios (shrunk)"}.get(link.method, link.method)
+
+
 @dataclass
 class Link:
     source: str
@@ -64,6 +72,11 @@ def fit_link(df: pd.DataFrame, source: str, target: str, provisional: bool, regi
         raise NotImplementedError(f"{chosen} won for {source}->{target}; only ratio methods can be applied")
     model = V.candidates(df)[chosen]
     coef = model.coefficients()
+    # Leaving one month of a single year out never tests a region x month ratio (the held-out month has none, so the
+    # model falls back to the region ratio). Ship only what was validated: drop month effects until there are years.
+    month_effects_validated = V.fold_key(df).nunique() != df.month.nunique()
+    if not month_effects_validated:
+        coef = coef[coef.level != "region_month"].reset_index(drop=True)
     band = V.band_table(cv[chosen].to_numpy(), cv.y.to_numpy())
     report = {
         "source": source, "target": target, "method": chosen, "provisional": provisional,
@@ -76,9 +89,14 @@ def fit_link(df: pd.DataFrame, source: str, target: str, provisional: bool, regi
         "band": band.round(4).to_dict("records"),
         "band_coverage_out_of_fold": V.band_coverage(cv, chosen),
         "monthly_drift": V.drift(df),
+        "residual_drift": V.residual_drift(cv, chosen),
         "shrinkage_k": getattr(model, "k", None),
+        "month_effects_validated": month_effects_validated,
     }
     report["caveats"] = caveats(report, df)
+    if chosen == "region_month_shrunk_ratio" and not month_effects_validated:
+        report["caveats"].append("one year of data: region x month ratios can't be validated, so only region ratios "
+                                 "(shrunk to the global ratio) ship; month effects return with multi-year folds")
     return Link(source, target, chosen, coef, band, provisional, report)
 
 
@@ -88,11 +106,11 @@ DRIFT_FLAG = 0.03
 def caveats(report: dict, df: pd.DataFrame) -> list[str]:
     """Plain-language warnings derived from the diagnostics, so they can't be forgotten in the write-up."""
     out = []
-    overall = float(df.y.sum() / df.x.sum())
-    for d in report["monthly_drift"]:
-        if abs(d["ratio_y_over_x"] / overall - 1) > DRIFT_FLAG:
-            out.append(f"{d['month']}: monthly ratio {d['ratio_y_over_x']:.3f} differs from the overall "
-                       f"{overall:.3f} by more than {DRIFT_FLAG:.0%}")
+    for d in report["residual_drift"]:
+        r = d["observed_over_predicted"]
+        if r is not None and abs(r - 1) > DRIFT_FLAG:
+            out.append(f"{d['month']}: held-out observed/predicted {r:.3f}; the chosen method misses this month "
+                       f"by more than {DRIFT_FLAG:.0%}")
     if abs(report["band_coverage_out_of_fold"] - 0.90) > 0.05:
         out.append(f"band coverage out of fold is {report['band_coverage_out_of_fold']:.1%}, not ~90%")
     if report["provisional"]:
