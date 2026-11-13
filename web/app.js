@@ -445,15 +445,18 @@ async function loadRisk(bbox, ctrl) {
 function renderRisk() {
   const r = state.risk, el = $("risk");
   if (!r) return;
-  if (r.error || !r.map.points) { el.innerHTML = `<p class="empty">Risk forecast not available${r.error ? `: ${esc(r.error)}` : ""}.</p>`; return; }
+  if (r.error || !r.map || !r.map.points || !r.health || !r.health.model || !r.health.model.validation) {
+    el.innerHTML = `<p class="empty">Risk forecast not available${r.error ? `: ${esc(r.error)}` : ""}.</p>`;
+    return;
+  }
   const m = r.map, counts = Object.fromEntries(RISK_LEVELS.map((l) => [l, 0]));
   m.levels.forEach((l) => { counts[l] += 1; });
   const top = m.points.slice(0, 5).map((p, i) => `<li>${fmt.format(p[0])}°, ${fmt.format(p[1])}°: ` +
     `<strong>${Math.round(p[2] * 100)}%</strong> (${esc(m.levels[i].replace("_", " "))})</li>`).join("");
   const rows = r.health.model.validation;
-  const model = rows[0], base = rows.find((x) => /persistence/i.test(x.model));
+  const model = rows[0], base = rows.find((x) => /persistence|burned in last/i.test(x.model));
   const info = (r.meta && r.meta.model) || {};
-  const where = info.test_scored ? `held-out test weeks ${(info.blocks && info.blocks.test || []).join(" to ")}`
+  const where = info.test_scored ? `held-out test weeks ${esc((info.blocks && info.blocks.test || []).join(" to "))}`
                                  : "validation weeks (the untouched test score comes with the model card)";
   const skill = base ? `On ${where}: ROC-AUC ${fmt3.format(model.roc_auc)} vs ${fmt3.format(base.roc_auc)} for persistence ` +
     `(“fire in the last 7 days”); Brier score ${fmt3.format(model.brier)} vs ${fmt3.format(base.brier)} (lower is better).` : "";

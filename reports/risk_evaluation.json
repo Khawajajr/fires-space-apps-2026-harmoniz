@@ -1,0 +1,477 @@
+{
+  "model": "risk_v2",
+  "label": "any NOAA-20-VIIRS fire cell-day in the 0.25 deg cell in days t+1..t+7",
+  "blocks": {
+    "train": [
+      "2026-02-06",
+      "2026-08-21"
+    ],
+    "validation": [
+      "2026-08-28",
+      "2026-09-25"
+    ],
+    "test": [
+      "2026-10-02",
+      "2026-10-30"
+    ]
+  },
+  "rows": {
+    "train": 2201331,
+    "validation": 524795,
+    "test": 545802
+  },
+  "test": [
+    {
+      "model": "LightGBM v2 (calibrated)",
+      "n": 545802,
+      "positive_rate": 0.2252,
+      "roc_auc": 0.8666,
+      "pr_auc": 0.7312,
+      "brier": 0.1063,
+      "bss_vs_persistence": 0.1973,
+      "bss_vs_frequency_to_date": 0.3648
+    },
+    {
+      "model": "LightGBM v2 (raw)",
+      "n": 545802,
+      "positive_rate": 0.2252,
+      "roc_auc": 0.8666,
+      "pr_auc": 0.7312,
+      "brier": 0.1066,
+      "bss_vs_persistence": 0.195,
+      "bss_vs_frequency_to_date": 0.363
+    },
+    {
+      "model": "persistence (any fire in last 7 days)",
+      "n": 545802,
+      "positive_rate": 0.2252,
+      "roc_auc": 0.7492,
+      "pr_auc": 0.4562,
+      "brier": 0.1325,
+      "bss_vs_persistence": 0.0,
+      "bss_vs_frequency_to_date": 0.2087
+    },
+    {
+      "model": "2026 frequency to date",
+      "n": 545802,
+      "positive_rate": 0.2252,
+      "roc_auc": 0.7719,
+      "pr_auc": 0.4811,
+      "brier": 0.1674,
+      "bss_vs_persistence": -0.2638,
+      "bss_vs_frequency_to_date": 0.0
+    }
+  ],
+  "new_activity_subset": [
+    {
+      "model": "LightGBM v2 (calibrated)",
+      "n": 304529,
+      "positive_rate": 0.0678,
+      "roc_auc": 0.6936,
+      "pr_auc": 0.1502,
+      "brier": 0.061,
+      "bss_vs_persistence": 0.0893,
+      "bss_vs_frequency_to_date": 0.5179
+    },
+    {
+      "model": "2026 frequency to date",
+      "n": 304529,
+      "positive_rate": 0.0678,
+      "roc_auc": 0.6445,
+      "pr_auc": 0.1033,
+      "brier": 0.1266
+    }
+  ],
+  "per_region": [
+    {
+      "region": "Levant",
+      "model": "LightGBM v2 (calibrated)",
+      "n": 2131,
+      "positive_rate": 0.282,
+      "roc_auc": 0.8353,
+      "pr_auc": 0.7095,
+      "brier": 0.1387,
+      "bss_vs_persistence": 0.2134,
+      "bss_vs_frequency_to_date": 0.119
+    },
+    {
+      "region": "Argentina",
+      "model": "LightGBM v2 (calibrated)",
+      "n": 18106,
+      "positive_rate": 0.1235,
+      "roc_auc": 0.7708,
+      "pr_auc": 0.2862,
+      "brier": 0.1059,
+      "bss_vs_persistence": 0.115,
+      "bss_vs_frequency_to_date": 0.1009
+    },
+    {
+      "region": "South America (other)",
+      "model": "LightGBM v2 (calibrated)",
+      "n": 71547,
+      "positive_rate": 0.3591,
+      "roc_auc": 0.8417,
+      "pr_auc": 0.7604,
+      "brier": 0.152,
+      "bss_vs_persistence": 0.1984,
+      "bss_vs_frequency_to_date": 0.2815
+    },
+    {
+      "region": "North America",
+      "model": "LightGBM v2 (calibrated)",
+      "n": 75076,
+      "positive_rate": 0.1164,
+      "roc_auc": 0.8005,
+      "pr_auc": 0.3992,
+      "brier": 0.0861,
+      "bss_vs_persistence": 0.1898,
+      "bss_vs_frequency_to_date": 0.293
+    },
+    {
+      "region": "Europe",
+      "model": "LightGBM v2 (calibrated)",
+      "n": 56353,
+      "positive_rate": 0.106,
+      "roc_auc": 0.8123,
+      "pr_auc": 0.4046,
+      "brier": 0.0784,
+      "bss_vs_persistence": 0.2069,
+      "bss_vs_frequency_to_date": 0.1347
+    },
+    {
+      "region": "Africa",
+      "model": "LightGBM v2 (calibrated)",
+      "n": 127536,
+      "positive_rate": 0.361,
+      "roc_auc": 0.8976,
+      "pr_auc": 0.8592,
+      "brier": 0.1184,
+      "bss_vs_persistence": 0.2356,
+      "bss_vs_frequency_to_date": 0.4813
+    },
+    {
+      "region": "Asia",
+      "model": "LightGBM v2 (calibrated)",
+      "n": 164211,
+      "positive_rate": 0.1773,
+      "roc_auc": 0.8492,
+      "pr_auc": 0.6565,
+      "brier": 0.0963,
+      "bss_vs_persistence": 0.1806,
+      "bss_vs_frequency_to_date": 0.3907
+    },
+    {
+      "region": "Australia & Oceania",
+      "model": "LightGBM v2 (calibrated)",
+      "n": 30325,
+      "positive_rate": 0.1485,
+      "roc_auc": 0.7698,
+      "pr_auc": 0.4734,
+      "brier": 0.1026,
+      "bss_vs_persistence": 0.1196,
+      "bss_vs_frequency_to_date": 0.2897
+    },
+    {
+      "region": "Other",
+      "model": "LightGBM v2 (calibrated)",
+      "n": 517,
+      "positive_rate": 0.1006,
+      "roc_auc": 0.8804,
+      "pr_auc": 0.5964,
+      "brier": 0.0624,
+      "bss_vs_persistence": 0.2766,
+      "bss_vs_frequency_to_date": 0.4635
+    }
+  ],
+  "risk_levels_on_test": [
+    {
+      "level": "low",
+      "from": 0,
+      "to": 0.1,
+      "n": 286458,
+      "observed_rate": 0.0535
+    },
+    {
+      "level": "moderate",
+      "from": 0.1,
+      "to": 0.3,
+      "n": 120062,
+      "observed_rate": 0.1857
+    },
+    {
+      "level": "high",
+      "from": 0.3,
+      "to": 0.5,
+      "n": 50703,
+      "observed_rate": 0.3665
+    },
+    {
+      "level": "very_high",
+      "from": 0.5,
+      "to": 0.7,
+      "n": 31069,
+      "observed_rate": 0.5661
+    },
+    {
+      "level": "extreme",
+      "from": 0.7,
+      "to": 1,
+      "n": 57510,
+      "observed_rate": 0.8544
+    }
+  ],
+  "spatial_block_cv_on_train": [
+    {
+      "model": "spatial 5\u00b0 blocks, 21 features",
+      "n": 2201331,
+      "positive_rate": 0.2669,
+      "roc_auc": 0.8757,
+      "pr_auc": 0.774,
+      "brier": 0.1144
+    },
+    {
+      "model": "spatial 5\u00b0 blocks, 19 features",
+      "n": 2201331,
+      "positive_rate": 0.2669,
+      "roc_auc": 0.8714,
+      "pr_auc": 0.7673,
+      "brier": 0.1161
+    }
+  ],
+  "reliability_test_raw": [
+    {
+      "bin": "0.0-0.1",
+      "n": 282522,
+      "mean_predicted": 0.0395,
+      "observed_rate": 0.0528
+    },
+    {
+      "bin": "0.1-0.2",
+      "n": 78771,
+      "mean_predicted": 0.1434,
+      "observed_rate": 0.1485
+    },
+    {
+      "bin": "0.2-0.3",
+      "n": 41843,
+      "mean_predicted": 0.2461,
+      "observed_rate": 0.2412
+    },
+    {
+      "bin": "0.3-0.4",
+      "n": 27973,
+      "mean_predicted": 0.3475,
+      "observed_rate": 0.3149
+    },
+    {
+      "bin": "0.4-0.5",
+      "n": 21434,
+      "mean_predicted": 0.4481,
+      "observed_rate": 0.3962
+    },
+    {
+      "bin": "0.5-0.6",
+      "n": 17512,
+      "mean_predicted": 0.5487,
+      "observed_rate": 0.5022
+    },
+    {
+      "bin": "0.6-0.7",
+      "n": 15220,
+      "mean_predicted": 0.6494,
+      "observed_rate": 0.5955
+    },
+    {
+      "bin": "0.7-0.8",
+      "n": 14483,
+      "mean_predicted": 0.75,
+      "observed_rate": 0.6849
+    },
+    {
+      "bin": "0.8-0.9",
+      "n": 16169,
+      "mean_predicted": 0.8521,
+      "observed_rate": 0.8015
+    },
+    {
+      "bin": "0.9-1.0",
+      "n": 29875,
+      "mean_predicted": 0.9588,
+      "observed_rate": 0.9437
+    }
+  ],
+  "reliability_test_calibrated": [
+    {
+      "bin": "0.0-0.1",
+      "n": 286458,
+      "mean_predicted": 0.0404,
+      "observed_rate": 0.0535
+    },
+    {
+      "bin": "0.1-0.2",
+      "n": 76631,
+      "mean_predicted": 0.144,
+      "observed_rate": 0.152
+    },
+    {
+      "bin": "0.2-0.3",
+      "n": 43431,
+      "mean_predicted": 0.2471,
+      "observed_rate": 0.2453
+    },
+    {
+      "bin": "0.3-0.4",
+      "n": 26484,
+      "mean_predicted": 0.3507,
+      "observed_rate": 0.3248
+    },
+    {
+      "bin": "0.4-0.5",
+      "n": 24219,
+      "mean_predicted": 0.4517,
+      "observed_rate": 0.4121
+    },
+    {
+      "bin": "0.5-0.6",
+      "n": 16481,
+      "mean_predicted": 0.5532,
+      "observed_rate": 0.5253
+    },
+    {
+      "bin": "0.6-0.7",
+      "n": 14588,
+      "mean_predicted": 0.6543,
+      "observed_rate": 0.6122
+    },
+    {
+      "bin": "0.7-0.8",
+      "n": 16112,
+      "mean_predicted": 0.7415,
+      "observed_rate": 0.7151
+    },
+    {
+      "bin": "0.8-0.9",
+      "n": 17931,
+      "mean_predicted": 0.8489,
+      "observed_rate": 0.8409
+    },
+    {
+      "bin": "0.9-1.0",
+      "n": 23467,
+      "mean_predicted": 0.9608,
+      "observed_rate": 0.9604
+    }
+  ],
+  "importance": [
+    {
+      "feature": "fire_days_14",
+      "gain": 3204795.7,
+      "mean_abs_contribution": 0.3502
+    },
+    {
+      "feature": "fire_days_30",
+      "gain": 1497611.7,
+      "mean_abs_contribution": 0.261
+    },
+    {
+      "feature": "nbr_fire_days_7",
+      "gain": 1314699.1,
+      "mean_abs_contribution": 0.4669
+    },
+    {
+      "feature": "days_since_fire",
+      "gain": 571493.0,
+      "mean_abs_contribution": 0.3947
+    },
+    {
+      "feature": "nbr_fire_days_30",
+      "gain": 515779.8,
+      "mean_abs_contribution": 0.3089
+    },
+    {
+      "feature": "cell_lat",
+      "gain": 178374.1,
+      "mean_abs_contribution": 0.1821
+    },
+    {
+      "feature": "cells_7",
+      "gain": 127319.7,
+      "mean_abs_contribution": 0.0562
+    },
+    {
+      "feature": "cell_lon",
+      "gain": 102921.3,
+      "mean_abs_contribution": 0.0896
+    },
+    {
+      "feature": "fire_freq_hist",
+      "gain": 71288.6,
+      "mean_abs_contribution": 0.1133
+    },
+    {
+      "feature": "frp_sum_30",
+      "gain": 52684.2,
+      "mean_abs_contribution": 0.0375
+    },
+    {
+      "feature": "fire_days_90",
+      "gain": 45931.6,
+      "mean_abs_contribution": 0.0324
+    },
+    {
+      "feature": "det_7",
+      "gain": 41754.1,
+      "mean_abs_contribution": 0.031
+    },
+    {
+      "feature": "cells_30",
+      "gain": 30273.8,
+      "mean_abs_contribution": 0.0412
+    },
+    {
+      "feature": "night_share_30",
+      "gain": 22404.4,
+      "mean_abs_contribution": 0.0128
+    },
+    {
+      "feature": "fire_streak",
+      "gain": 19242.4,
+      "mean_abs_contribution": 0.0156
+    },
+    {
+      "feature": "det_30",
+      "gain": 16826.6,
+      "mean_abs_contribution": 0.0093
+    },
+    {
+      "feature": "frp_mean_30",
+      "gain": 11862.4,
+      "mean_abs_contribution": 0.008
+    },
+    {
+      "feature": "frp_sum_7",
+      "gain": 5261.4,
+      "mean_abs_contribution": 0.0067
+    },
+    {
+      "feature": "fire_days_7",
+      "gain": 4237.3,
+      "mean_abs_contribution": 0.003
+    },
+    {
+      "feature": "accel_7_30",
+      "gain": 2981.7,
+      "mean_abs_contribution": 0.003
+    },
+    {
+      "feature": "gap_days_7",
+      "gain": 0.0,
+      "mean_abs_contribution": 0.0
+    }
+  ],
+  "persistence_probabilities": {
+    "fire_in_last_7_days": 0.5990607663687361,
+    "none": 0.12936815393016607
+  },
+  "v1_for_comparison": "v1 reported ROC-AUC 0.884 / PR-AUC 0.797 / Brier 0.114 on its own validation weeks, with early stopping on those same weeks and a different label (any sensor); not comparable and slightly optimistic."
+}

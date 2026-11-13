@@ -22,3 +22,8 @@
   - the metric next to persistence, stating which block it comes from;
   - the scope note, and an optional map layer of the top 1,500 cells.
 - Per-cell contributions (`pred_contrib`) are not done: cut candidate #2, revisit if time remains.
+- Review fixes:
+  - Forecasts are issued on NOAA-20's last full-data day (6 Nov was partial).
+  - Warning if v2 is configured but missing.
+  - The "not scored" note names the reference sensor.
+  - The panel guards against a missing health response and finds v1's baseline name too.

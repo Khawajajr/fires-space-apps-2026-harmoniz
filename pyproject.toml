@@ -43,3 +43,6 @@ extend-exclude = ["gods-eye-view", "data", "models", "logs", ".scratch"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
 ignore = ["E731"]  # small named lambdas are used as local readers
+
+[tool.ruff.lint.per-file-ignores]
+"src/godseye/risk/evaluate_suite.py" = ["E501"]   # the model card's prose template reads better unwrapped

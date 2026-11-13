@@ -19,6 +19,13 @@ COLUMNS = ["sensor", "acq_date", "cell_lat", "cell_lon", "n_detections", "n_fire
            "frp_sum_mw"]
 
 
+def last_full_day(cfg: Config, processed: Path) -> pd.Timestamp:
+    """The reference sensor's last day with status ok (the issue date for live forecasts)."""
+    a = read_table(processed, "sensor_availability")
+    ok = a[(a.sensor.astype(str) == cfg.risk_v2["reference_sensor"]) & (a.status.astype(str) == "ok")]
+    return pd.Timestamp(ok.acq_date.max())
+
+
 def load_panel(cfg: Config, processed: Path) -> PanelV2:
     v2 = cfg.risk_v2
     grid = read_table(processed, "sensor_grid_daily", COLUMNS)

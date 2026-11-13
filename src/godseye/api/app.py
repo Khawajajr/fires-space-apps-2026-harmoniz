@@ -54,6 +54,9 @@ def read_table(stem: str) -> pd.DataFrame:
 
 def load_predictions() -> tuple[pd.DataFrame, dict]:
     """Score the latest grid day with the trained model; fall back to the CSV written at training time."""
+    if CONFIG.risk.get("serve") == "v2" and not artifact.exists(CONFIG.served_model_dir):
+        LOG.warning("risk.serve is v2 but %s has no model; serving v1 (run `godseye train-v2`)",
+                    CONFIG.served_model_dir)
     if not artifact.exists(MODEL_DIR) and CONFIG.legacy_model_path.exists():
         artifact.migrate_pickle(CONFIG.legacy_model_path, MODEL_DIR, find_table(PROCESSED, "fires_daily_grid"),
                                 CONFIG.root)
@@ -63,7 +66,9 @@ def load_predictions() -> tuple[pd.DataFrame, dict]:
         from godseye.risk.model import risk_level
 
         bundle = artifact.load(CONFIG.served_model_dir)
-        preds = v2.predict_latest(bundle, train_v2.load_panel(CONFIG, PROCESSED), risk_level)
+        preds = v2.predict_latest(bundle, train_v2.load_panel(CONFIG, PROCESSED), risk_level,
+                                  issue=train_v2.last_full_day(CONFIG, PROCESSED))
+        STATE["scored_by"] = CONFIG.risk_v2["reference_sensor"]
         meta = {k: bundle[k] for k in ("grid_deg", "horizon_days", "risk_bins", "risk_labels", "trained_through")}
         # Same keys as v1 in /api/health (contract): the held-out test scores when 11b has run, else validation.
         rows = bundle.get("test") or bundle["validation"]
@@ -272,8 +277,8 @@ def risk_at(
         "point": ({"lat": float(near.cell_lat), "lon": float(near.cell_lon), "risk": float(near.risk),
                    "level": near.level, "scored": True} if covering else
                   {"scored": False, "risk": None, "level": "not_scored",
-                   "note": "no satellite fire detections in this cell since 2026-01-01, so it is not "
-                           "scored; such cells are historically very low risk"}),
+                   "note": f"no {STATE.get('scored_by', 'satellite')} fire detections in this cell since the data "
+                           "starts, so it is not scored; such cells are historically very low risk"}),
         "area": {
             "scored_cells": int(len(sel)), "max_risk": float(sel.risk.max()) if len(sel) else None,
             "mean_risk": round(float(sel.risk.mean()), 4) if len(sel) else None,

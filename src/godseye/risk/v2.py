@@ -132,12 +132,15 @@ def check_separation(b: Blocks, horizon: int, n_days: int) -> None:
         raise ValueError("a test label window runs past the data")
 
 
-def predict_latest(bundle: dict, panel: PanelV2, risk_level) -> pd.DataFrame:
-    """Risk for days (last day + 1 .. + horizon) for every cell with reference-sensor fire history; same columns as
-    v1's predictions so the risk endpoints keep their contract."""
-    t = len(panel.dates) - 1
+def predict_latest(bundle: dict, panel: PanelV2, risk_level, issue: pd.Timestamp | None = None) -> pd.DataFrame:
+    """Risk for days (issue + 1 .. + horizon) for every cell with reference-sensor fire history; same columns as
+    v1's predictions so the risk endpoints keep their contract. `issue` defaults to the last day of data; pass the
+    reference sensor's last full-data day so features aren't built on an incompletely delivered day."""
+    t = len(panel.dates) - 1 if issue is None else int(panel.dates.get_loc(pd.Timestamp(issue)))
     feats = panel.features(t)
     p = bundle["model"].predict(feats[bundle["features"]])
+    if bundle.get("calibration"):                       # isotonic map fitted on validation (godseye evaluate)
+        p = np.interp(p, bundle["calibration"]["x"], bundle["calibration"]["y"])
     issued = panel.dates[t]
     return pd.DataFrame({"cell_lat": feats.cell_lat, "cell_lon": feats.cell_lon, "risk": p.round(4),
                          "level": risk_level(p), "issued": issued.strftime("%Y-%m-%d"),

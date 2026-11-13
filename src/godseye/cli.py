@@ -36,6 +36,14 @@ def _train_v2(args) -> None:
     train_v2.run(cfg, Path(args.processed or cfg.processed_dir), out, args.n_estimators or cfg.risk_v2["n_estimators"])
 
 
+def _evaluate(args) -> None:
+    from godseye.risk import evaluate_suite
+
+    cfg = get_config()
+    evaluate_suite.run(cfg, cfg.processed_dir, cfg.models_dir / cfg.risk_v2["model_dir"], cfg.root / "reports",
+                       cfg.figures_dir, cfg.root / "docs" / "MODEL_CARD.md")
+
+
 def _aggregate(args) -> None:
     from godseye.ingest import pipeline
 
@@ -95,6 +103,9 @@ def build_parser() -> argparse.ArgumentParser:
     t2.add_argument("--out", help="model directory (default: models/<risk_v2.model_dir>)")
     t2.add_argument("--n-estimators", type=int)
     t2.set_defaults(func=_train_v2)
+
+    e = sub.add_parser("evaluate", help="score risk v2 once on the test block; write reports/ and docs/MODEL_CARD.md")
+    e.set_defaults(func=_evaluate)
 
     g = sub.add_parser("aggregate", help="cleaned detections -> per-sensor fire cells, grid, availability, chart")
     g.add_argument("--clean-dir", help=f"directory holding fires_clean (default: {cfg.processed_dir})")
