@@ -58,6 +58,17 @@ def load_predictions() -> tuple[pd.DataFrame, dict]:
         artifact.migrate_pickle(CONFIG.legacy_model_path, MODEL_DIR, find_table(PROCESSED, "fires_daily_grid"),
                                 CONFIG.root)
         LOG.warning("migrated %s to %s", CONFIG.legacy_model_path.name, MODEL_DIR)
+    if CONFIG.risk.get("serve") == "v2" and artifact.exists(CONFIG.served_model_dir):
+        from godseye.risk import train_v2, v2
+        from godseye.risk.model import risk_level
+
+        bundle = artifact.load(CONFIG.served_model_dir)
+        preds = v2.predict_latest(bundle, train_v2.load_panel(CONFIG, PROCESSED), risk_level)
+        meta = {k: bundle[k] for k in ("grid_deg", "horizon_days", "risk_bins", "risk_labels", "trained_through")}
+        # Same keys as v1 in /api/health (contract): the held-out test scores when 11b has run, else validation.
+        rows = bundle.get("test") or bundle["validation"]
+        meta["validation"] = [{k: r[k] for k in ("model", "roc_auc", "pr_auc", "brier")} for r in rows]
+        return preds, meta
     if artifact.exists(MODEL_DIR):
         bundle = artifact.load(MODEL_DIR)
         preds = predict_latest(bundle, Panel(load_grid(), bundle["grid_deg"]))
@@ -293,12 +304,12 @@ class MetaResponse(BaseModel):
 
 
 MODEL_INFO_FIELDS = ("name", "version", "created_at", "trained_through", "git_sha", "data_sha256", "num_trees",
-                     "migrated_from", "migrated_at", "note")
+                     "label", "blocks", "test_scored", "migrated_from", "migrated_at", "note")
 
 
 def model_info() -> dict | None:
     """From the committed metadata file, so it never waits for (or races with) the background scoring."""
-    meta = artifact.read_meta(MODEL_DIR)
+    meta = artifact.read_meta(CONFIG.served_model_dir)
     return None if meta is None else {k: meta.get(k) for k in MODEL_INFO_FIELDS}
 
 

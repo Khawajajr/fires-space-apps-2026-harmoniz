@@ -16,6 +16,7 @@ const state = { aois: [], aoi: "levant", bbox: null, view: "harmonized", sensor:
 const $ = (id) => document.getElementById(id);
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const fmt = new Intl.NumberFormat("en", { maximumFractionDigits: 1 });
+const fmt3 = new Intl.NumberFormat("en", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
 // ---------- URL state (shareable links) ----------
@@ -137,6 +138,7 @@ async function load() {
     showAoi(body.aoi.grid_bbox || body.aoi.bbox);
     writeHash(); renderFilters(); renderAll();
     loadSeason(params, ctrl);
+    loadRisk(body.aoi.grid_bbox || body.aoi.bbox, ctrl);
   } catch (err) {
     if (err.name !== "AbortError") setStatus(`Could not load the calendar: ${err.message}`);
   }
@@ -419,6 +421,63 @@ function renderProfile(c) {
     <path class="latest" d="${path(latestRow.slice(0, 52).map((v, i) => [x(i + 1), v]))}"/>${ticks}${yt}</svg>
     <p class="hint">Solid: weekly median · band: p10–p90${comparable ? ` · dashed: ${latestYear}` : ""} · shaded: in-season weeks.</p>`;
 }
+
+// ---------- next 7 days: risk ----------
+const RISK_LEVELS = ["low", "moderate", "high", "very_high", "extreme"];
+const riskColor = (level) => `var(--fire-${RISK_LEVELS.indexOf(level) + 2})`;
+let riskLayer = null;
+
+async function loadRisk(bbox, ctrl) {
+  try {
+    const [map, health, meta] = await Promise.all([
+      fetch(`${API}/predictions/risk-map?min_risk=0&bbox=${bbox.join(",")}`, { signal: ctrl.signal }).then((r) => r.json()),
+      fetch(`${API}/health`, { signal: ctrl.signal }).then((r) => r.json()),
+      fetch(`${API}/meta`, { signal: ctrl.signal }).then((r) => r.json()),
+    ]);
+    state.risk = { map, health, meta };
+  } catch (err) {
+    if (err.name === "AbortError") return;
+    state.risk = { error: err.message };
+  }
+  renderRisk();
+}
+
+function renderRisk() {
+  const r = state.risk, el = $("risk");
+  if (!r) return;
+  if (r.error || !r.map.points) { el.innerHTML = `<p class="empty">Risk forecast not available${r.error ? `: ${esc(r.error)}` : ""}.</p>`; return; }
+  const m = r.map, counts = Object.fromEntries(RISK_LEVELS.map((l) => [l, 0]));
+  m.levels.forEach((l) => { counts[l] += 1; });
+  const top = m.points.slice(0, 5).map((p, i) => `<li>${fmt.format(p[0])}°, ${fmt.format(p[1])}°: ` +
+    `<strong>${Math.round(p[2] * 100)}%</strong> (${esc(m.levels[i].replace("_", " "))})</li>`).join("");
+  const rows = r.health.model.validation;
+  const model = rows[0], base = rows.find((x) => /persistence/i.test(x.model));
+  const info = (r.meta && r.meta.model) || {};
+  const where = info.test_scored ? `held-out test weeks ${(info.blocks && info.blocks.test || []).join(" to ")}`
+                                 : "validation weeks (the untouched test score comes with the model card)";
+  const skill = base ? `On ${where}: ROC-AUC ${fmt3.format(model.roc_auc)} vs ${fmt3.format(base.roc_auc)} for persistence ` +
+    `(“fire in the last 7 days”); Brier score ${fmt3.format(model.brier)} vs ${fmt3.format(base.brier)} (lower is better).` : "";
+  const first = new Date(Date.parse(m.issued) + DAY_MS).toISOString().slice(0, 10);
+  el.innerHTML = `<p class="hint">Forecast issued ${esc(m.issued)} for ${esc(first)} to ${esc(m.valid_through)}, ` +
+      `per ${m.cell_deg}° cell: chance of at least one NOAA-20 fire detection.</p>
+    <div class="risk-levels">${RISK_LEVELS.map((l) => `<span><i style="background:${riskColor(l)}"></i>` +
+      `${esc(l.replace("_", " "))}: ${counts[l]}</span>`).join("")}</div>
+    ${m.count ? `<ol>${top}</ol>` : `<p class="empty">No scored cells in this area.</p>`}
+    <p class="hint">${esc(model.model)}: ${skill} Only cells where NOAA-20 has seen fire since the data starts are
+      scored. A planning aid for burning activity, not a prediction of ignitions.</p>`;
+  drawRiskLayer();
+}
+
+function drawRiskLayer() {
+  if (riskLayer) { map.removeLayer(riskLayer); riskLayer = null; }
+  const r = state.risk;
+  if (!$("risk-layer").checked || !r || !r.map || !r.map.points) return;
+  const h = r.map.cell_deg / 2;
+  riskLayer = L.layerGroup(r.map.points.slice(0, 1500).map((p, i) => L.rectangle([[p[0] - h, p[1] - h], [p[0] + h, p[1] + h]], {
+    stroke: false, fillColor: getComputedStyle(document.documentElement).getPropertyValue(`--fire-${RISK_LEVELS.indexOf(r.map.levels[i]) + 2}`).trim(),
+    fillOpacity: 0.75, interactive: false }))).addTo(map);
+}
+$("risk-layer").addEventListener("change", drawRiskLayer);
 
 // ---------- table view ----------
 function renderTable() {

@@ -132,6 +132,18 @@ def check_separation(b: Blocks, horizon: int, n_days: int) -> None:
         raise ValueError("a test label window runs past the data")
 
 
+def predict_latest(bundle: dict, panel: PanelV2, risk_level) -> pd.DataFrame:
+    """Risk for days (last day + 1 .. + horizon) for every cell with reference-sensor fire history; same columns as
+    v1's predictions so the risk endpoints keep their contract."""
+    t = len(panel.dates) - 1
+    feats = panel.features(t)
+    p = bundle["model"].predict(feats[bundle["features"]])
+    issued = panel.dates[t]
+    return pd.DataFrame({"cell_lat": feats.cell_lat, "cell_lon": feats.cell_lon, "risk": p.round(4),
+                         "level": risk_level(p), "issued": issued.strftime("%Y-%m-%d"),
+                         "valid_through": (issued + pd.Timedelta(days=panel.horizon)).strftime("%Y-%m-%d")})
+
+
 def build(panel: PanelV2, ts: list[int]) -> tuple[pd.DataFrame, np.ndarray]:
     ts = [t for t in ts if not panel.label_window_has_outage(t)]
     X = pd.concat([panel.features(t) for t in ts], ignore_index=True)

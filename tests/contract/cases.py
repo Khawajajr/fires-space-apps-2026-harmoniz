@@ -28,3 +28,27 @@ def fingerprint(body: bytes) -> str:
 
 def file_fingerprint(body: bytes) -> str:
     return hashlib.sha256(body).hexdigest()
+
+
+RISK_LEVELS = {"low", "moderate", "high", "very_high", "extreme"}
+
+
+def schema(obj):
+    """Shape of a JSON value: keys and value types (lists by the union of their items' shapes). Dicts keyed by risk
+    level (e.g. level_counts) are data, not structure: their keys become '<level>'."""
+    if isinstance(obj, dict):
+        if obj and set(obj) <= RISK_LEVELS:
+            return {"<level>": schema(next(iter(obj.values())))}
+        return {k: schema(v) for k, v in sorted(obj.items())}
+    if isinstance(obj, list):
+        shapes = []
+        for item in obj:
+            sh = schema(item)
+            if sh not in shapes:
+                shapes.append(sh)
+        return shapes
+    if isinstance(obj, bool):
+        return "boolean"
+    if isinstance(obj, (int, float)):
+        return "number"
+    return "null" if obj is None else "string"

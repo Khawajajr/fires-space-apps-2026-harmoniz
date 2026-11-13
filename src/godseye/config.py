@@ -61,6 +61,11 @@ class Config:
         return self.models_dir / self.risk["model_dir"]
 
     @property
+    def served_model_dir(self) -> Path:
+        v2 = self.risk.get("serve") == "v2"
+        return self.models_dir / (self.risk_v2["model_dir"] if v2 else self.risk["model_dir"])
+
+    @property
     def legacy_model_path(self) -> Path:
         return self.models_dir / self.risk["legacy_model_file"]
 

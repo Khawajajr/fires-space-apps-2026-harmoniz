@@ -1,0 +1,292 @@
+{
+ "/api/fires/recent": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      "number"
+     ],
+     "type": "string"
+    },
+    "properties": {
+     "conf": "string",
+     "dn": "string",
+     "frp": "number",
+     "res": "number",
+     "sat": "string",
+     "t": "string"
+    },
+    "type": "string"
+   }
+  ],
+  "metadata": {
+   "count": "number",
+   "hours": "number",
+   "matched": "number",
+   "newest": "string",
+   "truncated": "boolean"
+  },
+  "type": "string"
+ },
+ "/api/fires/recent?bbox=170,-60,-170,60&hours=168": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      "number"
+     ],
+     "type": "string"
+    },
+    "properties": {
+     "conf": "string",
+     "dn": "string",
+     "frp": "number",
+     "res": "number",
+     "sat": "string",
+     "t": "string"
+    },
+    "type": "string"
+   }
+  ],
+  "metadata": {
+   "count": "number",
+   "hours": "number",
+   "matched": "number",
+   "newest": "string",
+   "truncated": "boolean"
+  },
+  "type": "string"
+ },
+ "/api/fires/recent?format=firms&hours=24&min_confidence=nominal&limit=200000": {
+  "count": "number",
+  "fetchedAt": "number",
+  "fires": [
+   {
+    "acqDate": "string",
+    "acqTime": "string",
+    "confidence": "string",
+    "daynight": "string",
+    "frp": "number",
+    "instrument": "string",
+    "lat": "number",
+    "lon": "number",
+    "satellite": "string"
+   }
+  ],
+  "hours": "number",
+  "matched": "number",
+  "sources": [
+   {
+    "ok": "boolean",
+    "source": "string"
+   }
+  ],
+  "stale": "boolean",
+  "truncated": "boolean"
+ },
+ "/api/fires/recent?instrument=MODIS&min_confidence=high&limit=500": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      "number"
+     ],
+     "type": "string"
+    },
+    "properties": {
+     "conf": "string",
+     "dn": "string",
+     "frp": "number",
+     "res": "number",
+     "sat": "string",
+     "t": "string"
+    },
+    "type": "string"
+   }
+  ],
+  "metadata": {
+   "count": "number",
+   "hours": "number",
+   "matched": "number",
+   "newest": "string",
+   "truncated": "boolean"
+  },
+  "type": "string"
+ },
+ "/api/fires/recent?instrument=VIIRS&bbox=34,29,42.5,37.5&hours=168": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      "number"
+     ],
+     "type": "string"
+    },
+    "properties": {
+     "conf": "string",
+     "dn": "string",
+     "frp": "number",
+     "res": "number",
+     "sat": "string",
+     "t": "string"
+    },
+    "type": "string"
+   }
+  ],
+  "metadata": {
+   "count": "number",
+   "hours": "number",
+   "matched": "number",
+   "newest": "string",
+   "truncated": "boolean"
+  },
+  "type": "string"
+ },
+ "/api/health": {
+  "model": {
+   "grid_deg": "number",
+   "horizon_days": "number",
+   "risk_bins": [
+    "number"
+   ],
+   "risk_labels": [
+    "string"
+   ],
+   "trained_through": "string",
+   "validation": [
+    {
+     "brier": "number",
+     "model": "string",
+     "pr_auc": "number",
+     "roc_auc": "number"
+    }
+   ]
+  },
+  "recent_detections": "number",
+  "recent_window": [
+   "string"
+  ],
+  "risk_cells": "number",
+  "status": "string"
+ },
+ "/api/predictions/risk-at?lat=-24&lon=31.5&radius_km=50&top=5": {
+  "area": {
+   "level_counts": {
+    "extreme": "number",
+    "high": "number",
+    "moderate": "number"
+   },
+   "max_risk": "number",
+   "mean_risk": "number",
+   "scored_cells": "number",
+   "top": [
+    {
+     "distance_km": "number",
+     "lat": "number",
+     "level": "string",
+     "lon": "number",
+     "risk": "number"
+    }
+   ]
+  },
+  "cell_deg": "number",
+  "horizon_days": "number",
+  "issued": "string",
+  "point": {
+   "lat": "number",
+   "level": "string",
+   "lon": "number",
+   "risk": "number",
+   "scored": "boolean"
+  },
+  "query": {
+   "lat": "number",
+   "lon": "number",
+   "radius_km": "number"
+  },
+  "valid_through": "string"
+ },
+ "/api/predictions/risk-at?lat=31.95&lon=35.93": {
+  "area": {
+   "level_counts": {
+    "high": "number",
+    "moderate": "number"
+   },
+   "max_risk": "number",
+   "mean_risk": "number",
+   "scored_cells": "number",
+   "top": [
+    {
+     "distance_km": "number",
+     "lat": "number",
+     "level": "string",
+     "lon": "number",
+     "risk": "number"
+    }
+   ]
+  },
+  "cell_deg": "number",
+  "horizon_days": "number",
+  "issued": "string",
+  "point": {
+   "lat": "number",
+   "level": "string",
+   "lon": "number",
+   "risk": "number",
+   "scored": "boolean"
+  },
+  "query": {
+   "lat": "number",
+   "lon": "number",
+   "radius_km": "number"
+  },
+  "valid_through": "string"
+ },
+ "/api/predictions/risk-map?format=geojson&bbox=34,29,42.5,37.5": {
+  "features": [
+   {
+    "geometry": {
+     "coordinates": [
+      [
+       [
+        "number"
+       ]
+      ]
+     ],
+     "type": "string"
+    },
+    "properties": {
+     "level": "string",
+     "risk": "number"
+    },
+    "type": "string"
+   }
+  ],
+  "metadata": {
+   "cell_deg": "number",
+   "count": "number",
+   "horizon_days": "number",
+   "issued": "string",
+   "valid_through": "string"
+  },
+  "type": "string"
+ },
+ "/api/predictions/risk-map?min_risk=0.02": {
+  "cell_deg": "number",
+  "count": "number",
+  "fields": [
+   "string"
+  ],
+  "horizon_days": "number",
+  "issued": "string",
+  "levels": [
+   "string"
+  ],
+  "points": [
+   [
+    "number"
+   ]
+  ],
+  "valid_through": "string"
+ }
+}

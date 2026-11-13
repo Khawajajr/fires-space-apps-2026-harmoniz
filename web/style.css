@@ -139,6 +139,10 @@ thead th { position: sticky; top: 0; background: var(--surface-1); color: var(--
 .chart .gated { fill: var(--text-muted); opacity: 0.08; }
 .chart .median { fill: none; stroke: var(--fire-4); stroke-width: 2; }
 .chart .latest { fill: none; stroke: var(--text-primary); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.risk-levels { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.risk-levels span { font-size: 12px; padding: 3px 8px; border-radius: 10px; background: var(--surface-0); border: 1px solid var(--border); }
+.risk-levels i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.risk-toggle { display: block; margin: 2px 0 4px; }
 .notes { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
 .notes ul { margin: 6px 0 0; padding-left: 18px; color: var(--text-secondary); font-size: 12px; }
 
