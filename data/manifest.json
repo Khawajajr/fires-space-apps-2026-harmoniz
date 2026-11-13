@@ -1,0 +1,190 @@
+{
+  "files": [
+    {
+      "path": "data/raw/DL_FIRE_J1V-C2_839672/fire_archive_J1V-C2_839672.csv",
+      "bytes": 770736646,
+      "mtime_ns": 1793994086000000000,
+      "sha256": "e91e991ed7e10f00032d1e3dd14e0af2d89b39488a7b7258420c86075beea251",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_J1V-C2_839672"
+      },
+      "rows": 9559961,
+      "first_date": "2026-01-01",
+      "last_date": "2026-07-31",
+      "satellites": {
+        "N20": 9559961
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 9559961
+      }
+    },
+    {
+      "path": "data/raw/DL_FIRE_J1V-C2_839672/fire_nrt_J1V-C2_839672.csv",
+      "bytes": 592681060,
+      "mtime_ns": 1793994124000000000,
+      "sha256": "36e9e5974ba41c54067d127aecf6c896c20d148f82573ff5f75e66595bf4f6a0",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_J1V-C2_839672"
+      },
+      "rows": 7048915,
+      "first_date": "2026-08-01",
+      "last_date": "2026-11-06",
+      "satellites": {
+        "N20": 7048915
+      },
+      "product": [
+        "nrt"
+      ],
+      "versions": {
+        "2.0NRT": 7048915
+      }
+    },
+    {
+      "path": "data/raw/DL_FIRE_J2V-C2_839673/fire_archive_J2V-C2_839673.csv",
+      "bytes": 739137126,
+      "mtime_ns": 1793994166000000000,
+      "sha256": "89ab36576df33a9e4013215a21c3bca4a802cf3db5fdbc39ae4b72e2aa247a24",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_J2V-C2_839673"
+      },
+      "rows": 9164378,
+      "first_date": "2026-01-01",
+      "last_date": "2026-07-31",
+      "satellites": {
+        "N21": 9164378
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 9164378
+      }
+    },
+    {
+      "path": "data/raw/DL_FIRE_J2V-C2_839673/fire_nrt_J2V-C2_839673.csv",
+      "bytes": 569167623,
+      "mtime_ns": 1793994196000000000,
+      "sha256": "0808f3bb127d31fa8bbfdb516dc72f10381502cc66445460b65b0ff2f348f974",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_J2V-C2_839673"
+      },
+      "rows": 6766751,
+      "first_date": "2026-08-01",
+      "last_date": "2026-11-06",
+      "satellites": {
+        "N21": 6766751
+      },
+      "product": [
+        "nrt"
+      ],
+      "versions": {
+        "2.0NRT": 6766751
+      }
+    },
+    {
+      "path": "data/raw/DL_FIRE_M-C61_839671/fire_archive_M-C61_839671.csv",
+      "bytes": 182928472,
+      "mtime_ns": 1793994047000000000,
+      "sha256": "e5aa1d1a4d796e95bcbd5a3be319d729f486271e00095a53f0b5dab3dc6c10fd",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_839671"
+      },
+      "rows": 2302480,
+      "first_date": "2026-01-01",
+      "last_date": "2026-08-31",
+      "satellites": {
+        "Aqua": 1634254,
+        "Terra": 668226
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "61.03": 2302480
+      }
+    },
+    {
+      "path": "data/raw/DL_FIRE_M-C61_839671/fire_nrt_M-C61_839671.csv",
+      "bytes": 61969591,
+      "mtime_ns": 1793994050000000000,
+      "sha256": "0523879b284e997ee72c53259add71692003f3e0537dcf4884f834b62791c57b",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_839671"
+      },
+      "rows": 715317,
+      "first_date": "2026-09-01",
+      "last_date": "2026-11-06",
+      "satellites": {
+        "Aqua": 474998,
+        "Terra": 240319
+      },
+      "product": [
+        "nrt"
+      ],
+      "versions": {
+        "6.1NRT": 715317
+      }
+    },
+    {
+      "path": "data/raw/DL_FIRE_SV-C2_839674/fire_archive_SV-C2_839674.csv",
+      "bytes": 713855354,
+      "mtime_ns": 1793994081000000000,
+      "sha256": "789dd02e43770e729efe896b28f1324e84170f617d916700b9d637382a6d0a8a",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_SV-C2_839674"
+      },
+      "rows": 8859653,
+      "first_date": "2026-01-01",
+      "last_date": "2026-07-31",
+      "satellites": {
+        "SNPP": 8859653
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 8859653
+      }
+    },
+    {
+      "path": "data/raw/DL_FIRE_SV-C2_839674/fire_nrt_SV-C2_839674.csv",
+      "bytes": 555071478,
+      "mtime_ns": 1793994122000000000,
+      "sha256": "4c4f39c2da02e19cfa9c54b7126104dbcbf98c409fc36bbd2a73f214542f5f65",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_SV-C2_839674"
+      },
+      "rows": 6602259,
+      "first_date": "2026-08-01",
+      "last_date": "2026-11-02",
+      "satellites": {
+        "SNPP": 6602259
+      },
+      "product": [
+        "nrt"
+      ],
+      "versions": {
+        "2.0NRT": 6602259
+      }
+    }
+  ]
+}

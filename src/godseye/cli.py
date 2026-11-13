@@ -28,6 +28,23 @@ def _train(args) -> None:
               min_history_days=cfg.risk["min_history_days"])
 
 
+def _aggregate(args) -> None:
+    from godseye.ingest import pipeline
+
+    cfg = get_config()
+    pipeline.run(cfg, Path(args.clean_dir or cfg.processed_dir), Path(args.out or cfg.processed_dir),
+                 Path(args.figure or cfg.figures_dir / "coverage_sensor_date.png"))
+
+
+def _manifest(args) -> None:
+    from godseye.ingest.manifest import write_manifest
+
+    cfg = get_config()
+    out = Path(args.out or cfg.data_dir / "manifest.json")
+    m = write_manifest([Path(p) for p in (args.inputs or [cfg.raw_dir])], out, cfg.root)
+    print(f"  wrote {out}: {len(m['files'])} files, {sum(f['rows'] for f in m['files']):,} rows")
+
+
 def _api(args) -> None:
     import uvicorn
 
@@ -57,6 +74,17 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--val-weeks", type=int, default=cfg.risk["val_weeks"], help="most recent issue dates held out")
     t.add_argument("--n-estimators", type=int, default=cfg.risk["n_estimators"])
     t.set_defaults(func=_train)
+
+    g = sub.add_parser("aggregate", help="cleaned detections -> per-sensor fire cells, grid, availability, chart")
+    g.add_argument("--clean-dir", help=f"directory holding fires_clean (default: {cfg.processed_dir})")
+    g.add_argument("--out", help=f"output directory (default: {cfg.processed_dir})")
+    g.add_argument("--figure", help=f"coverage chart path (default: {cfg.figures_dir / 'coverage_sensor_date.png'})")
+    g.set_defaults(func=_aggregate)
+
+    m = sub.add_parser("manifest", help="record every FIRMS input file (source, dates, rows, sha256)")
+    m.add_argument("inputs", nargs="*", help=f"files or directories (default: {cfg.raw_dir})")
+    m.add_argument("--out", help=f"manifest path (default: {cfg.data_dir / 'manifest.json'})")
+    m.set_defaults(func=_manifest)
 
     a = sub.add_parser("api", help="serve the HTTP API and the dashboard")
     a.add_argument("--host", default=cfg.api["host"])

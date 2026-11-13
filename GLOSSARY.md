@@ -20,8 +20,12 @@ A ~1 km (0.01°) grid cell with at least one detection from a given sensor on a 
 _Avoid_: Fire, fire day
 
 **Coverage gap**:
-A period when a sensor was not delivering data (pre-launch, retired, outage, or zero global records). Shown as "no data", never as zero activity. Cloud cover is a known, unmapped limitation, not a coverage gap.
+A sensor-day when the sensor was not delivering full data: not operational (pre-launch or retired), no data (zero detections worldwide: an outage), or partial (far fewer detections worldwide than usual). Shown as "no data", never as zero activity. Cloud cover is a known, unmapped limitation, not a coverage gap.
 _Avoid_: Zero, missing fire
+
+**Kept detection**:
+A detection that passed quality filtering (nominal or high confidence, vegetation fire, not a known static source). Every count we show, raw or harmonized, is of kept detections.
+_Avoid_: Raw (when filtered data is meant)
 
 ## Harmonization
 

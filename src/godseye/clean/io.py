@@ -27,13 +27,13 @@ def resolve_table_format(preferred: str) -> str:
     return "csv"
 
 
-def iter_csvs(paths: list[str], chunk_rows: int = 1_000_000):
+def iter_csvs(paths: list[str], chunk_rows: int = 1_000_000, usecols: list[str] | None = None):
     """Yield (name, chunk) for every CSV chunk in the given files/dirs/zips."""
-    read = lambda src: pd.read_csv(src, dtype=str, chunksize=chunk_rows)
+    read = lambda src: pd.read_csv(src, dtype=str, chunksize=chunk_rows, usecols=usecols)
     for p in map(Path, paths):
         if p.is_dir():
             yield from iter_csvs([str(x) for x in sorted(p.rglob("*")) if x.suffix.lower() in (".csv", ".zip")],
-                                 chunk_rows)
+                                 chunk_rows, usecols)
         elif p.suffix.lower() == ".zip":
             with zipfile.ZipFile(p) as zf:
                 for n in zf.namelist():
@@ -73,13 +73,16 @@ def find_table(directory: Path, stem: str) -> Path:
     raise FileNotFoundError(f"{stem}{{{','.join(READERS)}}} not found in {directory} - run `godseye clean`")
 
 
-def read_table_file(path: Path) -> pd.DataFrame:
+def read_table_file(path: Path, columns: list[str] | None = None) -> pd.DataFrame:
     suffix = ".csv.gz" if path.name.endswith(".csv.gz") else path.suffix
-    return READERS.get(suffix, pd.read_csv)(path)
+    if suffix == ".feather":
+        return pd.read_feather(path, columns=columns)
+    df = READERS.get(suffix, pd.read_csv)(path)
+    return df if columns is None else df[columns]
 
 
-def read_table(directory: Path, stem: str) -> pd.DataFrame:
-    return read_table_file(find_table(directory, stem))
+def read_table(directory: Path, stem: str, columns: list[str] | None = None) -> pd.DataFrame:
+    return read_table_file(find_table(directory, stem), columns)
 
 
 def write_geojson(recent: pd.DataFrame, path: Path) -> None:

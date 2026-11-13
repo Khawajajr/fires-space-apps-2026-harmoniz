@@ -19,3 +19,4 @@ Follow-ups from the 01 review (judgement calls; fold in where 02 touches the cod
 - `grid_deg` appears under both `clean` and `risk` in pipeline.yaml; there should be one value, or a check that they agree.
 - The API decides VIIRS vs MODIS from `sensor_res_m`, while the schema decides it from the satellite: use one rule.
 - The GeoJSON point builder is duplicated (`clean.io.write_geojson` and `/api/fires/recent`).
+- From the 03 review: `Config.aggregate` is another string-keyed dict (make it typed with the rest); `Sensor.instrument` is now a third VIIRS/MODIS source, so derive `schema.VIIRS_SATELLITES` from `cfg.sensors`; the manifest library code prints (move printing to the CLI).

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 
@@ -19,15 +20,27 @@ class AOI:
 
 
 @dataclass(frozen=True)
+class Sensor:
+    name: str               # e.g. "Aqua-MODIS"
+    satellite: str          # canonical satellite name written by `clean`, e.g. "Aqua"
+    instrument: str         # MODIS | VIIRS
+    start: date | None      # first day of FIRMS data; None = take it from the data
+    end: date | None        # last day; None = still delivering
+
+
+@dataclass(frozen=True)
 class Config:
     root: Path
     display_name: str
     data_dir: Path
     models_dir: Path
     frontend_dir: Path
+    figures_dir: Path
     clean: dict
     risk: dict
     api: dict
+    aggregate: dict = field(default_factory=dict)
+    sensors: dict[str, Sensor] = field(default_factory=dict)
     aois: dict[str, AOI] = field(default_factory=dict)
     firms_map_key: str | None = None
 
@@ -62,9 +75,13 @@ def load_config(config_dir: Path | None = None, env: dict | None = None) -> Conf
         data_dir=Path(env["GODSEYE_DATA_DIR"]).resolve() if env.get("GODSEYE_DATA_DIR") else resolve(paths["data_dir"]),
         models_dir=resolve(paths["models_dir"]),
         frontend_dir=resolve(paths["frontend_dir"]),
+        figures_dir=resolve(paths["figures_dir"]),
         clean=pipeline["clean"],
         risk=pipeline["risk"],
         api=pipeline["api"],
+        aggregate=pipeline["aggregate"],
+        sensors={name: Sensor(name, s["satellite"], s["instrument"], s["start"], s["end"])
+                 for name, s in pipeline["sensors"].items()},
         aois={name: AOI(name, a["label"], tuple(float(v) for v in a["bbox"])) for name, a in aois_raw.items()},
         firms_map_key=env.get("FIRMS_MAP_KEY") or None,
     )

@@ -11,7 +11,8 @@ Display name lives in one config value; the Python package stays `godseye` (inte
 - Leaflet dashboard: served by the backend at `http://localhost:8000/`
 - Globe: `cd gods-eye-view; npm run dev` → `http://localhost:4173` (needs `GODS_EYE_API_URL=http://127.0.0.1:8000`)
 - Pipeline: `python -m godseye clean` (~7 min, reads `data/raw`), then `python -m godseye train` (~25 s).
-  `scripts/*.py` are deprecated wrappers.
+  `scripts/*.py` are deprecated wrappers. Then `python -m godseye aggregate` (~40 s: per-sensor fire cells,
+  0.25° sensor grid, sensor availability, coverage chart) and `python -m godseye manifest` (data/manifest.json).
 - Tests: `.venv\Scripts\python -m pytest` (fixture in `tests/fixtures/firms`, rebuilt by `make_fixture.py`);
   `.venv\Scripts\ruff check src tests scripts backend`. The contract test compares the 4 prototype endpoints with
   `tests/contract/golden.json` (captured from v0-prototype) and is skipped without real data.

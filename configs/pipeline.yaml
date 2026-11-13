@@ -6,6 +6,7 @@ paths:
   data_dir: data            # raw/ and processed/ live under it
   models_dir: models
   frontend_dir: frontend
+  figures_dir: reports/figures   # small committed PNG/SVG for README and slides
 
 clean:
   min_confidence: nominal   # low | nominal | high
@@ -13,6 +14,19 @@ clean:
   recent_days: 7
   chunk_rows: 1000000
   table_format: feather     # ADR 0002: feather/zstd, not parquet
+
+# Sensors (glossary: one instrument on one satellite). `satellite` is the canonical name written by `clean`.
+# start/end = first/last day the sensor delivers FIRMS data (null = take it from the data).
+sensors:
+  Terra-MODIS:   {satellite: Terra,     instrument: MODIS, start: 2000-11-01, end: null}
+  Aqua-MODIS:    {satellite: Aqua,      instrument: MODIS, start: 2002-07-04, end: null}
+  S-NPP-VIIRS:   {satellite: Suomi-NPP, instrument: VIIRS, start: 2012-01-20, end: 2026-11-02}
+  NOAA-20-VIIRS: {satellite: NOAA-20,   instrument: VIIRS, start: null,       end: null}
+  NOAA-21-VIIRS: {satellite: NOAA-21,   instrument: VIIRS, start: 2024-01-17, end: null}
+
+aggregate:
+  fine_deg: 0.01            # fire cell-day unit (~1 km); the coarse grid is clean.grid_deg
+  partial_fraction: 0.2     # global day < this x the sensor's 31-day median -> "partial" coverage
 
 risk:
   grid_deg: 0.25

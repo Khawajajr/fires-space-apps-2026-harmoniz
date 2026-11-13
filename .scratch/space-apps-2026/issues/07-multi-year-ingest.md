@@ -12,3 +12,10 @@
 - [ ] Sensor × year coverage chart in `reports/figures/`
 - [ ] Ingest report: per AOI, years of history (expected 2018–2026 = 9, so the ADR 0006 ≥5-year rule passes), weeks per year passing each ADR 0006 gate, and which rule applies
 - [ ] Records the earliest year per sensor, so 08 can pick its calibration window automatically
+
+## Comments
+
+From the 03 review, things 07 must handle:
+- `availability()` assumes **global** input (zero detections worldwide = outage). AOI-only archives can't show that, because a fire-free AOI day is a real zero. For AOI archive years, take status from the sensor start/end dates plus the known global outage days we have (the 2026 table), and set `basis = "aoi_archive"` so the rule is visible. Never mark an AOI zero day as `no_data`.
+- Set the manifest `source.url` to the real per-file origin (FIRMS archive request), not just the generic download page.
+- Coverage chart: add a sensor × year view once the years exist.
