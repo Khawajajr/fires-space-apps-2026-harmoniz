@@ -42,3 +42,5 @@ Times are Asia/Amman.
   new-activity BSS +0.089; MODEL_CARD.md generated. Ticket 12 review fixes.
 - Ticket 13: get_burning_calendar globe tool + proxy route (fork 09b62da), fire-only share-link preset, integration README.
 - Phase 7: README (hero figure, quickstart, results with baselines, limitations), ARCHITECTURE (mermaid), DATA_CARD, METHODOLOGY, AI_USAGE, LICENSE, CI (ruff + pytest + fresh-clone demo), secret scan clean; fresh clone -> demo verified.
+- CI green on GitHub (lint, tests, fresh-clone demo). Phase 8: SUBMISSION.md (all fields, 30 s video + 7 slides),
+  DEMO_SCRIPT.md (3 min), FOR_ME_TObeDONE.md updated. Waiting on archive files for 07/08.

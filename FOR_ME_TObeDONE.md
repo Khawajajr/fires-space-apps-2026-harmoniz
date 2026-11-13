@@ -1,22 +1,36 @@
 # For you to do (Claude worked overnight; this lists what needs a human)
 
-Newest at the bottom of each section. Each item says what to do and how long it takes.
+Updated 2026-11-14, early morning. Everything Claude could do is done and pushed: all tickets except 07/08, which wait for the archive files. CI is green, the docs and the submission drafts are written. What's left needs you.
 
-## Decisions (please answer; each has a safe default already in place)
+## 1. Decide (2 min)
 
-1. **ADR 0006: what counts as an "active" week?** (2 min) See `docs/adr/0006-activity-gate.md`, last paragraph.
-   - **Approved now (in use):** a week is active with ≥ 1 fire cell-day. Problem: in a big area, stray winter detections make *every* week active, so the "critical period" becomes the whole year. A test on synthetic 8-year data shows this.
-   - **Proposed:** a week is active when it reaches 10% of the area's own peak weekly median (never below 1). It's scale-invariant and matches the usual fire-season definitions.
-   - **To accept:** in `configs/pipeline.yaml` set `climatology: activity: relative`, then change the ADR's "PROPOSED" to "ACCEPTED". Nothing else is needed. To reject, leave it as it is.
-   - With today's 2026-only data this changes nothing visible: the panels say "needs ≥5 years of history".
+**ADR 0006: what counts as an "active" week?** See `docs/adr/0006-activity-gate.md`, last paragraph.
+- **In use now (as approved):** active = ≥ 1 fire cell-day. In a big area, stray winter detections make every week active, so the "critical period" becomes the whole year. A synthetic 8-year test shows this.
+- **Proposed:** active = 10% of the area's own peak weekly median (never below 1). It's scale-invariant and follows the usual fire-season definitions.
+- **To accept:** in `configs/pipeline.yaml` set `climatology: activity: relative` and change "PROPOSED" to "ACCEPTED" in the ADR. To reject, do nothing.
+- It only matters once there are ≥ 5 years of data.
 
-## Data
+## 2. Data (as soon as possible: hard cutoff Sat 14 Nov 18:00 Amman)
 
-2. **FIRMS archive downloads (2018 → now, Levant + Argentina).** Put the files (zips or CSVs, as delivered) in `C:\Users\muham\Downloads\firms_archive\`. Claude reads them in place.
-   - A watcher is running, and ticket 07 starts as soon as files appear.
-   - Hard cutoff for the 2018–2021 calibration: **Sat 14 Nov 18:00 Amman**. After that, the provisional 2026 calibration and the fallback figure ship (already built).
+Put the FIRMS archive files (zips or CSVs, as delivered) in `C:\Users\muham\Downloads\firms_archive\`. Tell Claude when they're there, or restart the session and ask it to run ticket 07 (then 08).
+- **With them:** the 2018–2021 stable-orbit calibration replaces the provisional one, the calendar gets 9 years, the season, anomaly and "this week vs history" panels switch on, and the headline figure becomes the "simulated switchover".
+- **Without them:** the provisional version ships. It is fully built and honest.
 
-## Accounts / submission (Claude can't do these)
+## 3. Before submitting (Sun 15 Nov, aim for 20:00)
 
-3. **Space Apps project page.** Register the team "Space Jo" with all 5 members on the Members tab; select the challenge "Harmonization of MODIS and VIIRS Hot Spots"; event Amman. The drafts for every field come in `docs/SUBMISSION.md` (Phase 8).
-4. **Public repo before submission.** `Khawajajr/fires-space-apps-2026` is **private**. The judges need a public link: on GitHub, Settings → Change visibility → Public (or tell Claude to do it with `gh repo edit --visibility public --accept-visibility-change-consequences`). Do this after the secret scan in Phase 7.
+1. **Make the repo public** (the judges need the link): `gh repo edit Khawajajr/fires-space-apps-2026 --visibility public --accept-visibility-change-consequences`. The secret scan was clean. The globe fork `Khawajajr/gods-eye-view` is already public.
+2. **Space Apps project page:**
+   - add all 5 members to the Members tab;
+   - select the challenge "Harmonization of MODIS and VIIRS Hot Spots";
+   - paste the fields from `docs/SUBMISSION.md`.
+3. **Demo:** record the ≤30-second video (shot list in `docs/SUBMISSION.md`, option A) **or** make the ≤7 slides (option B).
+   - The screenshots are in `reports/figures/`.
+   - For live screenshots: `.venv\Scripts\python -m godseye api`, then open `http://127.0.0.1:8000/app/`.
+4. **Live pitch:** rehearse `docs/DEMO_SCRIPT.md` (3 min).
+5. **Challenge link:** add the exact Space Apps challenge URL to the top of `README.md` (Claude didn't guess it).
+
+## 4. Nice to have (only if time remains)
+
+- Per-cell "why" for the risk forecast (`pred_contrib` in the Next 7 days panel): cut candidate #2, not done.
+- Arabic UI strings (the brief calls this a bonus).
+- Make the calendar app the default page at `/` (now `/app/`; `/` is the v0 dashboard).

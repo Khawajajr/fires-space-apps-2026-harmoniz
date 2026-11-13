@@ -6,9 +6,9 @@ Last updated: 2026-11-14, before the 09:00 start. Read this first, then `CLAUDE.
 
 - The mission brief is `CLAUDE_CODE_PROMPT.md`. The design decisions are in `GLOSSARY.md` and `docs/adr/0001`–`0007`.
 - The work plan is `.scratch/space-apps-2026/spec.md`. It includes the agreed **build order and cut order**. The tickets are in `.scratch/space-apps-2026/issues/`, and each says `Status: done` or `ready-for-agent`, with notes at the bottom.
-- **Done and pushed** (`main` on `Khawajajr/fires-space-apps-2026`, private): tickets 01, 03, 04, 05 and 06. The latest ticket commit is `3bb9808`. The `git log` messages give the numbers.
-- **Next in the build order:** 09 (climatology, activity gate, anomalies, critical periods; test on a synthetic multi-year fixture), then 10, then 11a → 12, then 07/08 when the archives land, then 11b, then 13. Ticket 02 runs alongside, before 11a.
-- **Never cut:** 05, 06, 09. **Cut order if short of time:** 13 → per-cell contributions in 12 → spatial blocks in 11b → 10.
+- **Done and pushed:** tickets 01, 02, 03, 04, 05, 06, 09, 10, 11a, 11b, 12 and 13, plus Phase 7 (docs, CI green, quickstart) and Phase 8 (`docs/SUBMISSION.md`, `docs/DEMO_SCRIPT.md`). See `git log`.
+- **Open:** 07 and 08 (they need the FIRMS archive files), and the user's manual steps in `FOR_ME_TObeDONE.md`.
+- **Served model:** risk v2, calibrated. Test block: ROC-AUC 0.867 vs persistence 0.749 (`docs/MODEL_CARD.md`).
 
 ## Things that will bite
 
