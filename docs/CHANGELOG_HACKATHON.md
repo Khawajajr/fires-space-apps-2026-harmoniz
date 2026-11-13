@@ -16,3 +16,5 @@ Times are Asia/Amman.
 - Archive requests cover 2018→now: calibration window 2018–2021 (auto-extends to 2013–2021), simulated-switchover figure; ADR 0001, spec, glossary, tickets 07/08 updated.
 - Ticket 03 done: per-sensor fire cells (0.01°), 0.25° sensor grid, sensor availability with coverage gaps, manifest, coverage chart.
   Found 14 S-NPP outage days in 2026 that would otherwise read as zero fire. Added docs/REFERENCES.md. Next: 04 (calendar tracer bullet).
+- Ticket 04 done: `/api/calendar` + `/api/aois` (pydantic, seam-3 tests), `web/` calendar app at /app/ (offline, vendored
+  Leaflet 1.9.4, Natural Earth basemap). Server ready in 1.5 s (was 9.2 s). Next: 05 (VIIRS continuity link).

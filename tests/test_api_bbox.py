@@ -20,3 +20,21 @@ def test_bad_bbox_is_a_422():
     with pytest.raises(HTTPException) as e:
         parse_bbox("1,2,3")
     assert e.value.status_code == 422
+
+
+def test_failed_risk_scoring_is_a_503_and_is_retried(monkeypatch):
+    from concurrent.futures import Future, ThreadPoolExecutor
+
+    from godseye.api import app as app_module
+
+    failed = Future()
+    failed.set_exception(RuntimeError("model file corrupt"))
+    executor = ThreadPoolExecutor(max_workers=1)
+    monkeypatch.setitem(app_module.STATE, "risk", failed)
+    monkeypatch.setitem(app_module.STATE, "executor", executor)
+    monkeypatch.setattr(app_module, "load_predictions", lambda: ("preds", {"m": 1}))
+    with pytest.raises(HTTPException) as e:
+        app_module.risk_state()
+    assert e.value.status_code == 503
+    assert app_module.risk_state() == ("preds", {"m": 1})   # the retry succeeded
+    executor.shutdown()

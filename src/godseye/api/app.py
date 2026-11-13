@@ -14,7 +14,9 @@ the gods-eye-view 3D globe's Active Fires layer reads through its /api/gods-eye 
 """
 from __future__ import annotations
 
+import logging
 import time
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 
 import numpy as np
@@ -24,6 +26,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from godseye.api import calendar as calendar_api
+from godseye.calendar.store import CalendarStore, in_bbox
 from godseye.clean.io import read_table as _read_table
 from godseye.clean.schema import CONF_RANK
 from godseye.config import get_config
@@ -31,6 +35,7 @@ from godseye.risk.model import load_bundle, predict_latest
 from godseye.risk.panel import Panel, load_grid
 
 CONFIG = get_config()
+LOG = logging.getLogger("godseye.api")
 PROCESSED = CONFIG.processed_dir
 MODEL_PATH = CONFIG.model_path
 STATE: dict = {}
@@ -62,18 +67,44 @@ async def lifespan(app: FastAPI):
     fires["acq_datetime"] = pd.to_datetime(fires["acq_datetime"], utc=True)
     fires["conf_rank"] = fires["confidence_class"].map(CONF_RANK).astype("int8")
     # FIRMS CSV spells the acquisition as date + unpadded-allowed HHMM; format once, not per request.
-    fires["acq_date_str"] = fires["acq_datetime"].dt.strftime("%Y-%m-%d")
-    fires["acq_hhmm"] = fires["acq_datetime"].dt.strftime("%H%M")
+    minutes = pd.Series(np.datetime_as_string(
+        fires["acq_datetime"].dt.tz_convert(None).to_numpy().astype("datetime64[m]")))   # YYYY-MM-DDTHH:MM, UTC
+    fires["acq_date_str"] = minutes.str[:10].to_numpy()
+    fires["acq_hhmm"] = (minutes.str[11:13] + minutes.str[14:16]).to_numpy()
     STATE["fires"] = fires
-    STATE["preds"], STATE["model_meta"] = load_predictions()
-    print(f"loaded {len(fires):,} recent detections and {len(STATE['preds']):,} risk cells "
-          f"in {time.time() - t0:.1f}s")
+    if (PROCESSED / "sensor_grid_daily.feather").exists():
+        calendar_api.STORE["calendar"] = CalendarStore(read_table("sensor_grid_daily"),
+                                                       read_table("sensor_availability"), CONFIG.clean["grid_deg"])
+    print(f"loaded {len(fires):,} recent detections and the calendar in {time.time() - t0:.1f}s; "
+          "scoring risk in the background")
+    # Scoring the latest day takes ~8 s; do it off the startup path so the calendar is up at once.
+    # Risk endpoints wait for it (see risk_state), so their responses are unchanged.
+    executor = ThreadPoolExecutor(max_workers=1)
+    STATE["executor"] = executor
+    STATE["risk"] = executor.submit(load_predictions)
     yield
+    executor.shutdown(wait=True)
     STATE.clear()
+    calendar_api.STORE.clear()
+
+
+def risk_state() -> tuple[pd.DataFrame, dict]:
+    """(predictions, model metadata), waiting for the background scoring the first time.
+
+    If scoring failed, log it, answer 503 and start it again so a later request can succeed."""
+    future = STATE["risk"]
+    try:
+        return future.result()
+    except Exception as err:   # noqa: BLE001 - any scoring failure must not take the API down for good
+        LOG.exception("risk scoring failed: %s", err)
+        if STATE["risk"] is future:
+            STATE["risk"] = STATE["executor"].submit(load_predictions)
+        raise HTTPException(503, "risk forecast unavailable; retrying") from err
 
 
 app = FastAPI(title=f"{CONFIG.display_name} API", version="0.2.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"], allow_headers=["*"])
+app.include_router(calendar_api.router)
 
 
 def parse_bbox(bbox: str | None) -> tuple[float, float, float, float] | None:
@@ -86,18 +117,13 @@ def parse_bbox(bbox: str | None) -> tuple[float, float, float, float] | None:
     return west, south, east, north
 
 
-def in_bbox(lat: pd.Series, lon: pd.Series, bbox) -> pd.Series:
-    west, south, east, north = bbox
-    lon_ok = lon.between(west, east) if west <= east else (lon >= west) | (lon <= east)  # antimeridian
-    return lat.between(south, north) & lon_ok
-
-
 @app.get("/api/health")
 def health():
     fires = STATE["fires"]
+    preds, meta = risk_state()
     return {"status": "ok", "recent_detections": len(fires),
             "recent_window": [fires.acq_datetime.min().isoformat(), fires.acq_datetime.max().isoformat()],
-            "risk_cells": len(STATE["preds"]), "model": STATE["model_meta"]}
+            "risk_cells": len(preds), "model": meta}
 
 
 @app.get("/api/fires/recent")
@@ -162,12 +188,11 @@ def risk_map(
     bbox: str | None = Query(None, description="west,south,east,north"),
     format: str = Query("json", pattern="^(json|geojson)$"),
 ):
-    df = STATE["preds"]
+    df, meta = risk_state()
     m = df.risk >= min_risk
     if (b := parse_bbox(bbox)) is not None:
         m &= in_bbox(df.cell_lat, df.cell_lon, b)
     sel = df[m].sort_values("risk", ascending=False)
-    meta = STATE["model_meta"]
     header = {"issued": str(df.issued.iat[0]), "valid_through": str(df.valid_through.iat[0]),
               "horizon_days": meta["horizon_days"], "cell_deg": meta["grid_deg"], "count": len(sel)}
     if format == "json":
@@ -199,8 +224,7 @@ def risk_at(
     radius_km: float = Query(50, gt=0, le=1000),
     top: int = Query(5, ge=0, le=50),
 ):
-    df = STATE["preds"]
-    meta = STATE["model_meta"]
+    df, meta = risk_state()
     dist = haversine_km(lat, lon, df.cell_lat.to_numpy(), df.cell_lon.to_numpy())
     nearest = int(np.argmin(dist))
     cell_half_diag_km = meta["grid_deg"] / 2 * 111.32 * np.sqrt(2)
@@ -234,4 +258,5 @@ def risk_at(
 
 
 # Mounted last so /api/* routes take precedence.
-app.mount("/", StaticFiles(directory=CONFIG.frontend_dir, html=True), name="frontend")
+app.mount("/app", StaticFiles(directory=CONFIG.web_dir, html=True), name="web")  # ADR 0003: primary product
+app.mount("/", StaticFiles(directory=CONFIG.frontend_dir, html=True), name="frontend")  # v0 Leaflet dashboard

@@ -10,6 +10,8 @@ Everything this project uses that we did not write. The submission's References 
   - VIIRS 375 m active fire, Collection 2 (S-NPP VNP14IMG, NOAA-20 VJ114IMG, NOAA-21 VJ214IMG via FIRMS). Schroeder, W., Oliva, P., Giglio, L., Csiszar, I. A. (2014). The New VIIRS 375 m active fire detection data product. *Remote Sensing of Environment*, 143, 85–96.
   - FIRMS acknowledgement: "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://www.earthdata.nasa.gov/firms), part of NASA's Earth Science Data and Information System (ESDIS)."
 
+- **Natural Earth** admin-0 countries (public domain), for the offline basemap of the calendar app: https://www.naturalearthdata.com/ . "Made with Natural Earth."
+
 ## Code we build on
 
 - **gods-eye-view** by Bilawal Sidhu, MIT licence. https://github.com/bilawalsidhu/gods-eye-view . Our fork adds fire layers and agent tools on branch `space-apps-2026`. Upstream notices are kept.
@@ -17,7 +19,7 @@ Everything this project uses that we did not write. The submission's References 
 ## Libraries
 
 - Python: FastAPI, Uvicorn, Pydantic, pandas, NumPy, PyArrow (feather), LightGBM, PyYAML, Matplotlib; pytest, Ruff and httpx for development. Exact versions are in `requirements.lock`.
-- JavaScript (globe fork): see `gods-eye-view/package.json`.
+- JavaScript: Leaflet 1.9.4 (BSD-2-Clause), vendored in `web/vendor/leaflet/` with its licence. Globe fork: see `gods-eye-view/package.json`.
 
 ## AI tools
 

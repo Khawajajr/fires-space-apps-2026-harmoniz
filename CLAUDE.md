@@ -8,7 +8,9 @@ Display name lives in one config value; the Python package stays `godseye` (inte
 - Install: `.venv\Scripts\python -m pip install -e ".[dev]"` (package `src/godseye`, config in `configs/*.yaml`)
 - Backend: `.venv\Scripts\python -m godseye api` (port 8000) → `curl localhost:8000/api/health`.
   `uvicorn backend.main:app` still works (thin wrapper).
-- Leaflet dashboard: served by the backend at `http://localhost:8000/`
+- **Calendar app (primary, ADR 0003):** `http://localhost:8000/app/` (`web/`, plain JS, vendored Leaflet, offline
+  basemap built by `web/tools/build_basemap.py`). API: `/api/aois`, `/api/calendar?aoi=|bbox=&unit=&metric=`.
+- v0 Leaflet dashboard: `http://localhost:8000/`
 - Globe: `cd gods-eye-view; npm run dev` → `http://localhost:4173` (needs `GODS_EYE_API_URL=http://127.0.0.1:8000`)
 - Pipeline: `python -m godseye clean` (~7 min, reads `data/raw`), then `python -m godseye train` (~25 s).
   `scripts/*.py` are deprecated wrappers. Then `python -m godseye aggregate` (~40 s: per-sensor fire cells,

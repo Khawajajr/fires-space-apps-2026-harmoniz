@@ -35,6 +35,7 @@ class Config:
     data_dir: Path
     models_dir: Path
     frontend_dir: Path
+    web_dir: Path
     figures_dir: Path
     clean: dict
     risk: dict
@@ -75,6 +76,7 @@ def load_config(config_dir: Path | None = None, env: dict | None = None) -> Conf
         data_dir=Path(env["GODSEYE_DATA_DIR"]).resolve() if env.get("GODSEYE_DATA_DIR") else resolve(paths["data_dir"]),
         models_dir=resolve(paths["models_dir"]),
         frontend_dir=resolve(paths["frontend_dir"]),
+        web_dir=resolve(paths["web_dir"]),
         figures_dir=resolve(paths["figures_dir"]),
         clean=pipeline["clean"],
         risk=pipeline["risk"],

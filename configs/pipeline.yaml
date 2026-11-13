@@ -5,7 +5,8 @@ display_name: F.I.R.E.S.
 paths:
   data_dir: data            # raw/ and processed/ live under it
   models_dir: models
-  frontend_dir: frontend
+  frontend_dir: frontend          # v0 Leaflet dashboard, served at /
+  web_dir: web                    # our calendar app (ADR 0003), served at /app/
   figures_dir: reports/figures   # small committed PNG/SVG for README and slides
 
 clean:
