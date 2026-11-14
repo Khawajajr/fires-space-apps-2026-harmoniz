@@ -9,17 +9,26 @@ import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from godseye.api.calendar import AOIOut, get_store, pick_store, resolve_aoi, too_large_message
+from godseye.api.calendar import (
+    AOIOut,
+    aoi_label,
+    get_store,
+    headline_label,
+    pick_store,
+    resolve_aoi,
+    too_large_message,
+)
 from godseye.calendar import climatology as C
 from godseye.calendar.store import CalendarStore, grid_cells
 from godseye.config import Config, get_config
+from godseye.i18n import Lang, t
 
 router = APIRouter(prefix="/api/calendar")
 REFERENCE_YEAR = 2025      # a 52-week ISO year, only for turning week numbers into readable dates
 
 
-def week_label(week: int) -> str:
-    return day_month(date.fromisocalendar(REFERENCE_YEAR, week, 1))
+def week_label(week: int, lang: str = "en") -> str:
+    return day_month(date.fromisocalendar(REFERENCE_YEAR, week, 1), lang)
 
 
 class Common(BaseModel):
@@ -86,25 +95,18 @@ class CriticalPeriodsResponse(Common):
     summary: str | None = Field(None, description="plain-language reading of the periods (e.g. active all year)")
 
 
-ALL_YEAR = ("Active all year: every week passes this area's activity gate (ADR 0006), so there is no distinct "
-            "critical period. Use the seasonal profile for the peak (week {peak}) and the unusual weeks instead.")
-
-
-def notes(activity: str, series: str) -> list[str]:
-    active = (f"A week counts as active when it reaches {C.ACTIVE_SHARE:.0%} of this area's peak weekly median "
-              f"(never below {C.ACTIVE:g}); ADR 0006, amendment accepted." if activity == "relative" else
-              f"A week counts as active with at least {C.ACTIVE:g} fire cell-day (ADR 0006).")
-    out = [f"Climatology uses only past weeks with full data (or >= {C.MIN_PARTIAL_DAYS} of 7 days, scaled up).",
-           f"Each ISO week pools the weeks either side (+-{C.POOL}) to steady estimates from few years.", active,
-           "Anomalies compare each year with a climatology built without that year.",
-           "Rules for the activity gate were fixed before looking at any data (ADR 0006)."]
+def notes(activity: str, series: str, lang: str = "en") -> list[str]:
+    active = (t(lang, "api.clim_note.active_relative", share=f"{C.ACTIVE_SHARE:.0%}", min=f"{C.ACTIVE:g}")
+              if activity == "relative" else t(lang, "api.clim_note.active_absolute", min=f"{C.ACTIVE:g}"))
+    out = [t(lang, "api.clim_note.partial", days=C.MIN_PARTIAL_DAYS), t(lang, "api.clim_note.pool", pool=C.POOL),
+           active, t(lang, "api.clim_note.loo"), t(lang, "api.clim_note.fixed")]
     if series != "harmonized":
-        out.append("One sensor's raw series: the gate's floor is applied in its own units, not Aqua-equivalent.")
+        out.append(t(lang, "api.clim_note.raw_floor"))
     return out
 
 
-def day_month(d: date) -> str:
-    return d.strftime("%d %b").lstrip("0")
+def day_month(d: date, lang: str = "en") -> str:
+    return f"{d.day} {t(lang, f'api.month.{d.month}')}"
 
 
 def _series(area, series: str, store: CalendarStore) -> dict:
@@ -121,7 +123,7 @@ def _series(area, series: str, store: CalendarStore) -> dict:
     raise HTTPException(422, f"series must be 'harmonized' or one of {store.sensors}")
 
 
-def analysis(aoi: str | None, bbox: str | None, series: str, store: CalendarStore, cfg: Config):
+def analysis(aoi: str | None, bbox: str | None, series: str, store: CalendarStore, cfg: Config, lang: str = "en"):
     """(Analysis, common response fields, the series itself) for one AOI and series."""
     area = resolve_aoi(aoi, bbox, cfg)
     store = pick_store(store, area.bbox)
@@ -130,50 +132,54 @@ def analysis(aoi: str | None, bbox: str | None, series: str, store: CalendarStor
         raise HTTPException(422, f"the box contains no {store.grid_deg}° grid cell centre; draw a larger box")
     ser = _series(area, series, store)
     values, coverage, days, years = ser["values"], ser["coverage"], ser["days"], ser["years"]
-    label = store.chain.label if series == "harmonized" else series
+    label = headline_label(store.chain, lang) if series == "harmonized" else series
     activity = cfg.climatology["activity"]
     a = C.analyse(years, values, coverage, days, activity)
-    big = too_large_message(area.bbox)
-    if big is not None and a.status == "insufficient_history":
-        a = replace(a, message=big)
-    common = dict(aoi=AOIOut(name=area.name, label=area.label, bbox=list(area.bbox), grid_bbox=snapped, cells=cells),
+    if a.status == "insufficient_history":
+        a = replace(a, message=too_large_message(area.bbox, lang) or
+                    t(lang, "api.needs_history", min=C.MIN_YEARS, n=len(a.history_years)))
+    elif a.gate_rule == "floor":
+        a = replace(a, message=t(lang, "api.floor"))
+    common = dict(aoi=AOIOut(name=area.name, label=aoi_label(area, lang), bbox=list(area.bbox), grid_bbox=snapped,
+                             cells=cells),
                   series=series, series_label=label, status=a.status, message=a.message, years=a.years,
                   history_years=a.history_years, gate_rule=a.gate_rule, gated_weeks=a.gated_weeks,
-                  notes=notes(activity, series))
+                  notes=notes(activity, series, lang))
     return a, common, ser
 
 
 Series = Query("harmonized", description="'harmonized' (default) or a sensor name")
+LangQ = Query("en", description="language of labels and messages: en (default) or ar")
 
 
 @router.get("/climatology", response_model=ClimatologyResponse)
-def climatology(aoi: str | None = None, bbox: str | None = None, series: str = Series,
+def climatology(aoi: str | None = None, bbox: str | None = None, series: str = Series, lang: Lang = LangQ,
                 store: CalendarStore = Depends(get_store), cfg: Config = Depends(get_config)):
-    a, common, _ = analysis(aoi, bbox, series, store, cfg)
+    a, common, _ = analysis(aoi, bbox, series, store, cfg, lang)
     return ClimatologyResponse(**common, mean_weekly=a.mean_weekly, active_threshold=a.active_threshold,
                                activity=a.activity, gate_counts=a.gate_counts,
-                               weeks=[ClimWeek(**c, week_start=week_label(c["week"])) for c in a.climatology])
+                               weeks=[ClimWeek(**c, week_start=week_label(c["week"], lang)) for c in a.climatology])
 
 
 @router.get("/anomalies", response_model=AnomaliesResponse)
-def anomalies(aoi: str | None = None, bbox: str | None = None, series: str = Series,
+def anomalies(aoi: str | None = None, bbox: str | None = None, series: str = Series, lang: Lang = LangQ,
               store: CalendarStore = Depends(get_store), cfg: Config = Depends(get_config)):
-    a, common, _ = analysis(aoi, bbox, series, store, cfg)
+    a, common, _ = analysis(aoi, bbox, series, store, cfg, lang)
     return AnomaliesResponse(**common, anomalies=[
         Anomaly(**x, week_start=date.fromisocalendar(x["year"], min(x["week"], 52), 1).isoformat())
         for x in a.anomalies])
 
 
 @router.get("/critical-periods", response_model=CriticalPeriodsResponse)
-def critical_periods(aoi: str | None = None, bbox: str | None = None, series: str = Series,
+def critical_periods(aoi: str | None = None, bbox: str | None = None, series: str = Series, lang: Lang = LangQ,
                      store: CalendarStore = Depends(get_store), cfg: Config = Depends(get_config)):
-    a, common, _ = analysis(aoi, bbox, series, store, cfg)
-    periods = [Period(**p, label=f"{week_label(p['start_week'])} - "
-                                 f"{day_month(date.fromisocalendar(REFERENCE_YEAR, p['end_week'], 7))}")
+    a, common, _ = analysis(aoi, bbox, series, store, cfg, lang)
+    periods = [Period(**p, label=f"{week_label(p['start_week'], lang)} - "
+                                 f"{day_month(date.fromisocalendar(REFERENCE_YEAR, p['end_week'], 7), lang)}")
                for p in a.critical_periods]
     all_year = any(p.weeks >= 52 for p in periods)
     return CriticalPeriodsResponse(**common, periods=periods, all_year=all_year,
-                                   summary=ALL_YEAR.format(peak=periods[0].peak_week) if all_year else None)
+                                   summary=t(lang, "api.all_year", peak=periods[0].peak_week) if all_year else None)
 
 
 class NowResponse(BaseModel):
@@ -222,10 +228,10 @@ def level_of(percentile: float) -> str:
 
 
 @router.get("/now", response_model=NowResponse)
-def now(aoi: str | None = None, bbox: str | None = None, series: str = Series,
+def now(aoi: str | None = None, bbox: str | None = None, series: str = Series, lang: Lang = LangQ,
         store: CalendarStore = Depends(get_store), cfg: Config = Depends(get_config)):
     """The latest week with enough data, against the same ISO week (+-1) in the other history years."""
-    a, common, ser = analysis(aoi, bbox, series, store, cfg)
+    a, common, ser = analysis(aoi, bbox, series, store, cfg, lang)
     base = {k: common[k] for k in ("aoi", "series", "series_label")}
     values, coverage, days, years = ser["values"], ser["coverage"], ser["days"], ser["years"]
     u = C.usable(values, coverage, days)
@@ -233,7 +239,7 @@ def now(aoi: str | None = None, bbox: str | None = None, series: str = Series,
     empty = dict(year=None, week=None, week_start=None, week_end=None, value=None, data_days=None, reference_years=0,
                  median=None, p10=None, p90=None, percentile=None, in_season=None, level=None, summary=None)
     if not latest:
-        return NowResponse(**base, **empty, status="no_recent_data", message="no recent week has enough data")
+        return NowResponse(**base, **empty, status="no_recent_data", message=t(lang, "api.no_recent"))
     yi, w = latest[-1]
     year, week, v, n_days = years[yi], w + 1, float(u[yi, w]), int(days[yi][w])
     scale = 7.0 / n_days if coverage[yi][w] == "partial" else 1.0
@@ -250,18 +256,20 @@ def now(aoi: str | None = None, bbox: str | None = None, series: str = Series,
                 data_days=n_days, data_age_days=age, reference_years=ref_years, reference_values=int(len(ref)), **band)
     if ref_years < C.MIN_YEARS:
         return NowResponse(**base, **{**empty, **info}, status="insufficient_history",
-                           message=too_large_message(area.bbox) or
-                           f"needs ≥{C.MIN_YEARS} years of history (currently {ref_years} other year(s))")
+                           message=too_large_message(area.bbox, lang) or
+                           t(lang, "api.needs_history_now", min=C.MIN_YEARS, n=ref_years))
     pct = C.percentile_of(v, ref)
     lvl = level_of(pct)
     in_season = a.status == "ok" and min(week, C.WEEKS) in a.gated_weeks
-    unit = "Aqua-equivalent fire cell-days" if series == "harmonized" else f"{series} fire cell-days"
-    est = f" (90% range {band['lo']:.0f}-{band['hi']:.0f})" if band else ""
-    partial = f", from {n_days} of 7 days scaled to a full week" if scale != 1.0 else ""
-    stale = f" Latest available data: {age} days old." if age > STALE_DAYS else ""
-    summary = (f"Week {week} ({day_month(start)}) had {v:.0f} {unit}{est}{partial}: {lvl} for this time of year "
-               f"({ordinal(round(pct))} percentile of {len(ref)} values from {ref_years} past years, "
-               f"{'in season' if in_season else 'outside the usual fire season'}).{stale}")
+    unit = (t(lang, "api.now.unit_harmonized") if series == "harmonized"
+            else t(lang, "api.now.unit_sensor", sensor=series))
+    est = t(lang, "api.now.band", lo=f"{band['lo']:.0f}", hi=f"{band['hi']:.0f}") if band else ""
+    partial = t(lang, "api.now.partial", n=n_days) if scale != 1.0 else ""
+    stale = t(lang, "api.now.stale", age=age) if age > STALE_DAYS else ""
+    summary = t(lang, "api.now.summary", week=week, day=day_month(start, lang), value=f"{v:.0f}", unit=unit, band=est,
+                partial=partial, level=t(lang, f"api.level.{lvl}"),
+                pct=ordinal(round(pct)) if lang == "en" else round(pct), n=len(ref), years=ref_years,
+                season=t(lang, "api.now.in_season" if in_season else "api.now.out_season"), stale=stale)
     return NowResponse(**base, **info, status="ok", message=None, median=float(np.median(ref)),
                        p10=float(np.quantile(ref, 0.1)), p90=float(np.quantile(ref, 0.9)), percentile=round(pct, 1),
                        in_season=in_season, level=lvl, summary=summary)

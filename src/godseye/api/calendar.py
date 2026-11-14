@@ -10,20 +10,33 @@ from pydantic import BaseModel, Field
 from godseye.calendar.store import CalendarStore, grid_cells
 from godseye.config import AOI, Config, get_config
 from godseye.harmonize.link import display_method
+from godseye.i18n import Lang, t
 
 router = APIRouter(prefix="/api")
 STORE: dict = {}
 
-METRIC_LABELS = {"cell_days": "fire cell-days (0.01° cells with ≥1 kept detection)",
-                 "detections": "kept detections"}
-NOTES = [
-    "Each sensor is shown separately; counts from different sensors are never added.",
-    "Counts are of kept detections: nominal/high confidence vegetation fires.",
-    "null = no data (sensor not operational, outage, or outside the data range), never zero fire.",
-    "Partial periods (marked with a bar) count only the days with data; they are never complete totals.",
-    "Clouds hide fires and are not mapped: a low count can mean cloud, not absence of fire.",
-    "The AOI is the set of 0.25° cells whose centre lies inside the box.",
-]
+NOTES = 6      # "How to read this": api.note.1 .. api.note.6 in web/i18n/strings.json
+
+
+def notes(lang: str) -> list[str]:
+    return [t(lang, f"api.note.{k}") for k in range(1, NOTES + 1)]
+
+
+def aoi_label(area, lang: str) -> str:
+    if area.name is None:
+        return t(lang, "api.custom_area")
+    return area.label if lang == "en" else t(lang, f"api.aoi.{area.name}", default=area.label)
+
+
+def headline_label(chain, lang: str) -> str:
+    return chain.label if lang == "en" else t(lang, "api.headline_label", default=chain.label)
+
+
+def method_label(link, lang: str) -> str:
+    """display_method(), in the requested language."""
+    key = ("region_only" if link.method == "region_month_shrunk_ratio" and
+           not link.report.get("month_effects_validated", True) else link.method)
+    return t(lang, f"api.method.{key}", default=display_method(link))
 
 
 class AOIOut(BaseModel):
@@ -74,32 +87,30 @@ class CalendarResponse(BaseModel):
     notes: list[str]
 
 
-def sensor_note(name: str, chain) -> str | None:
+def sensor_note(name: str, chain, lang: str = "en") -> str | None:
     times = (chain.headline.report.get("overpass_local_solar_time", {}) if chain else {})
     if name == "Terra-MODIS":
-        return f"Morning orbit (daytime passes near {times.get('Terra', '09:00-10:30')} local time): not comparable " \
-               "with the afternoon headline series."
+        return t(lang, "api.sensor.terra", time=times.get("Terra", "09:00-10:30"))
     if name == "Aqua-MODIS":
-        when = f"; in this data its daytime passes are near {times['Aqua']} local time" if "Aqua" in times else ""
-        return f"Drifting orbit from 2022 (designed for 13:30){when}. Before 2022 it is the headline reference."
+        when = t(lang, "api.sensor.aqua_when", time=times["Aqua"]) if "Aqua" in times else ""
+        return t(lang, "api.sensor.aqua", when=when)
     return None
 
 
-def headline_caveats(chain) -> list[str]:
+def headline_caveats(chain, lang: str = "en") -> list[str]:
     r = chain.headline.report
     out = []
     if chain.headline.provisional:
         span = sorted({str(f)[:4] for f in r.get("folds", [])})
-        years = (span[0] if len(span) == 1 else f"{span[0]}-{span[-1]}") if span else "the available data"
-        out.append(f"Provisional: calibrated on {years}, when Aqua's orbit had already drifted. The calibration on "
-                   "Aqua's stable years (2013-2021) replaces it when that data is ingested.")
-    out.append("Estimate of what Aqua-MODIS would have counted at its original afternoon overpass, from VIIRS. "
-               "Years when Aqua flew its original orbit show Aqua observed instead.")
+        years = ((span[0] if len(span) == 1 else f"{span[0]}-{span[-1]}") if span
+                 else t(lang, "api.caveat.available_data"))
+        out.append(t(lang, "api.caveat.provisional", years=years))
+    out.append(t(lang, "api.caveat.estimate"))
     misses = [d["observed_over_predicted"] for d in r.get("residual_drift", []) if d["observed_over_predicted"]]
     if misses:
-        out.append(f"Out-of-sample monthly error of the estimate: {min(misses) - 1:+.0%} to {max(misses) - 1:+.0%}.")
+        out.append(t(lang, "api.caveat.error", lo=f"{min(misses) - 1:+.0%}", hi=f"{max(misses) - 1:+.0%}"))
     if r.get("month_effects_validated") is False and chain.headline.method == "region_month_shrunk_ratio":
-        out.append("One year of data can't validate seasonal ratios, so one ratio per region is used all year.")
+        out.append(t(lang, "api.caveat.one_year"))
     return out
 
 
@@ -125,15 +136,11 @@ def pick_store(store: CalendarStore, bbox: tuple) -> CalendarStore:
     return (tiles.store_for(bbox) if tiles is not None else None) or store
 
 
-TOO_LARGE = ("This box is too large for the 15-year record (it would hold more than {rows:,} daily cell rows), so "
-             "only the latest year is shown. Draw a smaller box (up to roughly 40° x 40° in fire-heavy regions).")
-
-
-def too_large_message(bbox: tuple) -> str | None:
+def too_large_message(bbox: tuple, lang: str = "en") -> str | None:
     tiles = STORE.get("tiles")
     if tiles is None or any(contains(b, bbox) for b, _ in STORE.get("aoi", {}).values()):
         return None
-    return TOO_LARGE.format(rows=tiles.max_rows) if tiles.too_large(bbox) else None
+    return t(lang, "api.too_large", rows=f"{tiles.max_rows:,}") if tiles.too_large(bbox) else None
 
 
 def get_store() -> CalendarStore:
@@ -163,8 +170,8 @@ def resolve_aoi(aoi: str | None, bbox: str | None, cfg: Config) -> AOI:
 
 
 @router.get("/aois", response_model=list[AOIListItem])
-def list_aois(cfg: Config = Depends(get_config)):
-    return [AOIListItem(name=a.name, label=a.label, bbox=list(a.bbox)) for a in cfg.aois.values()]
+def list_aois(lang: Lang = Query("en"), cfg: Config = Depends(get_config)):
+    return [AOIListItem(name=a.name, label=aoi_label(a, lang), bbox=list(a.bbox)) for a in cfg.aois.values()]
 
 
 @router.get("/calendar", response_model=CalendarResponse)
@@ -173,6 +180,7 @@ def calendar(
     bbox: str | None = Query(None, description="west,south,east,north"),
     unit: Literal["week", "day"] = Query("week"),
     metric: Literal["cell_days", "detections"] = Query("cell_days"),
+    lang: Lang = Query("en", description="language of labels and messages: en (default) or ar"),
     store: CalendarStore = Depends(get_store),
     cfg: Config = Depends(get_config),
 ):
@@ -186,27 +194,26 @@ def calendar(
     grid = lambda a: [[clean(v) for v in row] for row in a]
     harmonized, why_not = None, None
     if metric != "cell_days":
-        why_not = "harmonized values are fitted for fire cell-days only"
+        why_not = t(lang, "api.why_not.metric")
     elif (h := store.harmonized(area.bbox, unit)) is None:
-        why_not = "no harmonization fitted yet - run `godseye harmonize`"
+        why_not = t(lang, "api.why_not.none")
     else:
         chain = store.chain
         harmonized = HarmonizedOut(
-            label=chain.label, target=chain.target, provisional=chain.headline.provisional,
-            method=display_method(chain.headline), sources=chain.priority, values=grid(h.values), lo=grid(h.lo),
+            label=headline_label(chain, lang), target=chain.target, provisional=chain.headline.provisional,
+            method=method_label(chain.headline, lang), sources=chain.priority, values=grid(h.values), lo=grid(h.lo),
             hi=grid(h.hi), coverage=h.coverage.tolist(), data_days=h.data_days.tolist(),
             estimated_days=h.estimated_days.tolist(), substituted_days=h.substituted_days.tolist(),
-            band_note=("90% range from out-of-sample tests, for weekly totals" if unit == "week" else
-                       "no range in day view: the calibration is for weekly totals"),
-            caveats=headline_caveats(chain))
+            band_note=t(lang, "api.band.week" if unit == "week" else "api.band.day"),
+            caveats=headline_caveats(chain, lang))
     return CalendarResponse(
-        aoi=AOIOut(name=area.name, label=area.label, bbox=list(area.bbox), grid_bbox=snapped, cells=cells),
-        unit=unit, metric=metric, metric_label=METRIC_LABELS[metric], years=cal.years, periods=cal.periods,
+        aoi=AOIOut(name=area.name, label=aoi_label(area, lang), bbox=list(area.bbox), grid_bbox=snapped, cells=cells),
+        unit=unit, metric=metric, metric_label=t(lang, f"api.metric.{metric}"), years=cal.years, periods=cal.periods,
         period_days=cal.period_days,
         data_range=[store.first.strftime("%Y-%m-%d"), store.last.strftime("%Y-%m-%d")],
-        sensors=[SensorCalendar(sensor=name, note=sensor_note(name, store.chain), values=grid(cal.values[i]),
+        sensors=[SensorCalendar(sensor=name, note=sensor_note(name, store.chain, lang), values=grid(cal.values[i]),
                                 coverage=cal.coverage[i].tolist(), data_days=cal.data_days[i].tolist())
                  for i, name in enumerate(store.sensors)],
         harmonized=harmonized, harmonized_unavailable=why_not,
-        notes=NOTES,
+        notes=notes(lang),
     )

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>F.I.R.E.S. burning activity calendar</title>
+  <title data-i18n="ui.title">F.I.R.E.S. burning activity calendar</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23c25222'/%3E%3Crect x='3' y='3' width='4' height='4' fill='%23fcfcfb'/%3E%3Crect x='9' y='9' width='4' height='4' fill='%23fcfcfb'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="style.css">
@@ -11,78 +11,82 @@
 <body>
   <header class="top">
     <div>
-      <h1>F.I.R.E.S.</h1>
-      <p class="tagline">Burning activity calendar from NASA MODIS and VIIRS active-fire records</p>
+      <h1 dir="ltr">F.I.R.E.S.</h1>
+      <p class="tagline" data-i18n="ui.tagline">Burning activity calendar from NASA MODIS and VIIRS active-fire records</p>
     </div>
-    <p class="event">NASA Space Apps 2026 · Team Space Jo · Amman</p>
+    <div class="top-right">
+      <p class="event" data-i18n="ui.event">NASA Space Apps 2026 · Team Space Jo · Amman</p>
+      <button id="lang-btn" type="button" class="btn small lang-btn" data-i18n="ui.lang_switch"
+              data-i18n-aria="ui.lang_switch_label" aria-label="Switch the interface to Arabic">عربي</button>
+    </div>
   </header>
 
   <main class="layout">
-    <section class="panel side" aria-label="Area of interest">
-      <h2>Area</h2>
-      <label class="field">Named area
+    <section class="panel side" data-i18n-aria="ui.aria_area" aria-label="Area of interest">
+      <h2 data-i18n="ui.area">Area</h2>
+      <label class="field"><span data-i18n="ui.named_area">Named area</span>
         <select id="aoi-select"></select>
       </label>
-      <button id="draw-btn" type="button" class="btn">Draw a box on the map</button>
-      <p id="draw-hint" class="hint" hidden>Drag on the map to draw. Press Esc to cancel.</p>
-      <div id="map" role="img" aria-label="Map showing the selected area"></div>
+      <button id="draw-btn" type="button" class="btn" data-i18n="ui.draw">Draw a box on the map</button>
+      <p id="draw-hint" class="hint" hidden data-i18n="ui.draw_hint">Drag on the map to draw. Press Esc to cancel.</p>
+      <div id="map" role="img" data-i18n-aria="ui.aria_map" aria-label="Map showing the selected area"></div>
       <p id="aoi-summary" class="hint"></p>
     </section>
 
-    <section class="panel main" aria-label="Burning activity calendar">
-      <div class="filters" role="toolbar" aria-label="Calendar options">
-        <div class="seg" role="radiogroup" aria-label="View" id="view-seg"></div>
-        <div class="seg" role="radiogroup" aria-label="Sensor" id="sensor-seg"></div>
-        <div class="seg" role="radiogroup" aria-label="Time unit" id="unit-seg"></div>
-        <div class="seg" role="radiogroup" aria-label="Metric" id="metric-seg"></div>
+    <section class="panel main" data-i18n-aria="ui.aria_calendar" aria-label="Burning activity calendar">
+      <div class="filters" role="toolbar" data-i18n-aria="ui.aria_options" aria-label="Calendar options">
+        <div class="seg" role="radiogroup" data-i18n-aria="ui.aria_view" aria-label="View" id="view-seg"></div>
+        <div class="seg" role="radiogroup" data-i18n-aria="ui.aria_sensor" aria-label="Sensor" id="sensor-seg"></div>
+        <div class="seg" role="radiogroup" data-i18n-aria="ui.aria_unit" aria-label="Time unit" id="unit-seg"></div>
+        <div class="seg" role="radiogroup" data-i18n-aria="ui.aria_metric" aria-label="Metric" id="metric-seg"></div>
       </div>
 
       <div class="chart-head">
-        <h2 id="chart-title">Loading…</h2>
+        <h2 id="chart-title" data-i18n="ui.loading">Loading…</h2>
         <p id="chart-sub" class="hint"></p>
       </div>
       <div id="badge" class="badge" hidden></div>
       <div id="status" class="status" role="status" aria-live="polite"></div>
       <div id="chart" class="chart"></div>
-      <div id="legend" class="legend" aria-label="Legend"></div>
+      <div id="legend" class="legend" data-i18n-aria="ui.aria_legend" aria-label="Legend"></div>
       <div class="chart-foot">
-        <button id="table-btn" type="button" class="btn small" aria-expanded="false">Show as table</button>
+        <button id="table-btn" type="button" class="btn small" aria-expanded="false" data-i18n="ui.show_table">Show as table</button>
       </div>
       <div id="table-wrap" class="table-wrap" hidden></div>
 
-      <section class="season" aria-label="Season">
+      <section class="season" data-i18n-aria="ui.aria_season" aria-label="Season">
         <div class="season-card wide now-card">
-          <h3>This week vs history</h3>
+          <h3 data-i18n="ui.now_title">This week vs history</h3>
           <div id="now"></div>
         </div>
         <div class="season-card wide">
-          <h3>Seasonal profile</h3>
+          <h3 data-i18n="ui.profile_title">Seasonal profile</h3>
           <p id="season-sub" class="hint"></p>
           <div id="season-chart" class="chart"></div>
         </div>
         <div class="season-card">
-          <h3>Critical periods</h3>
+          <h3 data-i18n="ui.periods_title">Critical periods</h3>
           <div id="periods"></div>
         </div>
         <div class="season-card">
-          <h3>Unusual weeks</h3>
+          <h3 data-i18n="ui.anomalies_title">Unusual weeks</h3>
           <div id="anomalies"></div>
         </div>
         <div class="season-card wide">
-          <h3>Next 7 days: fire risk</h3>
-          <label class="hint risk-toggle"><input type="checkbox" id="risk-layer"> Show the riskiest cells on the map</label>
+          <h3 data-i18n="ui.risk_title">Next 7 days: fire risk</h3>
+          <label class="hint risk-toggle"><input type="checkbox" id="risk-layer"> <span data-i18n="ui.risk_toggle">Show the riskiest cells on the map</span></label>
           <div id="risk"></div>
         </div>
       </section>
 
-      <aside class="notes" aria-label="How to read this">
-        <h3>How to read this</h3>
+      <aside class="notes" data-i18n-aria="ui.aria_notes" aria-label="How to read this">
+        <h3 data-i18n="ui.notes_title">How to read this</h3>
         <ul id="notes"></ul>
       </aside>
     </section>
   </main>
 
-  <footer class="credits">
+  <footer class="credits" data-i18n="ui.credits">
     Fire data: NASA FIRMS (MODIS C6.1, VIIRS 375 m C2). "We acknowledge the use of data and/or imagery from NASA's
     Fire Information for Resource Management System (FIRMS), part of NASA's Earth Science Data and Information System
     (ESDIS)." · Boundaries: Made with Natural Earth (public domain) · Map: Leaflet (BSD-2-Clause)

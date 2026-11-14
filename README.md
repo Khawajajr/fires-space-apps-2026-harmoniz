@@ -29,6 +29,7 @@ python -m godseye train-v2 --climatology && python -m godseye evaluate && python
 
 - **Burning activity calendar** (`/`): a year × week grid per area (named areas or a box drawn on the map) of Aqua-equivalent fire cell-days, with a 90% range. Each raw sensor series is a toggle away, and sensors are never added together.
 - **Season and history:** the seasonal profile, critical periods, unusual weeks and "this week vs history", from 15 years **for any box you draw on Earth** (global 0.25° tiles, 2012–2026, loaded per box) and for the named areas (Levant, Jordan, Argentina, and two focused areas chosen in advance, ADR 0008: the Northern Jordan forest belt and the Paraná Delta's Islas de Victoria). An area needs ≥ 5 years, and the app says so instead of guessing.
+- **English / Arabic:** an EN / Arabic toggle switches the whole app (labels, panels, tooltips and the API's messages via `?lang=ar`) to right-to-left Arabic, with Western digits; English is the default. All strings are in `web/i18n/strings.json`.
 - **Current:** data runs to 14 Nov 2026 (FIRMS near-real-time); the 7-day outlook is issued from the last full day.
 - **Next 7 days:** a calibrated chance of satellite-detected fire per 0.25° cell, with its test-block skill shown next to the persistence baseline.
 - **3D globe** (optional, the gods-eye-view fork): Active Fires, a Wildfire Risk layer, and agent tools that answer "is this week unusual for northern Jordan?". See `integrations/gods-eye-view/README.md`.
