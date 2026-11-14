@@ -109,6 +109,9 @@ async def lifespan(app: FastAPI):
                                            CONFIG.harmonize["region_deg"]))
         calendar_api.STORE["calendar"] = store
         calendar_api.STORE["aoi"] = load_aoi_stores(store.chain)
+        tiles = load_tiles(store.chain)
+        if tiles is not None:
+            calendar_api.STORE["tiles"] = tiles
     print(f"loaded {len(fires):,} recent detections and the calendar in {time.time() - t0:.1f}s; "
           "scoring risk in the background")
     # Scoring the latest day takes ~8 s; do it off the startup path so the calendar is up at once.
@@ -133,6 +136,19 @@ def load_aoi_stores(chain) -> dict:
             out[d.name] = (CONFIG.aois[d.name].bbox, s)
             LOG.warning("multi-year calendar for %s: %s to %s", d.name, s.first.date(), s.last.date())
     return out
+
+
+def load_tiles(chain):
+    """The global multi-year 0.25° tiles from `godseye ingest-archive`, loaded lazily per requested box."""
+    from godseye.calendar.tiles import TileStores
+
+    d = PROCESSED / "archive"
+    if not (d / "tiles").is_dir() or not (d / "sensor_availability.feather").exists():
+        return None
+    t = TileStores(d / "tiles", _read_table(d, "sensor_availability"), CONFIG.clean["grid_deg"], chain,
+                   CONFIG.api.get("tile_cache", 8), int(CONFIG.api.get("tile_max_rows", 30_000_000)))
+    LOG.warning("global multi-year tiles: %d files, %s to %s", len(t.available), t.first.date(), t.last.date())
+    return t
 
 
 def risk_state() -> tuple[pd.DataFrame, dict]:
@@ -314,7 +330,7 @@ class SensorCoverage(BaseModel):
 
 class StoreRange(BaseModel):
     name: str = Field(description="'global' or the named AOI whose multi-year store serves requests inside it")
-    kind: str = Field(description="global | aoi")
+    kind: str = Field(description="global | aoi | tiles (global multi-year, loaded per requested box)")
     bbox: list[float] | None
     first_day: str
     last_day: str
@@ -376,6 +392,8 @@ def meta():
                 days={names[k]: int((st == k).sum()) for k in names}))
     stores = [store_range("global", "global", None, store)] if store is not None else []
     stores += [store_range(name, "aoi", list(bbox), s) for name, (bbox, s) in calendar_api.STORE.get("aoi", {}).items()]
+    if "tiles" in calendar_api.STORE:                      # any other box: the global multi-year tiles
+        stores.append(store_range("global_tiles", "tiles", None, calendar_api.STORE["tiles"]))
     if stores:
         data_range = [min(s.first_day for s in stores), max(s.last_day for s in stores)]
     links = []

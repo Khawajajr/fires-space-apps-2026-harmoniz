@@ -7,9 +7,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from godseye.calendar.tiles import TileStores, tiles_for
 from godseye.config import load_config
 from godseye.ingest import archive
-from godseye.ingest.aggregate import availability
+from godseye.ingest.aggregate import availability, sensor_grid
 
 HEADER = "latitude,longitude,brightness,scan,track,acq_date,acq_time,satellite,instrument,confidence,version," \
          "bright_t31,frp,daynight,type"
@@ -59,6 +60,7 @@ def setup(tmp_path_factory):
     cells["acq_date"] = cells.acq_date.astype("datetime64[s]")
     cfg.processed_dir.mkdir(parents=True)
     cells.to_feather(cfg.processed_dir / "sensor_fire_cells.feather")
+    sensor_grid(cells, 0.01, 0.25).to_feather(cfg.processed_dir / "sensor_grid_daily.feather")
     availability(cells, cfg.sensors, 0.2).to_feather(cfg.processed_dir / "sensor_availability.feather")
     first = archive.run(cfg, zips, workers=2)
     second = archive.run(cfg, zips, workers=2)
@@ -121,3 +123,36 @@ def test_archive_overlapping_data_raw_is_refused(setup, tmp_path):
               csv_rows(pd.date_range("2025-12-30", "2026-01-02"), "N20", "VIIRS", "n", "2"))
     with pytest.raises(AssertionError, match="data/raw starts"):
         archive.run(cfg, bad, workers=1)
+
+
+def tile_stores(cfg, **kw):
+    avail = pd.read_feather(cfg.processed_dir / "archive" / "sensor_availability.feather")
+    return TileStores(cfg.processed_dir / "archive" / "tiles", avail, 0.25, **kw)
+
+
+def test_global_tiles_give_any_box_the_multi_year_calendar(setup):
+    cfg, zips, first, second = setup
+    report = json.loads((cfg.processed_dir / "archive" / "ingest_report.json").read_text())
+    assert report["tiles"]["files"] == 3                     # Jordan (both spots and 2026), Argentina, elsewhere
+    t = tile_stores(cfg)
+    store = t.store_for((19.0, 9.0, 22.0, 12.0))            # around the "elsewhere" spot, outside every named AOI
+    cal = store.calendar((19.0, 9.0, 22.0, 12.0), "cell_days", "week")
+    assert cal.years[0] == 2025 and cal.years[-1] == 2026
+    n20 = cal.values[store.sensors.index("NOAA-20-VIIRS")]
+    assert np.nansum(n20[0]) == 361      # one fire cell-day a day: ISO 2025 = 1 Jan..28 Dec (362 days) minus the gap
+    assert t.store_for((19.0, 9.0, 22.0, 12.0)) is store     # cached
+
+
+def test_a_fire_free_box_reads_zero_not_missing_and_huge_boxes_are_refused(setup):
+    cfg, zips, first, second = setup
+    t = tile_stores(cfg, max_rows=10)
+    quiet = t.store_for((100.0, 40.0, 101.0, 41.0))
+    cal = quiet.calendar((100.0, 40.0, 101.0, 41.0), "cell_days", "week")
+    aqua = cal.values[quiet.sensors.index("Aqua-MODIS")]
+    assert np.nanmax(aqua) == 0 and not np.isnan(aqua[0, 1])   # Aqua delivered, saw nothing: 0
+    assert t.store_for((-80.0, -50.0, -50.0, -20.0)) is None    # more rows than max_rows: caller falls back
+
+
+def test_tiles_for_handles_the_antimeridian():
+    assert tiles_for((170.0, -20.0, -170.0, -10.0)) == ["t_-20_+170", "t_-20_-180"]
+    assert tiles_for((34.0, 29.0, 42.5, 37.5)) == ["t_+20_+030", "t_+20_+040", "t_+30_+030", "t_+30_+040"]

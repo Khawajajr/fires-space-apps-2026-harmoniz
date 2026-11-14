@@ -94,5 +94,7 @@ risk_v2:
   n_estimators: 600
 
 api:
+  tile_cache: 8               # multi-year box stores kept in memory (LRU)
+  tile_max_rows: 30000000     # a larger box falls back to the 2026 global store
   host: 127.0.0.1
   port: 8000

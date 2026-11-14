@@ -8,6 +8,7 @@ aggregation, and writes small partial tables under data/processed/archive/parts/
   region     sensor x day x 10° block fire cell-days   -> global calibration of the sensor links (ticket 08)
   aoi_<name> sensor x day x 0.01° fire cells in an AOI  -> multi-year AOI stores (Levant, Argentina)
   n20_weeks  NOAA-20 0.25° cell x year x week with >= 1 fire cell-day -> weekly climatology for the risk baseline
+  g025/      sensor x day x 0.25° cell, split into 10° tiles -> the global multi-year calendar for any drawn box
 
 Zips run in parallel (one process each). A zip whose sha256 already has a finished part is skipped, so a crash
 resumes where it stopped. The merge step adds 2026 from the processed global tables (data/raw itself is not reread)
@@ -38,6 +39,23 @@ USECOLS = ["latitude", "longitude", "acq_date", "acq_time", "satellite", "confid
            "type"]
 CELL_KEYS = ["sensor", "acq_date", "lat_i", "lon_i"]
 CLIMATOLOGY_YEARS = (2019, 2025)
+PART_VERSION = 2          # 2: + g025 tiles. Parts written by an older version are read again.
+TILE_DEG = 10
+
+
+def tile_name(lat: np.ndarray, lon: np.ndarray, deg: float = TILE_DEG) -> np.ndarray:
+    """'t_+30_+030' style tile id (south-west corner) of each 0.25° cell centre."""
+    la = (np.floor(np.asarray(lat) / deg) * deg).astype(int)
+    lo = (np.floor(np.asarray(lon) / deg) * deg).astype(int)
+    return np.char.add(np.char.add(np.char.add("t_", np.char.mod("%+03d", la)), "_"), np.char.mod("%+04d", lo))
+
+
+def write_tiles(grid: pd.DataFrame, folder: Path) -> int:
+    folder.mkdir(parents=True, exist_ok=True)
+    names = tile_name(grid.cell_lat.to_numpy(), grid.cell_lon.to_numpy())
+    for name, idx in pd.Series(np.arange(len(grid))).groupby(names):
+        grid.iloc[idx.to_numpy()].reset_index(drop=True).to_feather(folder / f"{name}.feather")
+    return len(set(names))
 
 
 def week_of_year(dates: pd.Series) -> np.ndarray:
@@ -77,6 +95,7 @@ def process_zip(path: str, out_root: str, sha: str, sensors: dict, aois: dict, f
     cells.groupby(["sensor", "acq_date"], observed=True).n_detections.sum().reset_index() \
         .to_feather(tmp / "daily.feather")
     sensor_grid(cells, fine, region_deg).to_feather(tmp / "region.feather")
+    write_tiles(sensor_grid(cells, fine, coarse), tmp / "g025")
     lat, lon = cell_centres(cells, fine)
     for aoi, bbox in aois.items():
         cells[inside_bbox(lat, lon, bbox).to_numpy()].reset_index(drop=True).to_feather(tmp / f"aoi_{aoi}.feather")
@@ -87,7 +106,8 @@ def process_zip(path: str, out_root: str, sha: str, sensors: dict, aois: dict, f
         pd.DataFrame({"cell_lat": g.cell_lat, "cell_lon": g.cell_lon, "year": d.dt.year.astype(np.int16),
                       "week": week_of_year(d).astype(np.int8)}).drop_duplicates().reset_index(drop=True) \
             .to_feather(tmp / "n20_weeks.feather")
-    meta = {"rows": rows, "first_date": first, "last_date": last, "satellites": dict(sorted(sats.items())),
+    meta = {"version": PART_VERSION, "rows": rows, "first_date": first, "last_date": last,
+            "satellites": dict(sorted(sats.items())),
             "versions": dict(sorted(versions.items())),
             "product": sorted({"nrt" if "NRT" in str(v).upper() else "archive" for v in versions}),
             "sensors": sorted(cells.sensor.astype(str).unique()), "fire_cell_days": len(cells),
@@ -144,8 +164,10 @@ def run(cfg: Config, archive_dir: Path, workers: int | None = None, only: list[s
     shas = {z: sha256(z) for z in zips}
     entries, todo = [], []
     for z, sha in shas.items():
-        if (root / sha / "meta.json").exists():
-            entries.append(manifest_entry(z, sha, json.loads((root / sha / "meta.json").read_text()), cfg.root))
+        meta_path = root / sha / "meta.json"
+        meta = json.loads(meta_path.read_text()) if meta_path.exists() else None
+        if meta is not None and meta.get("version", 1) >= PART_VERSION:
+            entries.append(manifest_entry(z, sha, meta, cfg.root))
         else:
             todo.append(z)
     todo.sort(key=lambda z: -z.stat().st_size)          # biggest first balances the pool
@@ -224,6 +246,8 @@ def merge(cfg: Config, dirs: list[Path], entries: list[dict]) -> dict:
     region["sensor"] = pd.Categorical(region.sensor.astype(str), categories=sensors)
     region.to_feather(out / "region_daily.feather")
 
+    tiles = build_tiles(out / "tiles", dirs, read_table(cfg.processed_dir, "sensor_grid_daily"), sensors)
+
     clim = n20_climatology(read_parts(dirs, "n20_weeks"))
     clim.to_feather(out / "n20_week_climatology.feather")
 
@@ -233,12 +257,35 @@ def merge(cfg: Config, dirs: list[Path], entries: list[dict]) -> dict:
               for s, g in avail[avail.acq_date < pd.Timestamp("2026-01-01")].groupby("sensor", observed=True)}
     summary = {"overlap_check": overlap, "first_day": str(first.date()),
                "last_day": str(pd.Timestamp(avail.acq_date.max()).date()),
-               "status_days_2012_2025": status, "region_rows": len(region), "n20_climatology_cells": int(
+               "status_days_2012_2025": status, "region_rows": len(region), "tiles": tiles,
+               "n20_climatology_cells": int(
                    clim[["cell_lat", "cell_lon"]].drop_duplicates().shape[0]), "aois": aoi_reports,
                "merge_seconds": round(time.time() - t0, 1)}
     (out / "ingest_report.json").write_text(json.dumps(summary, indent=2, default=str) + "\n")
     print(json.dumps({k: v for k, v in summary.items() if k != "aois"}, indent=1, default=str))
     return summary
+
+
+def build_tiles(out: Path, dirs: list[Path], grid26: pd.DataFrame, sensors: list[str]) -> dict:
+    """Global sensor x day x 0.25° grid, 2012-2026, one feather file per 10° tile (archive fragments + 2026)."""
+    tmp = out.with_name(out.name + ".tmp")
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp.mkdir(parents=True)
+    by_tile = dict(tuple(grid26.groupby(tile_name(grid26.cell_lat.to_numpy(), grid26.cell_lon.to_numpy()))))
+    names = sorted(set(by_tile) | {p.stem for d in dirs for p in (d / "g025").glob("*.feather")})
+    rows = 0
+    for name in names:
+        frames = [as_sensor(pd.read_feather(d / "g025" / f"{name}.feather"), sensors) for d in dirs
+                  if (d / "g025" / f"{name}.feather").exists()]
+        if name in by_tile:
+            frames.append(as_sensor(by_tile[name].copy(), sensors))
+        df = pd.concat(frames, ignore_index=True).sort_values(["acq_date", "cell_lat", "cell_lon"])
+        df["sensor"] = pd.Categorical(df.sensor.astype(str), categories=sensors)
+        df.reset_index(drop=True).to_feather(tmp / f"{name}.feather", compression="zstd")
+        rows += len(df)
+    shutil.rmtree(out, ignore_errors=True)
+    tmp.rename(out)
+    return {"files": len(names), "rows": rows, "tile_deg": TILE_DEG}
 
 
 def n20_climatology(weeks: pd.DataFrame) -> pd.DataFrame:

@@ -186,7 +186,7 @@ class NowResponse(BaseModel):
     lo: float | None = Field(None, description="90% band of a harmonized estimate (scaled like the value)")
     hi: float | None = None
     data_days: int | None
-    data_age_days: int | None = Field(None, description="days from the end of this week to today")
+    data_age_days: int | None = Field(None, description="days from the last day with data in this week to today")
     reference_years: int = Field(description="other history years contributing to the reference")
     reference_values: int = Field(0, description="values in the reference (the week and its neighbours)")
     median: float | None
@@ -234,7 +234,9 @@ def now(aoi: str | None = None, bbox: str | None = None, series: str = Series,
     year, week, v, n_days = years[yi], w + 1, float(u[yi, w]), int(days[yi][w])
     scale = 7.0 / n_days if coverage[yi][w] == "partial" else 1.0
     start, end = date.fromisocalendar(year, week, 1), date.fromisocalendar(year, week, 7)
-    age = (date.today() - end).days
+    area = resolve_aoi(aoi, bbox, cfg)
+    last = pick_store(store, area.bbox).last.date()
+    age = max(0, (date.today() - min(end, last)).days)       # from the week's last day with data
     band = {}
     if "lo" in ser and not np.isnan(ser["lo"][yi][w]):
         band = dict(lo=round(float(ser["lo"][yi][w]) * scale, 2), hi=round(float(ser["hi"][yi][w]) * scale, 2))

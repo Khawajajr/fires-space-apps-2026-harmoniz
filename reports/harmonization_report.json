@@ -3465,11 +3465,11 @@
         }
       },
       "overpass_local_solar_time_2026": {
-        "Aqua": "15:24",
+        "Aqua": "15:25",
         "NOAA-20": "13:30",
         "NOAA-21": "13:26",
         "Suomi-NPP": "13:34",
-        "Terra": "09:09"
+        "Terra": "09:08"
       }
     }
   ]
