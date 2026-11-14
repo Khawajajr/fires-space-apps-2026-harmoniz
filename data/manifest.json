@@ -1,6 +1,90 @@
 {
   "files": [
     {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_J1V-C2_845636.zip",
+      "bytes": 333701053,
+      "mtime_ns": 1794633797524854600,
+      "sha256": "6f4304daefcadaf3989c020c8cd518e38394260937bc6020ad0d125d5be442e6",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_J1V-C2_845636"
+      },
+      "rows": 18466569,
+      "first_date": "2025-01-01",
+      "last_date": "2025-12-31",
+      "satellites": {
+        "N20": 18466569
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 18466569
+      },
+      "sensors": [
+        "NOAA-20-VIIRS"
+      ],
+      "ingest": {
+        "part": "6f4304daefcadaf3989c020c8cd518e38394260937bc6020ad0d125d5be442e6",
+        "fire_cell_days": 9634518,
+        "seconds": 216.9,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 4612,
+          "dropped_confidence_below_nominal": 2217698,
+          "dropped_non_vegetation_type": 1430439,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 8,
+          "detections_kept": 14813812
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_J1V-C2_845769.zip",
+      "bytes": 263283392,
+      "mtime_ns": 1794603893000000000,
+      "sha256": "d4000bd505ec13aca786df9f387494b96958449c5ef13847415274f65f48bb38",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_J1V-C2_845769"
+      },
+      "rows": 14599990,
+      "first_date": "2018-04-01",
+      "last_date": "2018-12-31",
+      "satellites": {
+        "N20": 14599990
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 14599990
+      },
+      "sensors": [
+        "NOAA-20-VIIRS"
+      ],
+      "ingest": {
+        "part": "d4000bd505ec13aca786df9f387494b96958449c5ef13847415274f65f48bb38",
+        "fire_cell_days": 7494676,
+        "seconds": 167.5,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 3889,
+          "dropped_confidence_below_nominal": 1631678,
+          "dropped_non_vegetation_type": 1193271,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 6,
+          "detections_kept": 11771146
+        }
+      }
+    },
+    {
       "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_J1V-C2_845773.zip",
       "bytes": 374992073,
       "mtime_ns": 1794604087000000000,
@@ -127,6 +211,48 @@
       }
     },
     {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_J1V-C2_845785.zip",
+      "bytes": 328665565,
+      "mtime_ns": 1794604693000000000,
+      "sha256": "b33261b0b8d5c6dc39504f6049d13f3e55682a38dbd914781440e4c97c136449",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_J1V-C2_845785"
+      },
+      "rows": 18130921,
+      "first_date": "2022-01-01",
+      "last_date": "2022-12-31",
+      "satellites": {
+        "N20": 18130921
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 18130921
+      },
+      "sensors": [
+        "NOAA-20-VIIRS"
+      ],
+      "ingest": {
+        "part": "b33261b0b8d5c6dc39504f6049d13f3e55682a38dbd914781440e4c97c136449",
+        "fire_cell_days": 9606470,
+        "seconds": 209.7,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 2516,
+          "dropped_confidence_below_nominal": 2132423,
+          "dropped_non_vegetation_type": 1351945,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 7,
+          "detections_kept": 14644030
+        }
+      }
+    },
+    {
       "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_J1V-C2_845789.zip",
       "bytes": 383343554,
       "mtime_ns": 1794605142000000000,
@@ -211,6 +337,90 @@
       }
     },
     {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_J2V-C2_845637.zip",
+      "bytes": 320690276,
+      "mtime_ns": 1794633853122788400,
+      "sha256": "5c079c9cd04a2096a1d01bb88feab7674194c32b5f70e97ff590e869296ecc66",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_J2V-C2_845637"
+      },
+      "rows": 17674069,
+      "first_date": "2025-01-01",
+      "last_date": "2025-12-31",
+      "satellites": {
+        "N21": 17674069
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 17674069
+      },
+      "sensors": [
+        "NOAA-21-VIIRS"
+      ],
+      "ingest": {
+        "part": "5c079c9cd04a2096a1d01bb88feab7674194c32b5f70e97ff590e869296ecc66",
+        "fire_cell_days": 9273308,
+        "seconds": 204.0,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 7257,
+          "dropped_confidence_below_nominal": 2178372,
+          "dropped_non_vegetation_type": 1385325,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 6,
+          "detections_kept": 14103109
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_J2V-C2_845790.zip",
+      "bytes": 325164296,
+      "mtime_ns": 1794604578000000000,
+      "sha256": "ebb9f760624200bc5da1a91512701f542eb25494919ee9698d08bf13a66dd3b9",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_J2V-C2_845790"
+      },
+      "rows": 18110940,
+      "first_date": "2023-03-01",
+      "last_date": "2023-12-31",
+      "satellites": {
+        "N21": 18110940
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 18110940
+      },
+      "sensors": [
+        "NOAA-21-VIIRS"
+      ],
+      "ingest": {
+        "part": "ebb9f760624200bc5da1a91512701f542eb25494919ee9698d08bf13a66dd3b9",
+        "fire_cell_days": 9107384,
+        "seconds": 208.2,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 9732,
+          "dropped_confidence_below_nominal": 1982622,
+          "dropped_non_vegetation_type": 1261611,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 6,
+          "detections_kept": 14856969
+        }
+      }
+    },
+    {
       "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_J2V-C2_845794.zip",
       "bytes": 390454175,
       "mtime_ns": 1794605064000000000,
@@ -249,6 +459,50 @@
           "dropped_nrt_superseded_by_archive": 0,
           "dropped_duplicates": 11,
           "detections_kept": 17804021
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845635.zip",
+      "bytes": 65984431,
+      "mtime_ns": 1794633852595284100,
+      "sha256": "7d508e7d09161adef5118cc73b940c727380c988cde3e78ecba11fbc78428308",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845635"
+      },
+      "rows": 3708770,
+      "first_date": "2025-01-01",
+      "last_date": "2025-12-31",
+      "satellites": {
+        "Aqua": 2632704,
+        "Terra": 1076066
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "61.03": 3708770
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "7d508e7d09161adef5118cc73b940c727380c988cde3e78ecba11fbc78428308",
+        "fire_cell_days": 3200802,
+        "seconds": 44.5,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 2742,
+          "dropped_confidence_below_nominal": 183896,
+          "dropped_non_vegetation_type": 189786,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 3332346
         }
       }
     },
@@ -293,6 +547,576 @@
           "dropped_nrt_superseded_by_archive": 0,
           "dropped_duplicates": 0,
           "detections_kept": 4543169
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845742.zip",
+      "bytes": 75446668,
+      "mtime_ns": 1794602831000000000,
+      "sha256": "e06ec37508091b6408ba90e18111983b37d50d0a04d5390f1a7aef8498c457bd",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845742"
+      },
+      "rows": 4248841,
+      "first_date": "2013-01-01",
+      "last_date": "2013-12-31",
+      "satellites": {
+        "Aqua": 2837252,
+        "Terra": 1411589
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 4248841
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "e06ec37508091b6408ba90e18111983b37d50d0a04d5390f1a7aef8498c457bd",
+        "fire_cell_days": 3694036,
+        "seconds": 51.1,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 936,
+          "dropped_confidence_below_nominal": 197851,
+          "dropped_non_vegetation_type": 196001,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 3854053
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845746.zip",
+      "bytes": 79220315,
+      "mtime_ns": 1794602837000000000,
+      "sha256": "ccc70c45baa1224da8946e112d91b2fddd4e7470599d944fc8b0cb89b405a1ff",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845746"
+      },
+      "rows": 4461419,
+      "first_date": "2014-01-01",
+      "last_date": "2014-12-31",
+      "satellites": {
+        "Aqua": 2927276,
+        "Terra": 1534143
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 4461419
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "ccc70c45baa1224da8946e112d91b2fddd4e7470599d944fc8b0cb89b405a1ff",
+        "fire_cell_days": 3854758,
+        "seconds": 54.2,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 5702,
+          "dropped_confidence_below_nominal": 217739,
+          "dropped_non_vegetation_type": 213401,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4024577
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845750.zip",
+      "bytes": 84565107,
+      "mtime_ns": 1794603019000000000,
+      "sha256": "2f4728a40006f1982c850b5393b7a51a3ff5c80e12e4dec948de3ac2ef06cdcc",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845750"
+      },
+      "rows": 4772188,
+      "first_date": "2015-01-01",
+      "last_date": "2015-12-31",
+      "satellites": {
+        "Aqua": 3131483,
+        "Terra": 1640705
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 4772188
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "2f4728a40006f1982c850b5393b7a51a3ff5c80e12e4dec948de3ac2ef06cdcc",
+        "fire_cell_days": 4127865,
+        "seconds": 57.6,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 2385,
+          "dropped_confidence_below_nominal": 226543,
+          "dropped_non_vegetation_type": 228705,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4314555
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845754.zip",
+      "bytes": 78718308,
+      "mtime_ns": 1794603101000000000,
+      "sha256": "472068e6656f542684c026d3e34601f7e1ddda698039b99ab41705823c7768e9",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845754"
+      },
+      "rows": 4443358,
+      "first_date": "2016-01-01",
+      "last_date": "2016-12-31",
+      "satellites": {
+        "Aqua": 2932755,
+        "Terra": 1510603
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 4443358
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "472068e6656f542684c026d3e34601f7e1ddda698039b99ab41705823c7768e9",
+        "fire_cell_days": 3847179,
+        "seconds": 54.1,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1333,
+          "dropped_confidence_below_nominal": 207659,
+          "dropped_non_vegetation_type": 219759,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4014607
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845762.zip",
+      "bytes": 79577500,
+      "mtime_ns": 1794603701000000000,
+      "sha256": "8cff010e8311ecb1e8703a24cbbbae399e34afa773a0638290782b7e0d17c8e3",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845762"
+      },
+      "rows": 4478281,
+      "first_date": "2017-01-01",
+      "last_date": "2017-12-31",
+      "satellites": {
+        "Aqua": 2895094,
+        "Terra": 1583187
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 4478281
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "8cff010e8311ecb1e8703a24cbbbae399e34afa773a0638290782b7e0d17c8e3",
+        "fire_cell_days": 3863161,
+        "seconds": 53.6,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1978,
+          "dropped_confidence_below_nominal": 210692,
+          "dropped_non_vegetation_type": 224224,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4041387
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845768.zip",
+      "bytes": 74905897,
+      "mtime_ns": 1794603756000000000,
+      "sha256": "214952bfbc9fa9c328e87ed5b684ee06cfb7580e81a0bedcff749d11470db84c",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845768"
+      },
+      "rows": 4210217,
+      "first_date": "2018-01-01",
+      "last_date": "2018-12-31",
+      "satellites": {
+        "Aqua": 2741560,
+        "Terra": 1468657
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 4210217
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "214952bfbc9fa9c328e87ed5b684ee06cfb7580e81a0bedcff749d11470db84c",
+        "fire_cell_days": 3626891,
+        "seconds": 50.4,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1887,
+          "dropped_confidence_below_nominal": 194831,
+          "dropped_non_vegetation_type": 223164,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 3790335
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845772.zip",
+      "bytes": 81849632,
+      "mtime_ns": 1794603764000000000,
+      "sha256": "b35f920f03dd09da2bd64eefe0d2ae2ee05e688599eb2e8d62670752a5e8ce45",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845772"
+      },
+      "rows": 4606007,
+      "first_date": "2019-01-01",
+      "last_date": "2019-12-31",
+      "satellites": {
+        "Aqua": 2968193,
+        "Terra": 1637814
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 4606007
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "b35f920f03dd09da2bd64eefe0d2ae2ee05e688599eb2e8d62670752a5e8ce45",
+        "fire_cell_days": 3977032,
+        "seconds": 55.8,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 2980,
+          "dropped_confidence_below_nominal": 228447,
+          "dropped_non_vegetation_type": 205422,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4169158
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845776.zip",
+      "bytes": 79162240,
+      "mtime_ns": 1794603790000000000,
+      "sha256": "4c034594df44d4d1f63481998be8d9cfa092f7041fa25304b9a52f5c1fb5da29",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845776"
+      },
+      "rows": 4464712,
+      "first_date": "2020-01-01",
+      "last_date": "2020-12-31",
+      "satellites": {
+        "Aqua": 2861305,
+        "Terra": 1603407
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 4464712
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "4c034594df44d4d1f63481998be8d9cfa092f7041fa25304b9a52f5c1fb5da29",
+        "fire_cell_days": 3871541,
+        "seconds": 54.2,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 2332,
+          "dropped_confidence_below_nominal": 220179,
+          "dropped_non_vegetation_type": 188169,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4054032
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845780.zip",
+      "bytes": 78118682,
+      "mtime_ns": 1794604528000000000,
+      "sha256": "391a68dd14be5f074d707036c6c724d1d1c3d983f50ae1bec336ee364de0acac",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845780"
+      },
+      "rows": 4406159,
+      "first_date": "2021-01-01",
+      "last_date": "2021-12-31",
+      "satellites": {
+        "Aqua": 2828088,
+        "Terra": 1578071
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 4406159
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "391a68dd14be5f074d707036c6c724d1d1c3d983f50ae1bec336ee364de0acac",
+        "fire_cell_days": 3801470,
+        "seconds": 53.3,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1649,
+          "dropped_confidence_below_nominal": 222413,
+          "dropped_non_vegetation_type": 184242,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 1,
+          "detections_kept": 3997854
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845784.zip",
+      "bytes": 67731339,
+      "mtime_ns": 1794604495000000000,
+      "sha256": "6066875108175e40b7a53e24c50c3e3c28dce90afd4aeb2dfb68f3bce4d6a2af",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845784"
+      },
+      "rows": 3809118,
+      "first_date": "2022-01-01",
+      "last_date": "2022-12-31",
+      "satellites": {
+        "Aqua": 2546030,
+        "Terra": 1263088
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 3809118
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "6066875108175e40b7a53e24c50c3e3c28dce90afd4aeb2dfb68f3bce4d6a2af",
+        "fire_cell_days": 3301208,
+        "seconds": 45.9,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1049,
+          "dropped_confidence_below_nominal": 181787,
+          "dropped_non_vegetation_type": 177916,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 3448366
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845788.zip",
+      "bytes": 83251211,
+      "mtime_ns": 1794604510000000000,
+      "sha256": "51b7db723df4b4893688833e259bffbd8caad6499bf4455ae0503783e054a7e7",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845788"
+      },
+      "rows": 4685568,
+      "first_date": "2023-01-01",
+      "last_date": "2023-12-31",
+      "satellites": {
+        "Aqua": 3105065,
+        "Terra": 1580503
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "61.03": 4685568
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "51b7db723df4b4893688833e259bffbd8caad6499bf4455ae0503783e054a7e7",
+        "fire_cell_days": 4045570,
+        "seconds": 57.1,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 3616,
+          "dropped_confidence_below_nominal": 246387,
+          "dropped_non_vegetation_type": 192393,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4243172
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_M-C61_845792.zip",
+      "bytes": 85857758,
+      "mtime_ns": 1794604535000000000,
+      "sha256": "ba563e5ca527e526190db8e99e59ae3e1d6786ce72d33f7c1651b07eec24aaed",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_M-C61_845792"
+      },
+      "rows": 4866204,
+      "first_date": "2024-01-01",
+      "last_date": "2024-12-31",
+      "satellites": {
+        "Aqua": 3342856,
+        "Terra": 1523348
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "61.03": 4866204
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "ba563e5ca527e526190db8e99e59ae3e1d6786ce72d33f7c1651b07eec24aaed",
+        "fire_cell_days": 4217279,
+        "seconds": 58.9,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 2418,
+          "dropped_confidence_below_nominal": 246065,
+          "dropped_non_vegetation_type": 194650,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4423071
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_SV-C2_845638.zip",
+      "bytes": 333149683,
+      "mtime_ns": 1794633845579272000,
+      "sha256": "ebcf04e7de836bc05960651a00bfdf8ea6ecd2b6787a1080416479e6737e27af",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_SV-C2_845638"
+      },
+      "rows": 18506538,
+      "first_date": "2025-01-01",
+      "last_date": "2025-12-31",
+      "satellites": {
+        "SNPP": 18506538
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 18506538
+      },
+      "sensors": [
+        "S-NPP-VIIRS"
+      ],
+      "ingest": {
+        "part": "ebcf04e7de836bc05960651a00bfdf8ea6ecd2b6787a1080416479e6737e27af",
+        "fire_cell_days": 9490506,
+        "seconds": 211.6,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 3883,
+          "dropped_confidence_below_nominal": 2159901,
+          "dropped_non_vegetation_type": 1427832,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 10,
+          "detections_kept": 14914912
         }
       }
     },
@@ -549,6 +1373,48 @@
       }
     },
     {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_SV-C2_845771.zip",
+      "bytes": 345473677,
+      "mtime_ns": 1794603991000000000,
+      "sha256": "34c67fc44a12c52d8442aa3936b8bcea0fd58c324303b1d308aa8af574b20735",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_SV-C2_845771"
+      },
+      "rows": 19170193,
+      "first_date": "2018-01-01",
+      "last_date": "2018-12-31",
+      "satellites": {
+        "SNPP": 19170193
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 19170193
+      },
+      "sensors": [
+        "S-NPP-VIIRS"
+      ],
+      "ingest": {
+        "part": "34c67fc44a12c52d8442aa3936b8bcea0fd58c324303b1d308aa8af574b20735",
+        "fire_cell_days": 9878908,
+        "seconds": 219.1,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 3289,
+          "dropped_confidence_below_nominal": 2162344,
+          "dropped_non_vegetation_type": 1446648,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 11,
+          "detections_kept": 15557901
+        }
+      }
+    },
+    {
       "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_SV-C2_845775.zip",
       "bytes": 378777345,
       "mtime_ns": 1794604251000000000,
@@ -671,6 +1537,48 @@
           "dropped_nrt_superseded_by_archive": 0,
           "dropped_duplicates": 9,
           "detections_kept": 16698832
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\DL_FIRE_SV-C2_845787.zip",
+      "bytes": 311609990,
+      "mtime_ns": 1794604640000000000,
+      "sha256": "2571a04659c83b0ca9461a6c505228964ce2cf88b48c58d043dffd92f9073253",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/download/",
+        "request": "DL_FIRE_SV-C2_845787"
+      },
+      "rows": 17251846,
+      "first_date": "2022-01-01",
+      "last_date": "2022-12-31",
+      "satellites": {
+        "SNPP": 17251846
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "2": 17251846
+      },
+      "sensors": [
+        "S-NPP-VIIRS"
+      ],
+      "ingest": {
+        "part": "2571a04659c83b0ca9461a6c505228964ce2cf88b48c58d043dffd92f9073253",
+        "fire_cell_days": 8972630,
+        "seconds": 189.8,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1822,
+          "dropped_confidence_below_nominal": 1991612,
+          "dropped_non_vegetation_type": 1300880,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 10,
+          "detections_kept": 13957522
         }
       }
     },

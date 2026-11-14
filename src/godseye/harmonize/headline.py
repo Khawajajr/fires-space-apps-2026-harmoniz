@@ -121,9 +121,10 @@ def switchover_series(store, chain, bbox, switch_after: int) -> pd.DataFrame:
     store.attach_chain(chain)
     years = np.asarray(cal.years)
     naive = np.where((years <= switch_after)[:, None], raw[chain.target], viirs)
-    return pd.DataFrame({"year": years, "naive": _year_mean(naive), "aqua": _year_mean(raw[chain.target]),
-                         "harmonized": _year_mean(h.values), "lo": _year_mean(h.lo), "hi": _year_mean(h.hi),
-                         "snpp_as_aqua": _year_mean(est.values)})
+    out = pd.DataFrame({"year": years, "naive": _year_mean(naive), "aqua": _year_mean(raw[chain.target]),
+                        "harmonized": _year_mean(h.values), "lo": _year_mean(h.lo), "hi": _year_mean(h.hi),
+                        "snpp_as_aqua": _year_mean(est.values)})
+    return out[out.year >= store.first.year].reset_index(drop=True)     # ISO week 1 Jan can belong to the year before
 
 
 def plot_switchover(series: dict[str, pd.DataFrame], switch_after: int, observed_until: int,

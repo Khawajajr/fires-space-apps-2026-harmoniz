@@ -78,6 +78,7 @@ class HarmonizedCalendar:
     data_days: np.ndarray
     estimated_days: np.ndarray    # days whose value is an estimate from VIIRS (the rest are target observed)
     substituted_days: np.ndarray  # estimated days supplied by a sensor other than the reference
+    years: list[int]              # row labels, as fold() produces them
 
 
 @dataclass
@@ -163,7 +164,7 @@ class HarmonizedSeries:
         else:
             lo = hi = np.full_like(v, np.nan)
         return HarmonizedCalendar(v, lo, hi, total.coverage[0], total.data_days[0], est_days.astype(int),
-                                  sub_days.astype(int))
+                                  sub_days.astype(int), total.years)
 
     def _widen(self, v, lo, hi, ref_v, sub_days, est_days):
         """Widen the estimate's band where substitute sensors supplied days (log space, weighted by their share).

@@ -92,7 +92,7 @@ def headline_caveats(chain) -> list[str]:
         span = sorted({str(f)[:4] for f in r.get("folds", [])})
         years = (span[0] if len(span) == 1 else f"{span[0]}-{span[-1]}") if span else "the available data"
         out.append(f"Provisional: calibrated on {years}, when Aqua's orbit had already drifted. The calibration on "
-                   "Aqua's stable years (2018-2021) replaces it when that data is ingested.")
+                   "Aqua's stable years (2013-2021) replaces it when that data is ingested.")
     out.append("Estimate of what Aqua-MODIS would have counted at its original afternoon overpass, from VIIRS. "
                "Years when Aqua flew its original orbit show Aqua observed instead.")
     misses = [d["observed_over_predicted"] for d in r.get("residual_drift", []) if d["observed_over_predicted"]]

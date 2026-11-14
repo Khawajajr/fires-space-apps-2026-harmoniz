@@ -1,6 +1,7 @@
 """Ticket 07: multi-year AOI ingest from FIRMS archive downloads (synthetic archive files)."""
 import json
 import shutil
+from dataclasses import replace
 
 import pandas as pd
 import pytest
@@ -41,7 +42,7 @@ def ingested(tmp_path_factory, fixture_dir_module):
     root = tmp_path_factory.mktemp("data")
     shutil.copytree(fixture_dir_module, root / "raw" / "fixture")
     write_archive(root / "archive")
-    cfg = load_config(env={"GODSEYE_DATA_DIR": str(root)})
+    cfg = replace(load_config(env={"GODSEYE_DATA_DIR": str(root)}), figures_dir=root / "figures")
     main(["clean", str(root / "raw"), "--out", str(cfg.processed_dir)])
     main(["aggregate", "--clean-dir", str(cfg.processed_dir), "--out", str(cfg.processed_dir),
           "--figure", str(root / "cov.png")])

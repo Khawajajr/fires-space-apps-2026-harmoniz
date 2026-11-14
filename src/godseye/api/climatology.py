@@ -106,9 +106,7 @@ def _series(area, series: str, store: CalendarStore) -> dict:
         h = store.harmonized(area.bbox, "week")
         if h is None:
             raise HTTPException(409, "no harmonized series yet - run `godseye harmonize`, or pass series=<sensor>")
-        iso = store.dates.isocalendar().year
-        years = list(range(int(iso.min()), int(iso.max()) + 1))     # the same rows fold() produces
-        return dict(values=h.values, coverage=h.coverage, days=h.data_days, years=years, lo=h.lo, hi=h.hi)
+        return dict(values=h.values, coverage=h.coverage, days=h.data_days, years=h.years, lo=h.lo, hi=h.hi)
     if series in store.sensors:
         cal = store.calendar(area.bbox, "cell_days", "week")
         i = store.sensors.index(series)

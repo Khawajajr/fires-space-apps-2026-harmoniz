@@ -133,8 +133,11 @@ def fold(daily: np.ndarray, status: np.ndarray, dates: pd.DatetimeIndex, unit: s
         periods = 366
     else:
         raise ValueError(f"unit must be 'week' or 'day', not {unit!r}")
-    years = list(range(int(year.min()), int(year.max()) + 1))
-    slot = (year - years[0]) * periods + period
+    keep = np.ones(len(dates), bool)
+    if unit == "week" and year.min() < dates[0].year:
+        keep = year >= dates[0].year     # e.g. 1 Jan 2012 is ISO 2011-W52: no row for a year the record never covers
+    years = list(range(int(year[keep].min()), int(year.max()) + 1))
+    slot = np.where(keep, (year - years[0]) * periods + period, 0)
     n_slots = len(years) * periods
     exists = np.ones((len(years), periods), bool)
     for i, y in enumerate(years):
@@ -145,10 +148,10 @@ def fold(daily: np.ndarray, status: np.ndarray, dates: pd.DatetimeIndex, unit: s
 
     values, coverage, days = [], [], []
     for s in range(daily.shape[0]):
-        has_data = status[s] != GAP
+        has_data = (status[s] != GAP) & keep
         total = np.bincount(slot[has_data], weights=daily[s, has_data], minlength=n_slots).reshape(exists.shape)
         data_days = np.bincount(slot[has_data], minlength=n_slots).reshape(exists.shape)
-        ok_days = np.bincount(slot[status[s] == OK], minlength=n_slots).reshape(exists.shape)
+        ok_days = np.bincount(slot[(status[s] == OK) & keep], minlength=n_slots).reshape(exists.shape)
         cov = np.where(data_days == 0, "none", np.where(ok_days == length, "full", "partial"))
         cov = np.where(exists, cov, "absent")
         values.append(np.where((data_days == 0) | ~exists, np.nan, total))

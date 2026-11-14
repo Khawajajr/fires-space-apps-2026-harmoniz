@@ -278,3 +278,11 @@ def test_chain_requires_the_reference_first():
            "viirs_priority": ["NOAA-20-VIIRS", "S-NPP-VIIRS"]}
     with pytest.raises(ValueError):
         build_chain(cfg, links, 10.0)
+
+
+def test_a_record_starting_in_the_previous_iso_year_gets_no_row_for_that_year():
+    dates = pd.date_range("2012-01-01", "2013-12-31")       # 1 Jan 2012 is ISO 2011-W52
+    status = np.zeros((1, len(dates)), dtype=np.int8)
+    cal = fold(np.ones((1, len(dates))), status, dates, "week")
+    assert cal.years == [2012, 2013, 2014]                   # 30-31 Dec 2013 are ISO 2014-W01: a real trailing week
+    assert cal.data_days[0, 0, 0] == 7                       # 2012-W01 is complete; the lone 2011 day is dropped
