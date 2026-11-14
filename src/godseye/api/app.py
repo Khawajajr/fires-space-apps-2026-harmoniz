@@ -55,14 +55,14 @@ def read_table(stem: str) -> pd.DataFrame:
 
 def load_predictions() -> tuple[pd.DataFrame, dict]:
     """Score the latest grid day with the trained model; fall back to the CSV written at training time."""
-    if CONFIG.risk.get("serve") == "v2" and not artifact.exists(CONFIG.served_model_dir):
-        LOG.warning("risk.serve is v2 but %s has no model; serving v1 (run `godseye train-v2`)",
+    if CONFIG.risk.get("serve") in ("v2", "v2.1") and not artifact.exists(CONFIG.served_model_dir):
+        LOG.warning("risk.serve is %s but %s has no model; serving v1 (run `godseye train-v2`)", CONFIG.risk["serve"],
                     CONFIG.served_model_dir)
     if not artifact.exists(MODEL_DIR) and CONFIG.legacy_model_path.exists():
         artifact.migrate_pickle(CONFIG.legacy_model_path, MODEL_DIR, find_table(PROCESSED, "fires_daily_grid"),
                                 CONFIG.root)
         LOG.warning("migrated %s to %s", CONFIG.legacy_model_path.name, MODEL_DIR)
-    if CONFIG.risk.get("serve") == "v2" and artifact.exists(CONFIG.served_model_dir):
+    if CONFIG.risk.get("serve") in ("v2", "v2.1") and artifact.exists(CONFIG.served_model_dir):
         from godseye.risk import train_v2, v2
         from godseye.risk.model import risk_level
 

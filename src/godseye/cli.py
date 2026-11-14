@@ -42,7 +42,7 @@ def _evaluate(args) -> None:
     from godseye.risk import evaluate_suite
 
     cfg = get_config()
-    evaluate_suite.run(cfg, cfg.processed_dir, cfg.models_dir / cfg.risk_v2["model_dir"], cfg.root / "reports",
+    evaluate_suite.run(cfg, cfg.processed_dir, cfg.served_model_dir, cfg.root / "reports",
                        cfg.figures_dir, cfg.root / "docs" / "MODEL_CARD.md")
 
 

@@ -74,7 +74,8 @@ risk:
   step_days: 7
   val_weeks: 6
   n_estimators: 600
-  serve: v2                                  # which model the risk endpoints serve: v1 (migrated pickle) or v2
+  serve: v2.1                                # which model the risk endpoints serve: v1 (migrated pickle), v2 or v2.1
+                                             # (v2.1 kept on 2026-11-14 by the validation rule in risk_v2.v21_model_dir)
   model_dir: risk_v1                        # under models/: model.txt + model_meta.json (native, no pickle)
   legacy_model_file: gods_eye_risk_model.pkl  # v1 pickle, migrated once into model_dir
   predictions_file: risk_predictions.csv

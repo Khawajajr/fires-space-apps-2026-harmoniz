@@ -1,5 +1,5 @@
 {
-  "model": "risk_v2",
+  "model": "risk_v21",
   "label": "any NOAA-20-VIIRS fire cell-day in the 0.25 deg cell in days t+1..t+7",
   "blocks": {
     "train": [
@@ -20,26 +20,29 @@
     "validation": 524795,
     "test": 545802
   },
+  "version": "v2.1",
   "test": [
     {
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 545802,
       "positive_rate": 0.2252,
-      "roc_auc": 0.8666,
-      "pr_auc": 0.7312,
-      "brier": 0.1063,
-      "bss_vs_persistence": 0.1973,
-      "bss_vs_frequency_to_date": 0.3648
+      "roc_auc": 0.8798,
+      "pr_auc": 0.7485,
+      "brier": 0.1023,
+      "bss_vs_persistence": 0.2278,
+      "bss_vs_frequency_to_date": 0.389,
+      "bss_vs_climatology": 0.1936
     },
     {
-      "model": "LightGBM v2 (raw)",
+      "model": "LightGBM v2.1 (raw)",
       "n": 545802,
       "positive_rate": 0.2252,
-      "roc_auc": 0.8666,
-      "pr_auc": 0.7312,
-      "brier": 0.1066,
-      "bss_vs_persistence": 0.195,
-      "bss_vs_frequency_to_date": 0.363
+      "roc_auc": 0.8798,
+      "pr_auc": 0.7486,
+      "brier": 0.1024,
+      "bss_vs_persistence": 0.2272,
+      "bss_vs_frequency_to_date": 0.3885,
+      "bss_vs_climatology": 0.1929
     },
     {
       "model": "persistence (any fire in last 7 days)",
@@ -49,7 +52,8 @@
       "pr_auc": 0.4562,
       "brier": 0.1325,
       "bss_vs_persistence": 0.0,
-      "bss_vs_frequency_to_date": 0.2087
+      "bss_vs_frequency_to_date": 0.2087,
+      "bss_vs_climatology": -0.0443
     },
     {
       "model": "2026 frequency to date",
@@ -59,19 +63,101 @@
       "pr_auc": 0.4811,
       "brier": 0.1674,
       "bss_vs_persistence": -0.2638,
-      "bss_vs_frequency_to_date": 0.0
+      "bss_vs_frequency_to_date": 0.0,
+      "bss_vs_climatology": -0.3198
+    },
+    {
+      "model": "NOAA-20 climatology 2019-2025",
+      "n": 545802,
+      "positive_rate": 0.2252,
+      "roc_auc": 0.8159,
+      "pr_auc": 0.6046,
+      "brier": 0.1268,
+      "bss_vs_persistence": 0.0424,
+      "bss_vs_frequency_to_date": 0.2423,
+      "bss_vs_climatology": 0.0
     }
   ],
+  "v2_vs_v21": {
+    "rule": "keep v2.1 only if its validation Brier score is lower than v2's (decided before the test block is scored)",
+    "validation": [
+      {
+        "model": "LightGBM v2",
+        "n": 524795,
+        "positive_rate": 0.2322,
+        "roc_auc": 0.9044,
+        "pr_auc": 0.8004,
+        "brier": 0.0929
+      },
+      {
+        "model": "LightGBM v2.1 (+ climatology feature)",
+        "n": 524795,
+        "positive_rate": 0.2322,
+        "roc_auc": 0.9098,
+        "pr_auc": 0.8092,
+        "brier": 0.0906
+      }
+    ],
+    "keep_v21": true,
+    "test": [
+      {
+        "model": "LightGBM v2 (calibrated)",
+        "n": 545802,
+        "positive_rate": 0.2252,
+        "roc_auc": 0.8666,
+        "pr_auc": 0.7312,
+        "brier": 0.1063,
+        "bss_vs_persistence": 0.1973,
+        "bss_vs_frequency_to_date": 0.3648,
+        "bss_vs_climatology": 0.1617
+      },
+      {
+        "model": "LightGBM v2 (raw)",
+        "n": 545802,
+        "positive_rate": 0.2252,
+        "roc_auc": 0.8666,
+        "pr_auc": 0.7312,
+        "brier": 0.1066,
+        "bss_vs_persistence": 0.195,
+        "bss_vs_frequency_to_date": 0.363,
+        "bss_vs_climatology": 0.1593
+      },
+      {
+        "model": "LightGBM v2.1 (calibrated)",
+        "n": 545802,
+        "positive_rate": 0.2252,
+        "roc_auc": 0.8798,
+        "pr_auc": 0.7485,
+        "brier": 0.1023,
+        "bss_vs_persistence": 0.2278,
+        "bss_vs_frequency_to_date": 0.389,
+        "bss_vs_climatology": 0.1936
+      },
+      {
+        "model": "LightGBM v2.1 (raw)",
+        "n": 545802,
+        "positive_rate": 0.2252,
+        "roc_auc": 0.8798,
+        "pr_auc": 0.7486,
+        "brier": 0.1024,
+        "bss_vs_persistence": 0.2272,
+        "bss_vs_frequency_to_date": 0.3885,
+        "bss_vs_climatology": 0.1929
+      }
+    ],
+    "served": "v2.1"
+  },
   "new_activity_subset": [
     {
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 304529,
       "positive_rate": 0.0678,
-      "roc_auc": 0.6936,
-      "pr_auc": 0.1502,
-      "brier": 0.061,
-      "bss_vs_persistence": 0.0893,
-      "bss_vs_frequency_to_date": 0.5179
+      "roc_auc": 0.7493,
+      "pr_auc": 0.2051,
+      "brier": 0.0589,
+      "bss_vs_persistence": 0.1212,
+      "bss_vs_frequency_to_date": 0.5348,
+      "bss_vs_climatology": 0.1431
     },
     {
       "model": "2026 frequency to date",
@@ -80,107 +166,124 @@
       "roc_auc": 0.6445,
       "pr_auc": 0.1033,
       "brier": 0.1266
+    },
+    {
+      "model": "NOAA-20 climatology 2019-2025",
+      "n": 304529,
+      "positive_rate": 0.0678,
+      "roc_auc": 0.696,
+      "pr_auc": 0.1577,
+      "brier": 0.0687
     }
   ],
   "per_region": [
     {
       "region": "Levant",
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 2131,
       "positive_rate": 0.282,
-      "roc_auc": 0.8353,
-      "pr_auc": 0.7095,
-      "brier": 0.1387,
-      "bss_vs_persistence": 0.2134,
-      "bss_vs_frequency_to_date": 0.119
+      "roc_auc": 0.842,
+      "pr_auc": 0.7115,
+      "brier": 0.1372,
+      "bss_vs_persistence": 0.2216,
+      "bss_vs_frequency_to_date": 0.1283,
+      "bss_vs_climatology": 0.2181
     },
     {
       "region": "Argentina",
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 18106,
       "positive_rate": 0.1235,
-      "roc_auc": 0.7708,
-      "pr_auc": 0.2862,
-      "brier": 0.1059,
-      "bss_vs_persistence": 0.115,
-      "bss_vs_frequency_to_date": 0.1009
+      "roc_auc": 0.7865,
+      "pr_auc": 0.3075,
+      "brier": 0.1051,
+      "bss_vs_persistence": 0.122,
+      "bss_vs_frequency_to_date": 0.1081,
+      "bss_vs_climatology": 0.2995
     },
     {
       "region": "South America (other)",
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 71547,
       "positive_rate": 0.3591,
-      "roc_auc": 0.8417,
-      "pr_auc": 0.7604,
-      "brier": 0.152,
-      "bss_vs_persistence": 0.1984,
-      "bss_vs_frequency_to_date": 0.2815
+      "roc_auc": 0.8527,
+      "pr_auc": 0.7756,
+      "brier": 0.1463,
+      "bss_vs_persistence": 0.2286,
+      "bss_vs_frequency_to_date": 0.3085,
+      "bss_vs_climatology": 0.1973
     },
     {
       "region": "North America",
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 75076,
       "positive_rate": 0.1164,
-      "roc_auc": 0.8005,
-      "pr_auc": 0.3992,
-      "brier": 0.0861,
-      "bss_vs_persistence": 0.1898,
-      "bss_vs_frequency_to_date": 0.293
+      "roc_auc": 0.823,
+      "pr_auc": 0.4286,
+      "brier": 0.0835,
+      "bss_vs_persistence": 0.2137,
+      "bss_vs_frequency_to_date": 0.3139,
+      "bss_vs_climatology": 0.1297
     },
     {
       "region": "Europe",
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 56353,
       "positive_rate": 0.106,
-      "roc_auc": 0.8123,
-      "pr_auc": 0.4046,
-      "brier": 0.0784,
-      "bss_vs_persistence": 0.2069,
-      "bss_vs_frequency_to_date": 0.1347
+      "roc_auc": 0.8232,
+      "pr_auc": 0.4265,
+      "brier": 0.0767,
+      "bss_vs_persistence": 0.2243,
+      "bss_vs_frequency_to_date": 0.1537,
+      "bss_vs_climatology": 0.1426
     },
     {
       "region": "Africa",
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 127536,
       "positive_rate": 0.361,
-      "roc_auc": 0.8976,
-      "pr_auc": 0.8592,
-      "brier": 0.1184,
-      "bss_vs_persistence": 0.2356,
-      "bss_vs_frequency_to_date": 0.4813
+      "roc_auc": 0.9108,
+      "pr_auc": 0.8733,
+      "brier": 0.1112,
+      "bss_vs_persistence": 0.2822,
+      "bss_vs_frequency_to_date": 0.5129,
+      "bss_vs_climatology": 0.1706
     },
     {
       "region": "Asia",
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 164211,
       "positive_rate": 0.1773,
-      "roc_auc": 0.8492,
-      "pr_auc": 0.6565,
-      "brier": 0.0963,
-      "bss_vs_persistence": 0.1806,
-      "bss_vs_frequency_to_date": 0.3907
+      "roc_auc": 0.865,
+      "pr_auc": 0.6765,
+      "brier": 0.0934,
+      "bss_vs_persistence": 0.2061,
+      "bss_vs_frequency_to_date": 0.4096,
+      "bss_vs_climatology": 0.235
     },
     {
       "region": "Australia & Oceania",
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 30325,
       "positive_rate": 0.1485,
-      "roc_auc": 0.7698,
-      "pr_auc": 0.4734,
-      "brier": 0.1026,
-      "bss_vs_persistence": 0.1196,
-      "bss_vs_frequency_to_date": 0.2897
+      "roc_auc": 0.7921,
+      "pr_auc": 0.494,
+      "brier": 0.1,
+      "bss_vs_persistence": 0.1422,
+      "bss_vs_frequency_to_date": 0.3079,
+      "bss_vs_climatology": 0.1751
     },
     {
       "region": "Other",
-      "model": "LightGBM v2 (calibrated)",
+      "model": "LightGBM v2.1 (calibrated)",
       "n": 517,
       "positive_rate": 0.1006,
-      "roc_auc": 0.8804,
-      "pr_auc": 0.5964,
-      "brier": 0.0624,
-      "bss_vs_persistence": 0.2766,
-      "bss_vs_frequency_to_date": 0.4635
+      "roc_auc": 0.8837,
+      "pr_auc": 0.5983,
+      "brier": 0.062,
+      "bss_vs_persistence": 0.2809,
+      "bss_vs_frequency_to_date": 0.4667,
+      "bss_vs_climatology": 0.2558
     }
   ],
   "risk_levels_on_test": [
@@ -188,280 +291,285 @@
       "level": "low",
       "from": 0,
       "to": 0.1,
-      "n": 286458,
-      "observed_rate": 0.0535
+      "n": 284131,
+      "observed_rate": 0.0463
     },
     {
       "level": "moderate",
       "from": 0.1,
       "to": 0.3,
-      "n": 120062,
-      "observed_rate": 0.1857
+      "n": 126867,
+      "observed_rate": 0.1895
     },
     {
       "level": "high",
       "from": 0.3,
       "to": 0.5,
-      "n": 50703,
-      "observed_rate": 0.3665
+      "n": 48156,
+      "observed_rate": 0.39
     },
     {
       "level": "very_high",
       "from": 0.5,
       "to": 0.7,
-      "n": 31069,
-      "observed_rate": 0.5661
+      "n": 29104,
+      "observed_rate": 0.5821
     },
     {
       "level": "extreme",
       "from": 0.7,
       "to": 1,
-      "n": 57510,
-      "observed_rate": 0.8544
+      "n": 57544,
+      "observed_rate": 0.8691
     }
   ],
   "spatial_block_cv_on_train": [
     {
-      "model": "spatial 5\u00b0 blocks, 21 features",
+      "model": "spatial 5\u00b0 blocks, 22 features",
       "n": 2201331,
       "positive_rate": 0.2669,
-      "roc_auc": 0.8757,
-      "pr_auc": 0.774,
-      "brier": 0.1144
+      "roc_auc": 0.887,
+      "pr_auc": 0.7899,
+      "brier": 0.1098
     },
     {
-      "model": "spatial 5\u00b0 blocks, 19 features",
+      "model": "spatial 5\u00b0 blocks, 20 features",
       "n": 2201331,
       "positive_rate": 0.2669,
-      "roc_auc": 0.8714,
-      "pr_auc": 0.7673,
-      "brier": 0.1161
+      "roc_auc": 0.8842,
+      "pr_auc": 0.785,
+      "brier": 0.1111
     }
   ],
   "reliability_test_raw": [
     {
       "bin": "0.0-0.1",
-      "n": 282522,
-      "mean_predicted": 0.0395,
-      "observed_rate": 0.0528
+      "n": 285491,
+      "mean_predicted": 0.0368,
+      "observed_rate": 0.0467
     },
     {
       "bin": "0.1-0.2",
-      "n": 78771,
-      "mean_predicted": 0.1434,
-      "observed_rate": 0.1485
+      "n": 77021,
+      "mean_predicted": 0.1437,
+      "observed_rate": 0.1533
     },
     {
       "bin": "0.2-0.3",
-      "n": 41843,
-      "mean_predicted": 0.2461,
-      "observed_rate": 0.2412
+      "n": 43169,
+      "mean_predicted": 0.2464,
+      "observed_rate": 0.2433
     },
     {
       "bin": "0.3-0.4",
-      "n": 27973,
-      "mean_predicted": 0.3475,
-      "observed_rate": 0.3149
+      "n": 28614,
+      "mean_predicted": 0.3471,
+      "observed_rate": 0.3317
     },
     {
       "bin": "0.4-0.5",
-      "n": 21434,
-      "mean_predicted": 0.4481,
-      "observed_rate": 0.3962
+      "n": 20641,
+      "mean_predicted": 0.4483,
+      "observed_rate": 0.4294
     },
     {
       "bin": "0.5-0.6",
-      "n": 17512,
+      "n": 16954,
       "mean_predicted": 0.5487,
-      "observed_rate": 0.5022
+      "observed_rate": 0.5134
     },
     {
       "bin": "0.6-0.7",
-      "n": 15220,
-      "mean_predicted": 0.6494,
-      "observed_rate": 0.5955
+      "n": 15106,
+      "mean_predicted": 0.649,
+      "observed_rate": 0.619
     },
     {
       "bin": "0.7-0.8",
-      "n": 14483,
-      "mean_predicted": 0.75,
-      "observed_rate": 0.6849
+      "n": 13930,
+      "mean_predicted": 0.7495,
+      "observed_rate": 0.7202
     },
     {
       "bin": "0.8-0.9",
-      "n": 16169,
-      "mean_predicted": 0.8521,
-      "observed_rate": 0.8015
+      "n": 15232,
+      "mean_predicted": 0.8513,
+      "observed_rate": 0.829
     },
     {
       "bin": "0.9-1.0",
-      "n": 29875,
-      "mean_predicted": 0.9588,
-      "observed_rate": 0.9437
+      "n": 29644,
+      "mean_predicted": 0.9618,
+      "observed_rate": 0.952
     }
   ],
   "reliability_test_calibrated": [
     {
       "bin": "0.0-0.1",
-      "n": 286458,
-      "mean_predicted": 0.0404,
-      "observed_rate": 0.0535
+      "n": 284131,
+      "mean_predicted": 0.038,
+      "observed_rate": 0.0463
     },
     {
       "bin": "0.1-0.2",
-      "n": 76631,
-      "mean_predicted": 0.144,
-      "observed_rate": 0.152
+      "n": 82781,
+      "mean_predicted": 0.1404,
+      "observed_rate": 0.1561
     },
     {
       "bin": "0.2-0.3",
-      "n": 43431,
-      "mean_predicted": 0.2471,
-      "observed_rate": 0.2453
+      "n": 44086,
+      "mean_predicted": 0.2445,
+      "observed_rate": 0.2521
     },
     {
       "bin": "0.3-0.4",
-      "n": 26484,
-      "mean_predicted": 0.3507,
-      "observed_rate": 0.3248
+      "n": 29316,
+      "mean_predicted": 0.3525,
+      "observed_rate": 0.353
     },
     {
       "bin": "0.4-0.5",
-      "n": 24219,
-      "mean_predicted": 0.4517,
-      "observed_rate": 0.4121
+      "n": 18840,
+      "mean_predicted": 0.4573,
+      "observed_rate": 0.4476
     },
     {
       "bin": "0.5-0.6",
-      "n": 16481,
-      "mean_predicted": 0.5532,
-      "observed_rate": 0.5253
+      "n": 15314,
+      "mean_predicted": 0.5511,
+      "observed_rate": 0.5375
     },
     {
       "bin": "0.6-0.7",
-      "n": 14588,
-      "mean_predicted": 0.6543,
-      "observed_rate": 0.6122
+      "n": 13790,
+      "mean_predicted": 0.6427,
+      "observed_rate": 0.6316
     },
     {
       "bin": "0.7-0.8",
-      "n": 16112,
-      "mean_predicted": 0.7415,
-      "observed_rate": 0.7151
+      "n": 15084,
+      "mean_predicted": 0.7506,
+      "observed_rate": 0.7334
     },
     {
       "bin": "0.8-0.9",
-      "n": 17931,
-      "mean_predicted": 0.8489,
-      "observed_rate": 0.8409
+      "n": 18490,
+      "mean_predicted": 0.852,
+      "observed_rate": 0.8569
     },
     {
       "bin": "0.9-1.0",
-      "n": 23467,
-      "mean_predicted": 0.9608,
-      "observed_rate": 0.9604
+      "n": 23970,
+      "mean_predicted": 0.9617,
+      "observed_rate": 0.9639
     }
   ],
   "importance": [
     {
+      "feature": "clim_p_week",
+      "gain": 3186784.5,
+      "mean_abs_contribution": 0.8115
+    },
+    {
       "feature": "fire_days_14",
-      "gain": 3204795.7,
-      "mean_abs_contribution": 0.3502
+      "gain": 2584577.8,
+      "mean_abs_contribution": 0.2523
     },
     {
       "feature": "fire_days_30",
-      "gain": 1497611.7,
-      "mean_abs_contribution": 0.261
+      "gain": 669709.8,
+      "mean_abs_contribution": 0.1567
     },
     {
       "feature": "nbr_fire_days_7",
-      "gain": 1314699.1,
-      "mean_abs_contribution": 0.4669
+      "gain": 620440.6,
+      "mean_abs_contribution": 0.2826
     },
     {
       "feature": "days_since_fire",
-      "gain": 571493.0,
-      "mean_abs_contribution": 0.3947
+      "gain": 533020.6,
+      "mean_abs_contribution": 0.3786
     },
     {
       "feature": "nbr_fire_days_30",
-      "gain": 515779.8,
-      "mean_abs_contribution": 0.3089
+      "gain": 145384.5,
+      "mean_abs_contribution": 0.1864
     },
     {
       "feature": "cell_lat",
-      "gain": 178374.1,
-      "mean_abs_contribution": 0.1821
+      "gain": 121940.4,
+      "mean_abs_contribution": 0.1318
     },
     {
       "feature": "cells_7",
-      "gain": 127319.7,
-      "mean_abs_contribution": 0.0562
+      "gain": 101367.7,
+      "mean_abs_contribution": 0.0328
     },
     {
       "feature": "cell_lon",
-      "gain": 102921.3,
-      "mean_abs_contribution": 0.0896
-    },
-    {
-      "feature": "fire_freq_hist",
-      "gain": 71288.6,
-      "mean_abs_contribution": 0.1133
+      "gain": 92609.7,
+      "mean_abs_contribution": 0.0837
     },
     {
       "feature": "frp_sum_30",
-      "gain": 52684.2,
-      "mean_abs_contribution": 0.0375
+      "gain": 58608.9,
+      "mean_abs_contribution": 0.0433
     },
     {
-      "feature": "fire_days_90",
-      "gain": 45931.6,
-      "mean_abs_contribution": 0.0324
-    },
-    {
-      "feature": "det_7",
-      "gain": 41754.1,
-      "mean_abs_contribution": 0.031
-    },
-    {
-      "feature": "cells_30",
-      "gain": 30273.8,
-      "mean_abs_contribution": 0.0412
-    },
-    {
-      "feature": "night_share_30",
-      "gain": 22404.4,
-      "mean_abs_contribution": 0.0128
-    },
-    {
-      "feature": "fire_streak",
-      "gain": 19242.4,
-      "mean_abs_contribution": 0.0156
-    },
-    {
-      "feature": "det_30",
-      "gain": 16826.6,
-      "mean_abs_contribution": 0.0093
-    },
-    {
-      "feature": "frp_mean_30",
-      "gain": 11862.4,
-      "mean_abs_contribution": 0.008
-    },
-    {
-      "feature": "frp_sum_7",
-      "gain": 5261.4,
-      "mean_abs_contribution": 0.0067
+      "feature": "fire_freq_hist",
+      "gain": 45581.9,
+      "mean_abs_contribution": 0.0794
     },
     {
       "feature": "fire_days_7",
-      "gain": 4237.3,
-      "mean_abs_contribution": 0.003
+      "gain": 38761.2,
+      "mean_abs_contribution": 0.0101
+    },
+    {
+      "feature": "cells_30",
+      "gain": 30900.9,
+      "mean_abs_contribution": 0.0244
+    },
+    {
+      "feature": "det_7",
+      "gain": 27992.5,
+      "mean_abs_contribution": 0.0157
+    },
+    {
+      "feature": "fire_days_90",
+      "gain": 26416.1,
+      "mean_abs_contribution": 0.0184
+    },
+    {
+      "feature": "fire_streak",
+      "gain": 24885.7,
+      "mean_abs_contribution": 0.02
+    },
+    {
+      "feature": "night_share_30",
+      "gain": 16729.7,
+      "mean_abs_contribution": 0.0135
+    },
+    {
+      "feature": "det_30",
+      "gain": 14829.5,
+      "mean_abs_contribution": 0.0122
+    },
+    {
+      "feature": "frp_mean_30",
+      "gain": 5917.5,
+      "mean_abs_contribution": 0.0058
+    },
+    {
+      "feature": "frp_sum_7",
+      "gain": 5665.0,
+      "mean_abs_contribution": 0.0075
     },
     {
       "feature": "accel_7_30",
-      "gain": 2981.7,
-      "mean_abs_contribution": 0.003
+      "gain": 3653.4,
+      "mean_abs_contribution": 0.0055
     },
     {
       "feature": "gap_days_7",
