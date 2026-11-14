@@ -46,3 +46,17 @@ Times are Asia/Amman.
   DEMO_SCRIPT.md (3 min), FOR_ME_TObeDONE.md updated. Waiting on archive files for 07/08.
 - Ticket 07 code ready ahead of the data: godseye ingest --aoi, multi-year AOI stores, API routing; synthetic e2e tests.
 - Ticket 08 code ready ahead of the data: archive pre-drift calibration (leave-one-year-out, not provisional), drift check from 2022, switchover figure; synthetic e2e tests. Archive day = 5 commands (FOR_ME_TObeDONE.md).
+- 08:00-08:59: global FIRMS archive arrived (39 yearly zips 2012-2025, verified by the user). `godseye ingest-archive`:
+  one parallel, resumable pass (14.4 min) -> AOI stores 2012-2026 (Levant with Jordan, Argentina), global 10-degree
+  calibration table, availability 2012-2025, NOAA-20 2019-2025 weekly climatology; 558,898,261 rows in the manifest.
+  ADR 0006 relative-activity amendment ACCEPTED before any multi-year data was merged. Calendar app now at `/`.
+- Multi-year calibration (08): headline link on 2013-2021, 9 yearly folds, region x month ratios, WAPE 0.086 vs 0.242
+  (global ratio), not provisional; VIIRS links on their multi-year overlaps; drift check: Aqua 0.97-1.04 to 2025,
+  0.905 in 2026. Switchover headline figure. Calendar panels on for Levant, Jordan, Argentina (15 years).
+- Risk v2.1 (+ NOAA-20 climatology feature) kept by the pre-declared validation rule (Brier 0.0906 vs 0.0929);
+  test ROC-AUC 0.880 vs 0.867 (v2), BSS +0.194 vs climatology. Last commit before the start: aad486f (08:59:50),
+  tagged `event-start`.
+
+## 2026-11-14 (after the 09:00 start)
+- Docs updated to the multi-year results: README hero figure and results, SUBMISSION (incl. what existed before the
+  start), DEMO_SCRIPT, DATA_CARD, METHODOLOGY, ADR 0001, spec, tickets 07/08, HANDOFF, FOR_ME_TObeDONE.

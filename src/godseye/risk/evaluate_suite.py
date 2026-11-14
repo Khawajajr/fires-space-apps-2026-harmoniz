@@ -235,8 +235,11 @@ def write_card(r: dict, path: Path) -> Path:
         f"- Label: {r['label']} (ADR 0004). One reference satellite keeps the base rate stable while satellites "
         "come and go.",
         "- Features: NOAA-20 only, all computed from data on or before the issue date (fire days, fire cells, "
-        "detections, FRP, night share, streaks, neighbouring cells, location, recent NOAA-20 outages).",
-        "- Data: NASA FIRMS VIIRS 375 m (NOAA-20, VJ114IMG), 2026-01-01 to 2026-11-06, global.",
+        "detections, FRP, night share, streaks, neighbouring cells, location, recent NOAA-20 outages)" +
+        (", plus the cell's NOAA-20 2019-2025 climatology for the label week (share of years with fire)."
+         if r.get("version") == "v2.1" else "."),
+        "- Data: NASA FIRMS VIIRS 375 m (NOAA-20, VJ114IMG), 2026-01-01 to 2026-11-06, global, for training and "
+        "testing; the NOAA-20 archive 2019-2025 only for the climatology (baseline and v2.1 feature).",
         f"- Weekly issue dates, three blocks separated by the 7-day horizon (ADR 0005): train {r['blocks']['train'][0]} "
         f"to {r['blocks']['train'][1]} ({r['rows']['train']:,} cell-weeks), validation {r['blocks']['validation'][0]} to "
         f"{r['blocks']['validation'][1]} ({r['rows']['validation']:,}; early stopping and calibration), test "

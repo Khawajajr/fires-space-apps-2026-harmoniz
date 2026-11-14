@@ -4,7 +4,7 @@
 
 **Blocked by:** 06, 07. **Cutoff Sat 14 Nov 18:00 (Amman):** if the archives aren't ingested by then, close this ticket as "cut"; 06's provisional link and fallback figure ship instead.
 
-**Status:** code done; waiting for the archive files (07, then `godseye harmonize`)
+**Status:** done (2026-11-14)
 
 - [ ] Calibration window chosen from the data: the overlap years ≤ 2021 that both Aqua and S-NPP cover (2018–2021 now; 2013–2021 if early years exist). The window used is recorded in the report.
 - [ ] 3 candidates, leave-one-year-out over the window's years (4 now); 90% band from bootstrapping over years. The band will be wider with 4 years; report it as it is.
@@ -29,3 +29,10 @@
   - the agreement check (S-NPP mapped to Aqua-equivalent).
 - Tested on synthetic archives (4 tests): window 2018–2021, 4 year folds, ratio recovered, drift check, figure swap.
 - Not done: the notebook `02_harmonization_validation` (the report JSON and figures carry the same content).
+
+## Done (2026-11-14) with the global archive
+
+- **Calibration:** every link is refitted on the global record (`data/processed/archive/region_daily`). The headline link uses `window: [2013, 2021]`, leave-one-year-out over 9 years, month effects validated, `provisional: false`. Results are in ADR 0001 ("Result").
+- **Drift check:** per year 2012–2026 with a trend.
+- **Figure:** an annual switchover figure (`reports/figures/headline_switchover.png`, log scale) with the simulated switch after 2015, the +NOAA-20 and +NOAA-21 jumps, Aqua drift shading, the band and the agreement check.
+- **Not done:** the notebook (the report JSON and figure carry the content).

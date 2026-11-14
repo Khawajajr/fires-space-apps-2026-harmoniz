@@ -8,9 +8,9 @@ Display name lives in one config value; the Python package stays `godseye` (inte
 - Install: `.venv\Scripts\python -m pip install -e ".[dev]"` (package `src/godseye`, config in `configs/*.yaml`)
 - Backend: `.venv\Scripts\python -m godseye api` (port 8000) → `curl localhost:8000/api/health`.
   `uvicorn backend.main:app` still works (thin wrapper).
-- **Calendar app (primary, ADR 0003):** `http://localhost:8000/app/` (`web/`, plain JS, vendored Leaflet, offline
+- **Calendar app (primary, ADR 0003):** `http://localhost:8000/` (also `/app/`; v0 dashboard at `/legacy/`) (`web/`, plain JS, vendored Leaflet, offline
   basemap built by `web/tools/build_basemap.py`). API: `/api/aois`, `/api/calendar?aoi=|bbox=&unit=&metric=`.
-- v0 Leaflet dashboard: `http://localhost:8000/`
+- v0 Leaflet dashboard: `http://localhost:8000/legacy/`
 - Globe: `cd gods-eye-view; npm run dev` → `http://localhost:4173` (needs `GODS_EYE_API_URL=http://127.0.0.1:8000`)
 - Pipeline: `python -m godseye clean` (~7 min, reads `data/raw`), then `python -m godseye train` (~25 s; writes
   `models/<dir>/model.txt` + `model_meta.json`, no pickle), `aggregate`, `harmonize` (links + figures).
@@ -35,7 +35,10 @@ Display name lives in one config value; the Python package stays `godseye` (inte
 - Use the native LightGBM API, not the sklearn wrapper.
 
 ## Data
-- `data/raw/DL_FIRE_{M-C61,SV-C2,J1V-C2,J2V-C2}_83967x`: global, 2026-01-01 → 2026-11-06 only (S-NPP ends 11-02).
+- Archive 2012–2025: 39 global yearly zips in `C:\Users\muham\Downloads\NASA_FIRE_DATA` (~60 GB unzipped: never
+  extract). `python -m godseye ingest-archive` reads them in one parallel, resumable pass into `data/processed/archive/`
+  and `data/processed/aoi/<levant|argentina>/` (~15 min; merge alone ~30 s).
+- `data/raw/DL_FIRE_{M-C61,SV-C2,J1V-C2,J2V-C2}_83967x`: global, 2026-01-01 → 2026-11-06 (S-NPP ends 11-02).
   Archive to 07-31 (VIIRS) / 08-31 (MODIS), NRT after. Satellite codes are Aqua/Terra/SNPP/N20/N21; the SV-C2
   `instrument` column says "SNPP"; VIIRS NRT has no `type` column.
 - Never commit data or model binaries. Read the originals in place; write outputs under `data/`.

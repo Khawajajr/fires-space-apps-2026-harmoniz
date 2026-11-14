@@ -4,7 +4,7 @@
 
 **Blocked by:** 03, and files appearing in `C:\Users\muham\Downloads\firms_archive\` (watched; start as soon as it has files)
 
-**Status:** code done; waiting for the archive files (run `python -m godseye ingest --aoi levant` / `argentina`)
+**Status:** done (2026-11-14, rescoped to the global archive)
 
 - [x] `python -m godseye ingest --aoi levant|argentina|jordan` is idempotent; the originals are never moved or copied; outputs go under `data/`
 - [x] **Dedupe against the 2026 files already in `data/raw`:** archive beats NRT; same satellite + acquisition time + location = duplicate (one row kept). Counts of dropped duplicates are in the ingest report.
@@ -27,3 +27,21 @@ From the 03 review, things 07 must handle:
 - **Availability for AOI-only years:** sensor operating dates only (`basis: aoi_archive`); a zero AOI day is never an outage. 2026 days reuse the global status.
 - **API:** a request inside an ingested AOI is answered from its multi-year store; everything else from the global 2026 store.
 - Tested end to end on synthetic archive files (5 tests). Still to do when the files arrive: run it, check the real report, regenerate the manifest (`godseye manifest data/raw <archive>`).
+
+## Done (2026-11-14, rescoped)
+
+The archive arrived as 39 global yearly zips (2012–2025). Rescoped by the user to one pass that also feeds 08 and the risk baseline: `godseye ingest-archive` (`src/godseye/ingest/archive.py`).
+
+- **The pass:** one streaming pass per zip, read in place and never extracted. It reuses seam 1 (`harmonize_schema`, `row_filters`, `global_filters`) and `fire_cells`.
+- **Run:** parallel (8 processes) and resumable by sha256. Timing: 40 s per MODIS year, 235 s per S-NPP year; the full read took 14.4 min, the merge 29 s.
+- **Outputs:**
+  - AOI stores for the Levant (Jordan nested) and Argentina, 2012 → 2026;
+  - a global sensor × day × 10° table for calibration;
+  - availability 2012–2025, where 2026 keeps its statuses;
+  - the NOAA-20 2019–2025 weekly climatology.
+- **Checks:** asserts the archive (last day 2025-12-31) never overlaps data/raw (first day 2026-01-01), and that no sensor-day comes from two zips. Rows, dates and sha256 for each zip are recorded during the pass in `data/manifest.json` (39 zips, 558,898,261 rows).
+- **Gates (ADR 0006, relative activity):**
+  - Levant: 45 gated weeks;
+  - Jordan: 52 (threshold floors at 1 cell-day; mean 2.9 per week, above the floor);
+  - Argentina: 52.
+- **Not used:** the earlier per-AOI `godseye ingest --aoi` path (kept, tested) is superseded for this data.

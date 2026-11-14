@@ -1,33 +1,33 @@
 # Handoff
 
-Last updated: 2026-11-14, before the 09:00 start. Read this first, then `CLAUDE.md`.
+Last updated: 2026-11-14, after the multi-year ingest (09:xx). Read this first, then `CLAUDE.md`.
 
 ## Where we are
 
 - The mission brief is `CLAUDE_CODE_PROMPT.md`. The design decisions are in `GLOSSARY.md` and `docs/adr/0001`–`0007`.
 - The work plan is `.scratch/space-apps-2026/spec.md`. It includes the agreed **build order and cut order**. The tickets are in `.scratch/space-apps-2026/issues/`, and each says `Status: done` or `ready-for-agent`, with notes at the bottom.
-- **Done and pushed:** tickets 01, 02, 03, 04, 05, 06, 09, 10, 11a, 11b, 12 and 13, plus Phase 7 (docs, CI green, quickstart) and Phase 8 (`docs/SUBMISSION.md`, `docs/DEMO_SCRIPT.md`). See `git log`.
-- **Open:** 07 and 08 are coded and tested but need the FIRMS archive files: run the 5 commands in `FOR_ME_TObeDONE.md` §2. The user's manual steps are in the same file.
-- **Served model:** risk v2, calibrated. Test block: ROC-AUC 0.867 vs persistence 0.749 (`docs/MODEL_CARD.md`).
+- **Done and pushed:** every ticket (01–13), Phase 7 and Phase 8. Tickets 07 and 08 ran on the global archive on Sat 14 Nov. The user's manual steps are in `FOR_ME_TObeDONE.md`.
+- **Data:** the 2012–2025 global archive (39 zips in `C:\Users\muham\Downloads\NASA_FIRE_DATA`, read in place) plus 2026 in `data/raw`. `godseye ingest-archive` builds `data/processed/archive/` and `data/processed/aoi/{levant,argentina}/`.
+- **Served model:** risk v2.1 (NOAA-20, plus the 2019–2025 climatology feature), calibrated. Test block: ROC-AUC 0.880 vs persistence 0.749 and climatology 0.816 (`docs/MODEL_CARD.md`).
 
 ## Things that will bite
 
-- **FIRMS archives (2018 → now, Levant + Argentina)** arrive in `C:\Users\muham\Downloads\firms_archive\`.
-  - Read them in place; never move or copy them.
-  - Ticket 07 runs as soon as files appear. Its notes cover the AOI-basis availability rule and the dedupe against the 2026 files.
-  - Hard cutoff for 08: **Sat 14 Nov 18:00 Amman** (ADR 0001).
+- **Archive:**
+  - Never extract the zips (~60 GB).
+  - Re-running `ingest-archive` skips any zip whose sha256 already has a part in `data/processed/archive/parts/`; the merge alone takes ~30 s.
+  - It asserts that the archive never overlaps `data/raw`.
 - **The harmonized headline (06) is done:** `src/godseye/calendar/harmonized.py`.
   - Aqua observed is the headline until `observed_until` (2021-12-31); after that, a VIIRS estimate via the links.
   - The `/api/calendar` `harmonized` block carries values, lo, hi, coverage, data_days, estimated_days, substituted_days and caveats.
   - 09 should build climatology on `harmonized.values` per ISO week, using `data_days` to scale or exclude partial weeks and honouring ADR 0006.
-  - 08 still owes the agreement series (story 11) and the switchover figure.
+  - 08 is done: the switchover figure and the 2013-2021 agreement check are in `reports/figures/headline_switchover.png`.
 - **Calendar API shape:** harmonized values go in a new top-level `harmonized` block (values, lo, hi, coverage, provisional). Partial periods carry `data_days`, and climatology (09) must exclude or scale them.
 - **Availability:**
   - Statuses are `ok | partial | no_data | not_operational`. `status_own_rule` is the status before the VIIRS cross-sensor check.
   - On 2026 data, S-NPP has 14 outage days and 10 partial days.
-  - AOI-only archives must not mark zero days as `no_data` (ticket 07 notes).
+  - 2012-2025 availability comes from the global archive, so outages are real global outages (S-NPP 35 no-data days).
 - **Servers:**
-  - Backend: `python -m godseye api` on :8000. The calendar app is at `/app/`, the v0 dashboard at `/`.
+  - Backend: `python -m godseye api` on :8000. The calendar app is at `/` (and `/app/`), the v0 dashboard at `/legacy/`.
   - Globe: `npm run dev` on :4173.
   - Risk scoring loads in a background thread, so risk endpoints may take ~8 s on the first call.
 - **Windows shell:** long Python heredocs with apostrophes break the Bash tool. Write patch scripts to the scratchpad and run those.

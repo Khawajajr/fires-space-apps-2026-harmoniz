@@ -9,8 +9,8 @@ A planning aid for **regional burning activity** over the next 7 days, per 0.25Â
 ## Data and label
 
 - Label: any NOAA-20-VIIRS fire cell-day in the 0.25 deg cell in days t+1..t+7 (ADR 0004). One reference satellite keeps the base rate stable while satellites come and go.
-- Features: NOAA-20 only, all computed from data on or before the issue date (fire days, fire cells, detections, FRP, night share, streaks, neighbouring cells, location, recent NOAA-20 outages).
-- Data: NASA FIRMS VIIRS 375 m (NOAA-20, VJ114IMG), 2026-01-01 to 2026-11-06, global.
+- Features: NOAA-20 only, all computed from data on or before the issue date (fire days, fire cells, detections, FRP, night share, streaks, neighbouring cells, location, recent NOAA-20 outages), plus the cell's NOAA-20 2019-2025 climatology for the label week (share of years with fire).
+- Data: NASA FIRMS VIIRS 375 m (NOAA-20, VJ114IMG), 2026-01-01 to 2026-11-06, global, for training and testing; the NOAA-20 archive 2019-2025 only for the climatology (baseline and v2.1 feature).
 - Weekly issue dates, three blocks separated by the 7-day horizon (ADR 0005): train 2026-02-06 to 2026-08-21 (2,201,331 cell-weeks), validation 2026-08-28 to 2026-09-25 (524,795; early stopping and calibration), test 2026-10-02 to 2026-10-30 (545,802).
 
 ## Results on the test block

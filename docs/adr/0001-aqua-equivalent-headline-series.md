@@ -13,18 +13,19 @@ Detections are a secondary metric, shown raw per sensor (harmonized detections w
 - Combined Terra+Aqua MODIS as the reference: rejected because it mixes two overpass times and Terra's own drift.
 - VIIRS-equivalent (back-cast MODIS upward): rejected because it invents detail MODIS never observed.
 
-## Data actually available (updated 2026-11-13)
+## Data actually available (updated 2026-11-14)
 
-The FIRMS archive requests cover **2018-01-01 → now**, not each sensor's start. So:
+The FIRMS archive arrived as **global yearly files for 2012–2025** (MODIS from 2012, S-NPP from 2012-01-20, NOAA-20 from 2018-04-01, NOAA-21 from 2023-03-01), plus the 2026 files. So:
 
-- **Calibration window = 2018–2021**: Aqua and S-NPP both delivering, before Aqua's drift. Validation is leave-one-year-out over those 4 years. With 4 years, the bootstrap band is wider than a 9-year window would give, and we report it as it comes out.
-- **Automatic extension:** if earlier years arrive later (MODIS 2000–2017, S-NPP 2012–2017), the window becomes **2013–2021** with no code change. The harmonization report records which window was used.
-- **Record shown:** 2018–2026 (9 years). The Terra-only (2000–2002) segment and the real 2012 MODIS→VIIRS switchover only appear if the early years arrive.
-- **Headline figure until then:** a clearly labelled **simulated sensor switchover**, made of MODIS-only 2018–2021, then VIIRS-only 2022–2025 (raw, showing the artificial jump), next to the harmonized Aqua-equivalent series (no jump, with its band). If the early years arrive, the real 2012 transition replaces it.
+- **Calibration window = 2013–2021**, global: Aqua and S-NPP both delivering, before Aqua's drift. Validation is leave-one-year-out over 9 years, so month effects are validated (they ship), the 90% band comes from held-out years, and the bootstrap over years gives the CI of the ratio. The link is **not provisional**.
+- **VIIRS continuity links** are fitted on their whole multi-year overlaps: NOAA-20 ↔ S-NPP 2018-04 → 2026, NOAA-21 ↔ S-NPP 2023-03 → 2026, leave-one-year-out.
+- **Record shown:** 2012–2026 (15 years). There is no Terra-only segment (2000–2002) and no MODIS-only era, so the real MODIS → VIIRS transition can't be shown.
+- **Headline figure:** a clearly labelled **simulated** switchover, placed inside the real overlap (MODIS raw to 2015, then the VIIRS satellites' raw counts added as each arrives). It shows the jumps at the switch and when NOAA-20 (2018) and NOAA-21 (2023) are added, next to the harmonized Aqua-equivalent series with its band and the 2013–2021 agreement check.
 
-## Until the archives are ingested
+## Result (2026-11-14)
 
-Only 2026 data is on disk, and 2026 is a drifting-orbit year for Aqua. So the links are split:
-
-- **VIIRS ↔ VIIRS (S-NPP ↔ NOAA-20 ↔ NOAA-21):** fitted and validated on the 2026 overlap now. Same orbit and instrument family, no drift: **not provisional**.
-- **VIIRS → Aqua-equivalent:** any 2026 fit is a drifted-orbit calibration, labelled **"provisional"** in the report and the UI. If the archives aren't ingested by **Sat 14 Nov 18:00 (Amman)**, we ship the provisional link, say so in the README and the slides, and present the 2018–2021 fit as designed but not yet run.
+- **S-NPP → Aqua:** region × month ratios with shrinkage (k = 10). Region-month WAPE is 0.086, against 0.242 for one global ratio (−65%). The global ratio is 0.245 (90% CI 0.243–0.247), and band coverage on held-out years is 92.0%.
+- **NOAA-20 → S-NPP:** no correction (ratio 0.994, CI 0.992–0.996; identity ties the global ratio within the 2% tolerance).
+- **NOAA-21 → S-NPP:** one global ratio, ×1.027 (CI 1.026–1.029).
+- **Drift check** (Aqua observed / predicted from S-NPP, global, per year): 0.97–1.04 for 2013–2021 (in the window), 1.00/1.02/1.04/1.01 for 2022–2025, and **0.905 in 2026**. The trend after the window is −0.021 per year, driven by 2026. So Aqua's drift barely moved fire cell-days until 2025, but by 2026 (overpass ~15:24) Aqua reads about 10% low. This supports switching the headline to VIIRS from 2022.
+- **Superseded:** the 2026-only provisional fit (WAPE 0.203, ratio 0.216) and its "same fires, different camera" figure.

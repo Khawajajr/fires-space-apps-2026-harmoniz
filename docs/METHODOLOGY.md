@@ -20,13 +20,15 @@ Each link maps a source sensor onto a target's scale. It is fitted on region × 
   - one global ratio;
   - region (× month) ratios shrunk towards their parent (empirical Bayes; the strength is chosen by nested CV);
   - quantile mapping by region × season.
-- **Validation:** leave one month out (one year out once there are several years).
+- **Validation:** leave one year out: NOAA-20 → S-NPP on 2018–2026 (9 folds), NOAA-21 → S-NPP on 2023–2026 (4), S-NPP → Aqua on 2013–2021 (9; Aqua's stable orbit, ADR 0001). With only one year, it falls back to leaving one month out.
 - **Selection:** the **simplest** method within 2% of the best held-out region-month WAPE.
 - **One year can't test month effects:** a held-out month has no month ratio, so month effects only ship once multi-year folds can validate them.
 - **The 90% band:** held-out ratios observed/predicted, binned by magnitude, plus an additive upper bound when the prediction is 0. Its coverage is checked on folds it was not built from, and on whole-AOI weeks. A bootstrap over whole folds gives the confidence interval of the ratio.
 - **Drift:** the report lists monthly held-out misses over 3% as caveats.
 
-2026 results are in `reports/harmonization_report.json` and the README.
+- **Drift check:** Aqua observed / predicted from S-NPP per year, globally (0.97–1.04 through 2025, 0.905 in 2026).
+
+Results are in `reports/harmonization_report.json` and the README.
 
 ## 3. Calendar, climatology and anomalies (ADR 0006)
 
