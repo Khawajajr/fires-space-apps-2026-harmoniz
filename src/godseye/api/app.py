@@ -15,9 +15,10 @@ the gods-eye-view 3D globe's Active Fires layer reads through its /api/gods-eye 
 """
 from __future__ import annotations
 
+import json
 import logging
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import asynccontextmanager
 
 import numpy as np
@@ -114,11 +115,18 @@ async def lifespan(app: FastAPI):
             calendar_api.STORE["tiles"] = tiles
     print(f"loaded {len(fires):,} recent detections and the calendar in {time.time() - t0:.1f}s; "
           "scoring risk in the background")
-    # Scoring the latest day takes ~8 s; do it off the startup path so the calendar is up at once.
-    # Risk endpoints wait for it (see risk_state), so their responses are unchanged.
+    # Scoring the latest day takes ~3-8 s. A forecast cached for the same model and data loads at once (the first
+    # risk call is then instant); otherwise it is scored off the startup path and cached. Risk endpoints wait for it
+    # (see risk_state), so their responses are unchanged.
     executor = ThreadPoolExecutor(max_workers=1)
     STATE["executor"] = executor
-    STATE["risk"] = executor.submit(load_predictions)
+    hit = cached_predictions()
+    if hit is not None:
+        STATE["risk"] = Future()
+        STATE["risk"].set_result(hit)
+        LOG.warning("risk forecast loaded from cache (issued %s)", hit[0].issued.iloc[0] if len(hit[0]) else "-")
+    else:
+        STATE["risk"] = executor.submit(score_and_cache)
     yield
     executor.shutdown(wait=True)
     STATE.clear()
@@ -151,6 +159,41 @@ def load_tiles(chain):
     return t
 
 
+RISK_CACHE = "risk_forecast_cache"
+
+
+def risk_cache_key() -> dict:
+    """What the served forecast depends on: the model files and the data it is scored from (size + mtime)."""
+    files = [CONFIG.served_model_dir / artifact.MODEL, CONFIG.served_model_dir / artifact.META,
+             PROCESSED / "sensor_grid_daily.feather", PROCESSED / "sensor_availability.feather",
+             PROCESSED / "archive" / "n20_week_climatology.feather", MODEL_DIR / artifact.MODEL]
+    stat = lambda p: [p.stat().st_size, p.stat().st_mtime_ns] if p.exists() else None
+    return {"serve": CONFIG.risk.get("serve"), "files": {p.as_posix(): stat(p) for p in files}}
+
+
+def cached_predictions() -> tuple[pd.DataFrame, dict] | None:
+    try:
+        info = json.loads((PROCESSED / f"{RISK_CACHE}.json").read_text())
+        if info["key"] != risk_cache_key():
+            return None
+        if info.get("scored_by"):
+            STATE["scored_by"] = info["scored_by"]
+        return pd.read_feather(PROCESSED / f"{RISK_CACHE}.feather"), info["meta"]
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+def score_and_cache() -> tuple[pd.DataFrame, dict]:
+    preds, meta = load_predictions()
+    try:
+        preds.reset_index(drop=True).to_feather(PROCESSED / f"{RISK_CACHE}.feather")
+        (PROCESSED / f"{RISK_CACHE}.json").write_text(json.dumps(
+            {"key": risk_cache_key(), "meta": meta, "scored_by": STATE.get("scored_by")}, default=str))
+    except Exception as e:  # noqa: BLE001 - a failed cache write (read-only folder, ...) must not stop serving
+        LOG.warning("could not cache the risk forecast: %s", e)
+    return preds, meta
+
+
 def risk_state() -> tuple[pd.DataFrame, dict]:
     """(predictions, model metadata), waiting for the background scoring the first time.
 
@@ -161,7 +204,7 @@ def risk_state() -> tuple[pd.DataFrame, dict]:
     except Exception as err:   # noqa: BLE001 - any scoring failure must not take the API down for good
         LOG.exception("risk scoring failed: %s", err)
         if STATE["risk"] is future:
-            STATE["risk"] = STATE["executor"].submit(load_predictions)
+            STATE["risk"] = STATE["executor"].submit(score_and_cache)
         raise HTTPException(503, "risk forecast unavailable; retrying") from err
 
 

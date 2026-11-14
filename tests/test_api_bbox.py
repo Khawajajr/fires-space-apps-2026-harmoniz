@@ -38,3 +38,21 @@ def test_failed_risk_scoring_is_a_503_and_is_retried(monkeypatch):
     assert e.value.status_code == 503
     assert app_module.risk_state() == ("preds", {"m": 1})   # the retry succeeded
     executor.shutdown()
+
+
+def test_risk_forecast_is_cached_for_the_same_model_and_data(tmp_path, monkeypatch):
+    import pandas as pd
+
+    from godseye.api import app as app_module
+
+    monkeypatch.setattr(app_module, "PROCESSED", tmp_path)
+    (tmp_path / "sensor_grid_daily.feather").write_bytes(b"v1")
+    preds = pd.DataFrame({"cell_lat": [31.875], "cell_lon": [35.875], "risk": [0.4], "issued": ["2026-11-13"]})
+    calls = []
+    monkeypatch.setattr(app_module, "load_predictions", lambda: (calls.append(1), (preds, {"m": 1}))[1])
+    assert app_module.cached_predictions() is None                     # nothing cached yet
+    app_module.score_and_cache()
+    hit = app_module.cached_predictions()
+    assert hit is not None and hit[1] == {"m": 1} and hit[0].risk.tolist() == [0.4] and calls == [1]
+    (tmp_path / "sensor_grid_daily.feather").write_bytes(b"newer data")   # new data: the cache no longer applies
+    assert app_module.cached_predictions() is None
