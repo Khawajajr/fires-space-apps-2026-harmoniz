@@ -13,7 +13,10 @@ from godseye.config import Config
 from godseye.risk import artifact
 from godseye.risk.evaluate import scores
 from godseye.risk.model import LGB_PARAMS
-from godseye.risk.v2 import FEATURES, PanelV2, build, issue_blocks
+from godseye.risk.v2 import FEATURES, FEATURES_V21, PanelV2, build, issue_blocks
+
+CLIMATOLOGY = "archive/n20_week_climatology"
+
 
 COLUMNS = ["sensor", "acq_date", "cell_lat", "cell_lon", "n_detections", "n_fire_cells", "n_fire_cells_daytime",
            "frp_sum_mw"]
@@ -26,7 +29,7 @@ def last_full_day(cfg: Config, processed: Path) -> pd.Timestamp:
     return pd.Timestamp(ok.acq_date.max())
 
 
-def load_panel(cfg: Config, processed: Path) -> PanelV2:
+def load_panel(cfg: Config, processed: Path, climatology: bool = False) -> PanelV2:
     v2 = cfg.risk_v2
     grid = read_table(processed, "sensor_grid_daily", COLUMNS)
     grid = grid[grid.sensor.astype(str) == v2["reference_sensor"]]
@@ -35,13 +38,18 @@ def load_panel(cfg: Config, processed: Path) -> PanelV2:
     # Outages only (no_data / not_operational), which are known on the day; 'partial' uses a centred window.
     gap = pd.Series(a.status.astype(str).isin(["no_data", "not_operational"]).to_numpy(),
                     index=pd.to_datetime(a.acq_date))
-    return PanelV2(grid, gap, cfg.clean["grid_deg"], cfg.risk["horizon_days"])
+    panel = PanelV2(grid, gap, cfg.clean["grid_deg"], cfg.risk["horizon_days"])
+    if climatology:
+        panel.attach_climatology(read_table(processed / "archive", "n20_week_climatology"))
+    return panel
 
 
-def run(cfg: Config, processed: Path, out: Path, n_estimators: int) -> dict:
+def run(cfg: Config, processed: Path, out: Path, n_estimators: int, climatology: bool = False) -> dict:
     t0 = time.time()
     v2 = cfg.risk_v2
-    panel = load_panel(cfg, processed)
+    panel = load_panel(cfg, processed, climatology)
+    features = FEATURES_V21 if climatology else FEATURES
+    name = "LightGBM v2.1" if climatology else "LightGBM v2"
     blocks = issue_blocks(panel.dates, v2, panel.horizon)
     span = lambda ts: [str(panel.dates[ts[0]].date()), str(panel.dates[ts[-1]].date())]
     Xtr, ytr = build(panel, blocks.train)
@@ -50,22 +58,25 @@ def run(cfg: Config, processed: Path, out: Path, n_estimators: int) -> dict:
           f"{span(blocks.train)} positive {ytr.mean():.3f}; validation {len(Xva):,} rows {span(blocks.validation)} "
           f"positive {yva.mean():.3f}; test {span(blocks.test)} held out  [{time.time() - t0:.0f}s]")
 
-    model = lgb.train(LGB_PARAMS, lgb.Dataset(Xtr[FEATURES], ytr), num_boost_round=n_estimators,
-                      valid_sets=[lgb.Dataset(Xva[FEATURES], yva)], callbacks=[lgb.early_stopping(50, verbose=False)])
+    model = lgb.train(LGB_PARAMS, lgb.Dataset(Xtr[features], ytr), num_boost_round=n_estimators,
+                      valid_sets=[lgb.Dataset(Xva[features], yva)], callbacks=[lgb.early_stopping(50, verbose=False)])
     best = model.best_iteration or n_estimators
-    model = lgb.train(LGB_PARAMS, lgb.Dataset(Xtr[FEATURES], ytr), num_boost_round=best)   # train block only, no refit
-    pva = model.predict(Xva[FEATURES])
-    validation = [scores(yva, pva, "LightGBM v2"),
+    model = lgb.train(LGB_PARAMS, lgb.Dataset(Xtr[features], ytr), num_boost_round=best)   # train block only, no refit
+    pva = model.predict(Xva[features])
+    validation = [scores(yva, pva, name),
                   scores(yva, (Xva.fire_days_7 > 0).astype(float).to_numpy(), "persistence (any fire in last 7 days)"),
                   scores(yva, 1 - (1 - Xva.fire_freq_hist.to_numpy()) ** 7, "2026 frequency to date")]
     gain = model.feature_importance(importance_type="gain")
-    bundle = {"model": model, "features": FEATURES, "grid_deg": panel.grid_deg, "horizon_days": panel.horizon,
+    bundle = {"model": model, "features": features, "grid_deg": panel.grid_deg, "horizon_days": panel.horizon,
               "risk_bins": cfg.risk["risk_bins"], "risk_labels": cfg.risk["risk_labels"],
               "trained_through": span(blocks.train)[1], "validation": validation,
-              "feature_importance_gain": dict(sorted(zip(FEATURES, (round(float(g), 1) for g in gain)),
+              "feature_importance_gain": dict(sorted(zip(features, (round(float(g), 1) for g in gain)),
                                                      key=lambda kv: -kv[1]))}
+    if climatology:
+        validation.append(scores(yva, Xva.clim_p_week.to_numpy(), "NOAA-20 climatology 2019-2025"))
     artifact.save(bundle, out, {
-        "name": out.name, "version": "v2", "params": LGB_PARAMS, "best_iteration": best,
+        "name": out.name, "version": "v2.1" if climatology else "v2", "climatology_feature": climatology,
+        "params": LGB_PARAMS, "best_iteration": best,
         "label": f"any {v2['reference_sensor']} fire cell-day in the 0.25 deg cell in days t+1..t+{panel.horizon}",
         "reference_sensor": v2["reference_sensor"],
         "blocks": {"train": span(blocks.train), "validation": span(blocks.validation), "test": span(blocks.test)},

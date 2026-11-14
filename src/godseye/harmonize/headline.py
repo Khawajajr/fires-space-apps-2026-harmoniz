@@ -7,7 +7,7 @@ sensors delivered full data, so the right-hand panel shows out-of-sample agreeme
 """
 from __future__ import annotations
 
-from datetime import date
+import warnings
 from pathlib import Path
 
 import matplotlib
@@ -93,52 +93,72 @@ def plot_fallback(weeks: dict[str, pd.DataFrame], link: Link, path: Path) -> Pat
     return path
 
 
+VIIRS = ["S-NPP-VIIRS", "NOAA-20-VIIRS", "NOAA-21-VIIRS"]
+
+
+def _year_mean(a: np.ndarray) -> np.ndarray:
+    with np.errstate(all="ignore"), warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        return np.nanmean(a, axis=1)
+
+
 def switchover_series(store, chain, bbox, switch_after: int) -> pd.DataFrame:
-    """Weekly series for one AOI: the naive record (Aqua-MODIS raw up to `switch_after`, then S-NPP-VIIRS raw), the
-    harmonized headline with its band, and S-NPP mapped to Aqua-equivalent in every year (the agreement check)."""
+    """Per year for one AOI (mean weekly fire cell-days, so 2026's partial year compares): the naive record (Aqua-MODIS
+    raw to `switch_after`, then every VIIRS satellite's raw counts added up: the wrong way, shown as the problem),
+    Aqua raw, the harmonized Aqua-equivalent with its band, and S-NPP mapped to Aqua-equivalent in every year."""
     import dataclasses
 
-    from godseye.calendar.store import CalendarStore  # noqa: F401  (type of `store`)
-
     cal = store.calendar(bbox, "cell_days", "week")
-    aqua, snpp = (cal.values[store.sensors.index(s)] for s in (chain.target, chain.reference))
+    raw = {s: cal.values[store.sensors.index(s)] for s in [chain.target, *VIIRS]}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        viirs = np.where(np.all([np.isnan(raw[s]) for s in VIIRS], axis=0), np.nan,
+                         np.nansum([raw[s] for s in VIIRS], axis=0))
     store.attach_chain(chain)
     h = store.harmonized(bbox, "week")
     store.attach_chain(dataclasses.replace(chain, observed_until=None))   # VIIRS estimate in every year
     est = store.harmonized(bbox, "week")
     store.attach_chain(chain)
-    rows = []
-    for yi, year in enumerate(cal.years):
-        for w in range(52):
-            try:
-                day = date.fromisocalendar(year, w + 1, 4)
-            except ValueError:
-                continue
-            naive = aqua[yi, w] if year <= switch_after else snpp[yi, w]
-            rows.append({"date": pd.Timestamp(day), "naive": naive, "harmonized": h.values[yi, w],
-                         "lo": h.lo[yi, w], "hi": h.hi[yi, w], "aqua": aqua[yi, w], "snpp_as_aqua": est.values[yi, w]})
-    return pd.DataFrame(rows)
+    years = np.asarray(cal.years)
+    naive = np.where((years <= switch_after)[:, None], raw[chain.target], viirs)
+    return pd.DataFrame({"year": years, "naive": _year_mean(naive), "aqua": _year_mean(raw[chain.target]),
+                         "harmonized": _year_mean(h.values), "lo": _year_mean(h.lo), "hi": _year_mean(h.hi),
+                         "snpp_as_aqua": _year_mean(est.values)})
 
 
-def plot_switchover(series: dict[str, pd.DataFrame], switch_after: int, real_2012: bool, path: Path) -> Path:
-    fig, axes = plt.subplots(len(series), 1, figsize=(12, 3.4 * len(series)), constrained_layout=True, squeeze=False)
-    for ax, (label, s) in zip(axes[:, 0], series.items()):
-        m = s.set_index("date").resample("MS").sum(min_count=1)          # monthly totals read better over years
-        ax.fill_between(m.index, m.lo, m.hi, color="#1baf7a", alpha=0.18, lw=0, label="harmonized 90% range")
-        ax.plot(m.index, m.naive, color="#e34948", lw=1.6,
-                label=f"naive record: Aqua-MODIS raw to {switch_after}, then S-NPP-VIIRS raw")
-        ax.plot(m.index, m.harmonized, color="#1baf7a", lw=2.2, label="harmonized: Aqua-equivalent")
-        early = m[m.index.year <= switch_after]
-        ax.plot(early.index, early.snpp_as_aqua, color="#2a78d6", lw=1.2, ls="--",
-                label="S-NPP mapped to Aqua-equivalent (agreement check)")
-        ax.axvline(pd.Timestamp(f"{switch_after + 1}-01-01"), color="#77756f", lw=1, ls=":")
-        ax.set_title(f"{label}: monthly fire cell-days", fontsize=10, loc="left")
-        ax.grid(alpha=0.3)
-        ax.legend(fontsize=8, frameon=False, loc="upper left")
-    kind = "The 2012 MODIS-to-VIIRS transition" if real_2012 else \
-        f"Simulated sensor switchover (MODIS until {switch_after}, VIIRS from {switch_after + 1})"
-    fig.suptitle(f"{kind}: the jump is the satellite, not the fire", fontsize=11)
+def plot_switchover(series: dict[str, pd.DataFrame], switch_after: int, observed_until: int,
+                    agreement: tuple[int, int], last_day: str, path: Path) -> Path:
+    fig, axes = plt.subplots(1, len(series), figsize=(max(10, 7 * len(series)), 5.6), constrained_layout=True,
+                             squeeze=False)
+    for i, (ax, (label, s)) in enumerate(zip(axes[0], series.items())):
+        ax.axvspan(observed_until + 0.5, s.year.max() + 0.5, color="#77756f", alpha=0.07, lw=0)
+        ax.fill_between(s.year, s.lo, s.hi, color="#1baf7a", alpha=0.2, lw=0, label="harmonized: 90% range")
+        ax.plot(s.year, s.naive, "o-", color="#e34948", lw=2, ms=4,
+                label=f"naive record: Aqua-MODIS raw to {switch_after}, then all VIIRS satellites added up")
+        ax.plot(s.year, s.aqua, "s--", color="#77756f", lw=1.2, ms=3, label="Aqua-MODIS raw")
+        ax.plot(s.year, s.harmonized, "o-", color="#1baf7a", lw=2.6, ms=4, label="harmonized: Aqua-equivalent")
+        a = s[s.year.between(*agreement)]
+        ax.plot(a.year, a.snpp_as_aqua, "D", color="#2a78d6", ms=5, mfc="none", mew=1.5,
+                label=f"agreement check: S-NPP mapped to Aqua-equivalent, {agreement[0]}-{agreement[1]}")
+        vals = s[["naive", "aqua", "lo", "hi", "harmonized"]].to_numpy()
+        top, bottom = np.nanmax(vals), np.nanmin(vals[vals > 0])
+        ax.set_yscale("log")
+        ax.set_ylim(bottom / 3, top * 4)
+        for x, text, y in ((switch_after + 0.5, "simulated switch MODIS → VIIRS", 3.2),
+                           (2018.25, "+ NOAA-20 (Apr 2018)", 2.0), (2023.17, "+ NOAA-21 (Mar 2023)", 1.25)):
+            ax.axvline(x, color="#77756f", lw=0.8, ls=":")
+            ax.text(x + 0.08, top * y, text, fontsize=7.5, color="#55534e", va="center")
+        ax.text(observed_until + 0.6, bottom / 2.2, "Aqua orbit drifting →", fontsize=7.5, color="#55534e")
+        ax.set_title(label, fontsize=11, loc="left")
+        ax.set_ylabel("mean weekly fire cell-days (log scale)")
+        ax.set_xticks(s.year[::2])
+        ax.grid(alpha=0.3, which="both")
+    fig.legend(*axes[0, 0].get_legend_handles_labels(), loc="outside lower center", fontsize=8, frameon=False,
+               ncol=2 if len(series) == 1 else 3)
+    fig.suptitle(f"Same fires, changing satellites: the raw record jumps, the harmonized record doesn't\n"
+                 f"(2026 to {last_day}; the {switch_after}/{switch_after + 1} MODIS → VIIRS switch is simulated "
+                 f"inside the real overlap)", fontsize=11)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path, dpi=120)
+    fig.savefig(path, dpi=130)
     plt.close(fig)
     return path

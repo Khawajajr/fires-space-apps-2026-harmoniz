@@ -32,8 +32,10 @@ def _train_v2(args) -> None:
     from godseye.risk import train_v2
 
     cfg = get_config()
-    out = Path(args.out or cfg.models_dir / cfg.risk_v2["model_dir"])
-    train_v2.run(cfg, Path(args.processed or cfg.processed_dir), out, args.n_estimators or cfg.risk_v2["n_estimators"])
+    out = Path(args.out or cfg.models_dir / (cfg.risk_v2["v21_model_dir"] if args.climatology else
+                                             cfg.risk_v2["model_dir"]))
+    train_v2.run(cfg, Path(args.processed or cfg.processed_dir), out, args.n_estimators or cfg.risk_v2["n_estimators"],
+                 args.climatology)
 
 
 def _evaluate(args) -> None:
@@ -57,6 +59,13 @@ def _ingest(args) -> None:
 
     cfg = get_config()
     aoi.run(cfg, args.aoi, Path(args.archive or cfg.archive_dir))
+
+
+def _ingest_archive(args) -> None:
+    from godseye.ingest import archive
+
+    cfg = get_config()
+    archive.run(cfg, Path(args.archive or cfg.archive_dir), args.workers, args.only, merge_parts=not args.no_merge)
 
 
 def _manifest(args) -> None:
@@ -133,6 +142,8 @@ def build_parser() -> argparse.ArgumentParser:
     t2.add_argument("--processed", help="directory with the sensor grid and availability")
     t2.add_argument("--out", help="model directory (default: models/<risk_v2.model_dir>)")
     t2.add_argument("--n-estimators", type=int)
+    t2.add_argument("--climatology", action="store_true",
+                    help="v2.1: + the cell's NOAA-20 2019-2025 weekly climatology (needs ingest-archive)")
     t2.set_defaults(func=_train_v2)
 
     e = sub.add_parser("evaluate", help="score risk v2 once on the test block; write reports/ and docs/MODEL_CARD.md")
@@ -148,6 +159,14 @@ def build_parser() -> argparse.ArgumentParser:
     i.add_argument("--aoi", required=True, help="named AOI from configs/aois.yaml")
     i.add_argument("--archive", help=f"archive folder, read in place (default: {cfg.archive_dir})")
     i.set_defaults(func=_ingest)
+
+    ia = sub.add_parser("ingest-archive", help="one pass over the global archive zips: AOI stores, calibration "
+                                               "regions, availability, NOAA-20 climatology (ticket 07)")
+    ia.add_argument("--archive", help=f"folder of FIRMS archive zips, read in place (default: {cfg.archive_dir})")
+    ia.add_argument("--workers", type=int, help="parallel processes (default: cores - 1)")
+    ia.add_argument("--only", nargs="*", help="zip file names to read (timing runs)")
+    ia.add_argument("--no-merge", action="store_true", help="read zips into parts only")
+    ia.set_defaults(func=_ingest_archive)
 
     m = sub.add_parser("manifest", help="record every FIRMS input file (source, dates, rows, sha256)")
     m.add_argument("inputs", nargs="*", help=f"files or directories (default: {cfg.raw_dir})")

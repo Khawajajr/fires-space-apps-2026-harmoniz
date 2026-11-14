@@ -48,6 +48,7 @@ class Config:
     aois: dict[str, AOI] = field(default_factory=dict)
     firms_map_key: str | None = None
     archive_dir: Path | None = None
+    archive: dict = field(default_factory=dict)
 
     @property
     def raw_dir(self) -> Path:
@@ -99,6 +100,7 @@ def load_config(config_dir: Path | None = None, env: dict | None = None) -> Conf
         harmonize=pipeline["harmonize"],
         climatology=pipeline["climatology"],
         risk_v2=pipeline["risk_v2"],
+        archive=pipeline.get("archive", {}),
         sensors={name: Sensor(name, s["satellite"], s["instrument"], s["start"], s["end"])
                  for name, s in pipeline["sensors"].items()},
         aois={name: AOI(name, a["label"], tuple(float(v) for v in a["bbox"])) for name, a in aois_raw.items()},

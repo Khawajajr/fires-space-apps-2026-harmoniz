@@ -4,7 +4,7 @@ display_name: F.I.R.E.S.
 
 paths:
   data_dir: data            # raw/ and processed/ live under it
-  archive_dir: C:/Users/muham/Downloads/firms_archive   # FIRMS archive downloads (2018 onward), read in place
+  archive_dir: C:/Users/muham/Downloads/NASA_FIRE_DATA  # global FIRMS archive zips 2012-2025, read in place
   models_dir: models
   frontend_dir: frontend          # v0 Leaflet dashboard, served at /
   web_dir: web                    # our calendar app (ADR 0003), served at /app/
@@ -24,7 +24,12 @@ sensors:
   Aqua-MODIS:    {satellite: Aqua,      instrument: MODIS, start: 2002-07-04, end: null}
   S-NPP-VIIRS:   {satellite: Suomi-NPP, instrument: VIIRS, start: 2012-01-20, end: 2026-11-02}
   NOAA-20-VIIRS: {satellite: NOAA-20,   instrument: VIIRS, start: null,       end: null}
-  NOAA-21-VIIRS: {satellite: NOAA-21,   instrument: VIIRS, start: 2024-01-17, end: null}
+  NOAA-21-VIIRS: {satellite: NOAA-21,   instrument: VIIRS, start: null,       end: null}   # FIRMS archive from 2023-03-01
+
+# `godseye ingest-archive` (ticket 07): one pass over the global archive zips (one sensor-year each)
+archive:
+  aois: [levant, argentina]   # multi-year AOI stores; nested AOIs (jordan) are served from their parent
+  chunk_rows: 500000
 
 aggregate:
   fine_deg: 0.01            # fire cell-day unit (~1 km); the coarse grid is clean.grid_deg
@@ -39,12 +44,11 @@ harmonize:
   region_deg: 10            # region blocks for the region x month candidate and for cross-validation
   links:
     - {source: NOAA-20-VIIRS, target: S-NPP-VIIRS, provisional: false,
-       note: "VIIRS continuity: same instrument, same orbit plane, no orbit drift; S-NPP read low in Oct 2026"}
+       note: "VIIRS continuity: same instrument, same orbit plane, no orbit drift; fitted on the whole overlap"}
     - {source: NOAA-21-VIIRS, target: S-NPP-VIIRS, provisional: false,
-       note: "VIIRS continuity: same instrument, same orbit plane, no orbit drift; S-NPP read low in Oct 2026"}
-    - {source: S-NPP-VIIRS, target: Aqua-MODIS, provisional: true,
-       prefer_archive: {window: [2013, 2021]},
-       note: "Headline link (ADR 0001): fitted on the AOI archives' pre-drift years when ingested (ticket 08), else on 2026 (provisional)"}
+       note: "VIIRS continuity: same instrument, same orbit plane, no orbit drift; fitted on the whole overlap"}
+    - {source: S-NPP-VIIRS, target: Aqua-MODIS, provisional: true, window: [2013, 2021],
+       note: "Headline link (ADR 0001): fitted on 2013-2021, Aqua's original orbit (ticket 08); provisional only when just 2026 is available"}
   # The calendar's harmonized series: VIIRS in S-NPP units (first sensor in `viirs_priority` with full data that day,
   # converted with the links above), mapped to the headline target.
   headline:
@@ -54,11 +58,12 @@ harmonize:
     reference: S-NPP-VIIRS
     viirs_priority: [S-NPP-VIIRS, NOAA-20-VIIRS, NOAA-21-VIIRS]
     figure_aois: [levant, argentina]   # headline figure (README, slides, video)
+    simulated_switch_after: 2015       # headline figure: the naive record switches MODIS -> VIIRS here (inside the real overlap)
 
 climatology:
-  # ADR 0006: "absolute" = a week is active with >= 1 fire cell-day (as approved). "relative" = >= 10% of the AOI's
-  # peak weekly median: PROPOSED amendment, waiting for the team's sign-off; switch here once agreed.
-  activity: absolute
+  # ADR 0006 (amendment ACCEPTED 2026-11-14, before multi-year data was merged): "relative" = a week is active at
+  # >= 10% of the AOI's peak weekly median (never below 1 fire cell-day); "absolute" = >= 1 fire cell-day (original).
+  activity: relative
 
 risk:
   grid_deg: 0.25
@@ -77,6 +82,8 @@ risk:
 # Risk model v2 (ADRs 0004, 0005): NOAA-20 reference label/features, three blocks separated by the horizon.
 risk_v2:
   model_dir: risk_v2
+  v21_model_dir: risk_v21     # candidate v2.1: + NOAA-20 2019-2025 weekly climatology feature; kept only if it beats
+                              # v2 on the validation block (Brier score, decided before the test block is scored)
   reference_sensor: NOAA-20-VIIRS
   step_days: 7
   min_history_days: 30

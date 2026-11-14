@@ -1,4 +1,4 @@
-"""Ticket 08: the headline link is calibrated on the archive's pre-drift years when they are ingested."""
+"""Ticket 08: with the global multi-year record ingested, every link is refitted on it (headline: 2013-2021)."""
 import json
 from dataclasses import replace
 
@@ -10,18 +10,31 @@ from godseye.config import load_config
 from godseye.harmonize import pipeline as harmonize
 from godseye.ingest.aggregate import availability
 
-LEVANT = [(31.875, 35.875), (32.125, 36.125), (33.375, 36.375)]
-ELSEWHERE = [(-24.125, 31.375), (-10.125, 25.375), (12.125, 105.375)]
+REGIONS = [(35.0, 35.0), (-35.0, -65.0), (5.0, 25.0), (55.0, 125.0)]       # 10° block centres
+LEVANT = [(31.875, 35.875), (32.125, 36.125), (33.375, 36.375)]           # 0.25° cells
+RATIOS = {"S-NPP-VIIRS": 1.0, "NOAA-20-VIIRS": 1.0, "NOAA-21-VIIRS": 0.97}
+STARTS = {"S-NPP-VIIRS": "2013-01-01", "NOAA-20-VIIRS": "2018-04-01", "NOAA-21-VIIRS": "2023-03-01",
+          "Aqua-MODIS": "2013-01-01", "Terra-MODIS": "2013-01-01"}
 
 
-def grid_rows(sensor, dates, cells, mean, rng, ratio=1.0, base=None):
+def aqua_ratio(d):
+    return 0.25 if d.year <= 2021 else 0.25 * (1 - 0.05 * (d.year - 2021))   # orbit drift after 2021
+
+
+def rows_for(cells, days, rng, mean):
     rows = []
-    for d in dates:
-        season = 1.0 + 0.8 * np.sin(2 * np.pi * d.dayofyear / 365)
+    for d in days:
+        season = 1 + 0.8 * np.sin(2 * np.pi * d.dayofyear / 365)
         for lat, lon in cells:
-            n = rng.poisson(mean * season * ratio) if base is None else rng.poisson(ratio * base[(d, lat, lon)])
+            base = rng.poisson(mean * season)
+            for s, r in RATIOS.items():
+                if d >= pd.Timestamp(STARTS[s]):
+                    n = rng.poisson(base * r)
+                    if n:
+                        rows.append((s, d, lat, lon, n, n, n, float(n)))
+            n = rng.poisson(base * aqua_ratio(d))
             if n:
-                rows.append((sensor, d, lat, lon, n, n, n, float(n)))
+                rows.append(("Aqua-MODIS", d, lat, lon, n, n, n, float(n)))
     return rows
 
 
@@ -32,10 +45,12 @@ def frame(rows, sensors):
     return g
 
 
-def write_store(folder, grid, avail):
-    folder.mkdir(parents=True, exist_ok=True)
-    grid.reset_index(drop=True).to_feather(folder / "sensor_grid_daily.feather")
-    avail.reset_index(drop=True).to_feather(folder / "sensor_availability.feather")
+def status_table(sensors, days):
+    a = pd.DataFrame([(s, d, "ok" if d >= pd.Timestamp(STARTS[s]) else "not_operational")
+                      for s in sensors for d in days], columns=["sensor", "acq_date", "status"])
+    a["sensor"] = pd.Categorical(a.sensor, categories=sensors)
+    a["status_own_rule"] = a.status
+    return a
 
 
 @pytest.fixture(scope="module")
@@ -45,69 +60,54 @@ def run(tmp_path_factory):
     cfg = replace(cfg, figures_dir=root / "figures")
     sensors = list(cfg.sensors)
     rng = np.random.default_rng(5)
+    proc = cfg.processed_dir
+    (proc / "archive").mkdir(parents=True)
+    (proc / "aoi" / "levant").mkdir(parents=True)
 
-    # global 2026: every VIIRS pair and Aqua, on six cells around the world
     days26 = pd.date_range("2026-01-01", "2026-10-31")
-    snpp = {}
-    rows = []
-    for d in days26:
-        for lat, lon in LEVANT + ELSEWHERE:
-            snpp[(d, lat, lon)] = rng.poisson(40 * (1 + 0.8 * np.sin(2 * np.pi * d.dayofyear / 365)))
-    rows += [("S-NPP-VIIRS", d, la, lo, n, n, n, float(n)) for (d, la, lo), n in snpp.items() if n]
-    for s, r in (("NOAA-20-VIIRS", 1.0), ("NOAA-21-VIIRS", 0.97), ("Aqua-MODIS", 0.2)):
-        rows += grid_rows(s, days26, LEVANT + ELSEWHERE, 0, rng, r, snpp)
-    g26 = frame(rows, sensors)
-    a26 = availability(g26.rename(columns={}), cfg.sensors, 0.2)
-    write_store(cfg.processed_dir, g26, a26)
-    clean = pd.DataFrame({"satellite": ["Aqua", "Suomi-NPP"], "acq_datetime": pd.to_datetime(["2026-07-01 10:30Z"] * 2),
-                          "longitude": [35.9, 35.9], "daynight": ["D", "D"]})
-    clean.to_feather(cfg.processed_dir / "fires_clean.feather")
+    g26 = frame(rows_for(LEVANT, days26, rng, 20), sensors)
+    g26.to_feather(proc / "sensor_grid_daily.feather")
+    availability(g26, cfg.sensors, 0.2).to_feather(proc / "sensor_availability.feather")
+    pd.DataFrame({"satellite": ["Aqua", "Suomi-NPP"], "acq_datetime": pd.to_datetime(["2026-07-01 10:30Z"] * 2),
+                  "longitude": [35.9, 35.9], "daynight": ["D", "D"]}).to_feather(proc / "fires_clean.feather")
 
-    # Levant archive 2018-2025: Aqua sees 25% of S-NPP before its drift
-    days = pd.date_range("2018-01-01", "2025-12-31")
-    base, rows = {}, []
-    for d in days:
-        for lat, lon in LEVANT:
-            base[(d, lat, lon)] = rng.poisson(30 * (1 + 0.8 * np.sin(2 * np.pi * d.dayofyear / 365)))
-    rows += [("S-NPP-VIIRS", d, la, lo, n, n, n, float(n)) for (d, la, lo), n in base.items() if n]
-    rows += grid_rows("Aqua-MODIS", days, LEVANT, 0, rng, 0.25, base)
-    garch = frame(rows, sensors)
-    aarch = pd.DataFrame([(s, d, "ok" if s in ("S-NPP-VIIRS", "Aqua-MODIS") else "not_operational")
-                          for s in sensors for d in days], columns=["sensor", "acq_date", "status"])
-    aarch["sensor"] = pd.Categorical(aarch.sensor, categories=sensors)
-    aarch["status_own_rule"] = aarch.status
-    write_store(cfg.processed_dir / "aoi" / "levant", garch, aarch)
+    days = pd.date_range("2013-01-01", "2026-10-31")
+    frame(rows_for(REGIONS, days, rng, 60), sensors).to_feather(proc / "archive" / "region_daily.feather")
+    status_table(sensors, days).to_feather(proc / "archive" / "sensor_availability.feather")
+    frame(rows_for(LEVANT, days, rng, 15), sensors).to_feather(proc / "aoi" / "levant" / "sensor_grid_daily.feather")
+    status_table(sensors, days).to_feather(proc / "aoi" / "levant" / "sensor_availability.feather")
 
-    links = harmonize.run(cfg, cfg.processed_dir, root / "reports")
+    links = harmonize.run(cfg, proc, root / "reports")
     report = json.loads((root / "reports" / harmonize.REPORT).read_text())
-    return cfg, links, report
+    return cfg, links, {r["source"]: r for r in report["links"]}
 
 
-def test_headline_link_uses_the_pre_drift_archive_years_and_is_no_longer_provisional(run):
+def test_headline_link_is_fitted_on_2013_2021_by_year_and_is_not_provisional(run):
     cfg, links, report = run
-    head = next(r for r in report["links"] if r["target"] == "Aqua-MODIS")
-    assert head["calibration_window"] == "2018-2021" and head["calibration_aois"] == ["levant"]
+    head = report["S-NPP-VIIRS"]
+    assert head["calibration_window"] == "2013-2021" and head["folds"] == [str(y) for y in range(2013, 2022)]
     assert head["provisional"] is False and head["month_effects_validated"] is True
-    assert head["folds"] == ["2018", "2019", "2020", "2021"]
     link = next(k for k in links if k.target == "Aqua-MODIS")
-    assert link.ratios() == pytest.approx(0.25, abs=0.02)
+    assert link.ratios() == pytest.approx(0.25, abs=0.01)
     assert not any(c.startswith("provisional") for c in head["caveats"])
 
 
-def test_drift_check_covers_the_years_after_the_window(run):
+def test_drift_check_finds_the_simulated_orbit_drift(run):
     cfg, links, report = run
-    head = next(r for r in report["links"] if r["target"] == "Aqua-MODIS")
-    years = sorted({row["year"] for row in head["drift_check"]})
-    assert years[0] == 2022 and all(abs(r["observed_over_predicted"] - 1) < 0.1 for r in head["drift_check"])
+    d = report["S-NPP-VIIRS"]["drift_check"]
+    assert d["from_year"] == 2022 and d["mean_ratio_in_window"] == pytest.approx(1, abs=0.03)
+    assert d["trend_per_year_after_window"] < -0.03 and d["mean_ratio_after_window"] < 0.95
+
+
+def test_viirs_links_use_their_whole_multi_year_overlap(run):
+    cfg, links, report = run
+    assert report["NOAA-20-VIIRS"]["calibration_window"] == "2018-2026"
+    assert report["NOAA-21-VIIRS"]["calibration_window"] == "2023-2026"
+    n21 = next(k for k in links if k.source == "NOAA-21-VIIRS")
+    assert n21.ratios() == pytest.approx(1 / 0.97, abs=0.01)
 
 
 def test_switchover_figure_replaces_the_2026_figure(run):
     cfg, links, report = run
     assert (cfg.figures_dir / "headline_switchover.png").stat().st_size > 0
     assert not (cfg.figures_dir / "headline_same_fires_different_camera.png").exists()
-
-
-def test_continuity_links_still_come_from_the_2026_global_data(run):
-    cfg, links, report = run
-    n21 = next(r for r in report["links"] if r["source"] == "NOAA-21-VIIRS")
-    assert n21["first_week"].startswith("2025-12") or n21["first_week"].startswith("2026")

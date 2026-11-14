@@ -5,7 +5,7 @@ import pytest
 
 from godseye.config import load_config
 from godseye.risk.evaluate import brier, brier_skill, scores
-from godseye.risk.v2 import Blocks, PanelV2, check_separation, issue_blocks
+from godseye.risk.v2 import CLIMATOLOGY_FEATURE, FEATURES_V21, Blocks, PanelV2, check_separation, issue_blocks
 
 
 def test_scores_match_hand_computed_values():
@@ -82,3 +82,17 @@ def test_v2_features():
     assert "doy_sin" not in f.columns
     assert p.label_window_has_outage(15) and not p.label_window_has_outage(22)
     assert len(p.features(4)) == 0                                              # nothing has burned yet: not scored
+
+
+def test_v21_climatology_feature_looks_up_the_label_windows_week_and_defaults_to_zero():
+    panel = tiny_panel()
+    t = 9                                                   # 2026-03-10; label window 03-11..03-17, middle 03-14
+    week = (pd.Timestamp("2026-03-14").dayofyear - 1) // 7
+    panel.attach_climatology(pd.DataFrame({"cell_lat": [31.875, 31.875], "cell_lon": [35.875, 99.875],
+                                           "week": [week, week], "p_years": [3 / 7, 1.0]}))
+    f = panel.features(t)
+    assert list(f.columns[:len(FEATURES_V21)]) == FEATURES_V21
+    clim = dict(zip(f.cell_lon, f[CLIMATOLOGY_FEATURE]))
+    assert clim[35.875] == pytest.approx(3 / 7)             # this cell, this week
+    assert clim.get(36.125, 0.0) == 0.0                     # listed nowhere: never burned in 2019-2025
+    assert panel.features(t + 14)[CLIMATOLOGY_FEATURE].max() == 0.0     # another week

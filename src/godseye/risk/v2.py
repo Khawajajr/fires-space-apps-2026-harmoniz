@@ -7,8 +7,9 @@ Risk model v2 (ADRs 0004, 0005): NOAA-20 reference label and features, three tim
              streak, 7d-vs-30d acceleration, fire days in the 8 neighbouring cells (7/30), cell lat/lon, and NOAA-20
              outage days in the last 7 (missing data is not "no fire"; outages = no_data / not_operational, which are
              known on the day; 'partial' is not used because its rule looks at a centred window, i.e. the future).
-             No season features: with one year, day-of-year is a time index and validation/test lie outside the
-             training months (add them back with multi-year data).
+             No day-of-year features: with one year, day-of-year is a time index and validation/test lie outside the
+             training months. v2.1 adds season through the cell's NOAA-20 climatology instead (clim_p_week: share of
+             2019-2025 with >= 1 fire cell-day in the cell in the label window's week of year), which uses no 2026 data.
   scored     cells with any NOAA-20 fire on or before t (cells that never burned are not scored: a known limit);
              issue dates whose label window contains a NOAA-20 outage day are left out (an outage is not a negative)
   blocks     weekly issue dates, train / validation / test, each separated by the horizon so no label window crosses
@@ -29,6 +30,13 @@ FEATURES = [
     "days_since_fire", "fire_streak", "accel_7_30", "nbr_fire_days_7", "nbr_fire_days_30",
     "cell_lat", "cell_lon", "gap_days_7",
 ]
+CLIMATOLOGY_FEATURE = "clim_p_week"
+FEATURES_V21 = FEATURES + [CLIMATOLOGY_FEATURE]
+
+
+def week_of_year(dates) -> np.ndarray:
+    """0-51: seven-day blocks from 1 January (the last block takes the 1-2 spare days); same rule as the archive."""
+    return np.minimum((pd.DatetimeIndex(dates).dayofyear.to_numpy() - 1) // 7, 51)
 
 
 class PanelV2:
@@ -60,8 +68,22 @@ class PanelV2:
                                 "frp": mat(grid.frp_sum_mw.to_numpy()), "night": mat(night)}.items()}
         self.gap_cs = np.concatenate([[0.0], np.cumsum(self.gap)])
         self.first_fire = np.where(self.fire.any(1), self.fire.argmax(1), len(self.dates))
+        self.clim = None
         self.rows = np.floor((self.cells.cell_lat.to_numpy() + 90) / grid_deg).astype(int)
         self.cols = np.floor((self.cells.cell_lon.to_numpy() + 180) / grid_deg).astype(int)
+
+    def attach_climatology(self, clim: pd.DataFrame) -> None:
+        """clim: cell_lat, cell_lon, week (0-51), p_years. Cells or weeks it doesn't list never burned: 0."""
+        m = np.zeros((len(self.cells), 52), np.float32)
+        ci = pd.MultiIndex.from_frame(self.cells).get_indexer(pd.MultiIndex.from_arrays(
+            [clim.cell_lat.round(4).to_numpy(), clim.cell_lon.round(4).to_numpy()]))
+        keep = ci >= 0
+        m[ci[keep], clim.week.to_numpy()[keep].astype(int)] = clim.p_years.to_numpy()[keep]
+        self.clim = m
+
+    def climatology(self, t: int) -> np.ndarray:
+        """Climatological chance of fire in the label window: the week of year of its middle day (t + 4)."""
+        return self.clim[:, week_of_year([self.dates[0] + pd.Timedelta(days=t + 4)])[0]]
 
     def window(self, key: str, t: int, w: int) -> np.ndarray:
         return self.cs[key][:, t + 1] - self.cs[key][:, max(0, t + 1 - w)]
@@ -86,7 +108,10 @@ class PanelV2:
         f["nbr_fire_days_30"] = neighbour_sum(f["fire_days_30"], self.rows, self.cols, self.grid_deg)
         f["cell_lat"], f["cell_lon"] = self.cells.cell_lat.to_numpy(), self.cells.cell_lon.to_numpy()
         f["gap_days_7"] = np.full(len(self.cells), self.gap_cs[t + 1] - self.gap_cs[max(0, t - 6)], np.float32)
-        out = pd.DataFrame(f)[FEATURES].astype(np.float32)
+        cols = FEATURES
+        if self.clim is not None:
+            f[CLIMATOLOGY_FEATURE], cols = self.climatology(t), FEATURES_V21
+        out = pd.DataFrame(f)[cols].astype(np.float32)
         out["t"], out["cell_id"] = t, np.arange(len(self.cells))
         return out[self.first_fire <= t].reset_index(drop=True)
 

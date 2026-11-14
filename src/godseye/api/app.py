@@ -6,7 +6,8 @@ HTTP API.
   GET /api/fires/recent.geojson    the full fires_recent.geojson file written by the pipeline
   GET /api/predictions/risk-map    7-day risk per grid cell from the trained model
   GET /api/predictions/risk-at     7-day risk at / around one point (agent and voice tools)
-  GET /                            frontend/index.html (Leaflet dashboard)
+  GET /  (and /app/)               web/ calendar app (ADR 0003)
+  GET /legacy/                     frontend/index.html (v0 Leaflet dashboard)
 
 `/api/fires/recent?format=firms` returns the record shape of NASA FIRMS area CSV rows
 ({lat, lon, frp, confidence, daynight, acqDate, acqTime, satellite, instrument}), which
@@ -66,7 +67,8 @@ def load_predictions() -> tuple[pd.DataFrame, dict]:
         from godseye.risk.model import risk_level
 
         bundle = artifact.load(CONFIG.served_model_dir)
-        preds = v2.predict_latest(bundle, train_v2.load_panel(CONFIG, PROCESSED), risk_level,
+        panel = train_v2.load_panel(CONFIG, PROCESSED, climatology=v2.CLIMATOLOGY_FEATURE in bundle["features"])
+        preds = v2.predict_latest(bundle, panel, risk_level,
                                   issue=train_v2.last_full_day(CONFIG, PROCESSED))
         STATE["scored_by"] = CONFIG.risk_v2["reference_sensor"]
         meta = {k: bundle[k] for k in ("grid_deg", "horizon_days", "risk_bins", "risk_labels", "trained_through")}
@@ -371,4 +373,5 @@ def meta():
 
 # Mounted last so /api/* routes take precedence.
 app.mount("/app", StaticFiles(directory=CONFIG.web_dir, html=True), name="web")  # ADR 0003: primary product
-app.mount("/", StaticFiles(directory=CONFIG.frontend_dir, html=True), name="frontend")  # v0 Leaflet dashboard
+app.mount("/legacy", StaticFiles(directory=CONFIG.frontend_dir, html=True), name="frontend")  # v0 Leaflet dashboard
+app.mount("/", StaticFiles(directory=CONFIG.web_dir, html=True), name="home")  # the calendar app is the default page

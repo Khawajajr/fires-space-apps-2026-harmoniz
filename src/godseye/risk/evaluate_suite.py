@@ -4,7 +4,12 @@
 Pre-declared choices (made before looking at test scores):
   calibration   isotonic regression fitted on the validation block; the served probabilities are calibrated
   baselines     persistence as a probability (P(label | fire in the last 7 days) and P(label | none), from the train
-                block) and "2026 frequency to date" (1 - (1 - share of past days with fire)^7)
+                block), "2026 frequency to date" (1 - (1 - share of past days with fire)^7) and, once the archive is
+                ingested, the NOAA-20 climatology: the share of 2019-2025 with >= 1 fire cell-day in the cell in the
+                label window's week of year (no 2026 data, so no leakage)
+  v2 vs v2.1    v2.1 adds that climatology as a feature. It is kept only if its raw validation Brier score beats v2's;
+                the decision is made and recorded before either model's test predictions are computed. Both are then
+                scored on the test block and reported
   subsets       new activity = no NOAA-20 fire in the cell in the 30 days before the issue date; regions by bbox
   spatial check 5-fold cross-validation over 5° blocks inside the train block, with and without cell lat/lon
 """
@@ -58,37 +63,74 @@ def spatial_blocks(X: pd.DataFrame, y: np.ndarray, features: list[str], rounds: 
     return scores(y, pred, f"spatial 5° blocks, {len(features)} features")
 
 
+CLIMATOLOGY_NAME = "NOAA-20 climatology 2019-2025"
+
+
+def decide_v21(v2: dict, v21: dict, Xva: pd.DataFrame, yva: np.ndarray) -> dict:
+    """The pre-declared rule, on the validation block only (raw probabilities, before calibration)."""
+    rows = [scores(yva, b["model"].predict(Xva[b["features"]]), name) for b, name in
+            ((v2, "LightGBM v2"), (v21, "LightGBM v2.1 (+ climatology feature)"))]
+    return {"rule": "keep v2.1 only if its validation Brier score is lower than v2's (decided before the test block "
+                    "is scored)", "validation": rows, "keep_v21": rows[1]["brier"] < rows[0]["brier"]}
+
+
+def test_rows(bundle: dict, name: str, Xva, yva, Xte, yte, refs) -> tuple[list[dict], np.ndarray, tuple]:
+    pva, pte = bundle["model"].predict(Xva[bundle["features"]]), bundle["model"].predict(Xte[bundle["features"]])
+    cal = isotonic_fit(pva, yva)                                       # validation only
+    pte_cal = isotonic_apply(pte, cal)
+    return ([scores(yte, pte_cal, f"{name} (calibrated)", refs(Xte)), scores(yte, pte, f"{name} (raw)", refs(Xte))],
+            pte_cal, cal)
+
+
 def run(cfg: Config, processed: Path, model_dir: Path, reports: Path, figures: Path, card: Path) -> dict:
     t0 = time.time()
     bundle = artifact.load(model_dir)
     model, feats = bundle["model"], bundle["features"]
-    panel = load_panel(cfg, processed)
+    has_clim = (processed / "archive" / "n20_week_climatology.feather").exists()
+    panel = load_panel(cfg, processed, climatology=has_clim)
     blocks = issue_blocks(panel.dates, cfg.risk_v2, panel.horizon)
     (Xtr, ytr), (Xva, yva), (Xte, yte) = (build(panel, b) for b in (blocks.train, blocks.validation, blocks.test))
     span = lambda ts: [str(panel.dates[ts[0]].date()), str(panel.dates[ts[-1]].date())]
 
-    pva, pte = model.predict(Xva[feats]), model.predict(Xte[feats])
-    cal = isotonic_fit(pva, yva)                                       # validation only
-    pte_cal = isotonic_apply(pte, cal)
+    # v2 vs v2.1: decided on validation before any test prediction exists
+    version = bundle.get("version") or artifact.read_meta(model_dir).get("version", "v2")
+    names = {"v2": cfg.risk_v2["model_dir"], "v2.1": cfg.risk_v2["v21_model_dir"]}
+    other_dir = cfg.models_dir / names["v2" if version == "v2.1" else "v2.1"]
+    comparison = None
+    if has_clim and artifact.exists(other_dir):
+        other = artifact.load(other_dir)
+        v2b, v21b = (other, bundle) if version == "v2.1" else (bundle, other)
+        comparison = decide_v21(v2b, v21b, Xva, yva)
     p1, p0 = float(ytr[Xtr.fire_days_7 > 0].mean()), float(ytr[Xtr.fire_days_7 == 0].mean())
     persist = lambda X: np.where(X.fire_days_7 > 0, p1, p0)
     freq = lambda X: 1 - (1 - X.fire_freq_hist.to_numpy()) ** panel.horizon
-    refs = lambda X: {"persistence": persist(X), "frequency_to_date": freq(X)}
+    clim = lambda X: X.clim_p_week.to_numpy()
+    refs = lambda X: {"persistence": persist(X), "frequency_to_date": freq(X), **({"climatology": clim(X)}
+                                                                                 if has_clim else {})}
 
-    test = [scores(yte, pte_cal, "LightGBM v2 (calibrated)", refs(Xte)),
-            scores(yte, pte, "LightGBM v2 (raw)", refs(Xte)),
-            scores(yte, persist(Xte), "persistence (any fire in last 7 days)", refs(Xte)),
+    name = "LightGBM v2.1" if version == "v2.1" else "LightGBM v2"
+    rows, pte_cal, cal = test_rows(bundle, name, Xva, yva, Xte, yte, refs)
+    pte = model.predict(Xte[feats])
+    test = [*rows, scores(yte, persist(Xte), "persistence (any fire in last 7 days)", refs(Xte)),
             scores(yte, freq(Xte), "2026 frequency to date", refs(Xte))]
+    if has_clim:
+        test.append(scores(yte, clim(Xte), CLIMATOLOGY_NAME, refs(Xte)))
+    if comparison is not None:
+        other_name = "LightGBM v2" if version == "v2.1" else "LightGBM v2.1"
+        comparison["test"] = test_rows(other, other_name, Xva, yva, Xte, yte, refs)[0] + rows
+        comparison["served"] = version
     new = (Xte.fire_days_30 == 0).to_numpy()
     new_refs = {k: v[new] for k, v in refs(Xte).items()}
-    new_activity = [scores(yte[new], pte_cal[new], "LightGBM v2 (calibrated)", new_refs),
+    new_activity = [scores(yte[new], pte_cal[new], f"{name} (calibrated)", new_refs),
                     scores(yte[new], freq(Xte)[new], "2026 frequency to date")]
+    if has_clim:
+        new_activity.append(scores(yte[new], clim(Xte)[new], CLIMATOLOGY_NAME))
     regions = region_of(Xte.cell_lat.to_numpy(), Xte.cell_lon.to_numpy())
     per_region = []
-    for name in list(REGIONS) + ["Other"]:
-        m = regions == name
+    for region in list(REGIONS) + ["Other"]:
+        m = regions == region
         if m.sum() >= 500:
-            per_region.append({"region": name, **scores(yte[m], pte_cal[m], "LightGBM v2 (calibrated)",
+            per_region.append({"region": region, **scores(yte[m], pte_cal[m], f"{name} (calibrated)",
                                                         {k: v[m] for k, v in refs(Xte).items()})})
     bins = cfg.risk["risk_bins"]
     levels = np.digitize(pte_cal, bins)
@@ -109,7 +151,7 @@ def run(cfg: Config, processed: Path, model_dir: Path, reports: Path, figures: P
     result = {"model": model_dir.name, "label": bundle.get("label"),
               "blocks": {"train": span(blocks.train), "validation": span(blocks.validation), "test": span(blocks.test)},
               "rows": {"train": len(ytr), "validation": len(yva), "test": len(yte)},
-              "test": test, "new_activity_subset": new_activity, "per_region": per_region,
+              "version": version, "test": test, "v2_vs_v21": comparison, "new_activity_subset": new_activity, "per_region": per_region,
               "risk_levels_on_test": level_rates, "spatial_block_cv_on_train": spatial,
               "reliability_test_raw": reliability(yte, pte), "reliability_test_calibrated": reliability(yte, pte_cal),
               "importance": importance, "persistence_probabilities": {"fire_in_last_7_days": p1, "none": p0},
@@ -150,16 +192,34 @@ def plot_reliability(result: dict, path: Path) -> Path:
     return path
 
 
-def _row(r: dict, cols=("roc_auc", "pr_auc", "brier", "bss_vs_persistence", "bss_vs_frequency_to_date")) -> str:
+COLS = ("roc_auc", "pr_auc", "brier", "bss_vs_persistence", "bss_vs_frequency_to_date", "bss_vs_climatology")
+
+
+def _row(r: dict, cols=COLS) -> str:
     fmt = lambda v: "n/a" if v is None else f"{v:.3f}"
     return f"| {r.get('region', r['model'])} | {r['n']:,} | " + " | ".join(fmt(r.get(c)) for c in cols) + " |"
 
 
 def write_card(r: dict, path: Path) -> Path:
-    head = "| | rows | ROC-AUC | PR-AUC | Brier | BSS vs persistence | BSS vs frequency to date |\n|---|---|---|---|---|---|---|"
+    head = ("| | rows | ROC-AUC | PR-AUC | Brier | BSS vs persistence | BSS vs frequency to date | BSS vs climatology |"
+            "\n|---|---|---|---|---|---|---|---|")
     t = r["test"][0]
+    c = r.get("v2_vs_v21")
+    compare = [] if c is None else [
+        "### v2 vs v2.1 (+ NOAA-20 climatology feature)",
+        "",
+        f"Rule, fixed in advance: {c['rule']}. Validation block:",
+        "",
+        "| | rows | ROC-AUC | PR-AUC | Brier |", "|---|---|---|---|---|",
+        *[_row(x, ("roc_auc", "pr_auc", "brier")) for x in c["validation"]],
+        "",
+        f"Decision: **{'keep v2.1' if c['keep_v21'] else 'keep v2'}** (served: {c['served']}). Both on the test block:",
+        "",
+        head, *[_row(x) for x in c["test"]],
+        "",
+    ]
     lines = [
-        "# Model card: F.I.R.E.S. 7-day fire risk (v2)",
+        f"# Model card: F.I.R.E.S. 7-day fire risk ({r.get('version', 'v2')})",
         "",
         "Generated by `python -m godseye evaluate` from `reports/risk_evaluation.json`. Every number below comes from "
         f"the **untouched test block ({r['blocks']['test'][0]} to {r['blocks']['test'][1]})**, scored once.",
@@ -187,8 +247,10 @@ def write_card(r: dict, path: Path) -> Path:
         head, *[_row(x) for x in r["test"]],
         "",
         f"ROC-AUC is a ranking measure, not accuracy. Brier score: lower is better. Brier skill score (BSS) > 0 means "
-        f"better than that baseline. Positive rate on the test block: {t['positive_rate']:.1%}.",
+        f"better than that baseline. Positive rate on the test block: {t['positive_rate']:.1%}. The climatology "
+        "baseline is NOAA-20's 2019-2025 record for the cell and week of year (no 2026 data).",
         "",
+        *compare,
         "### New activity (no fire in the cell in the previous 30 days)",
         "",
         head, *[_row(x) for x in r["new_activity_subset"]],
@@ -235,8 +297,8 @@ def write_card(r: dict, path: Path) -> Path:
         "wildfire only.",
         "- **Clouds and outages:** a missed detection looks like no fire. NOAA-20 outages are dropped from labels, "
         "clouds are not.",
-        "- **One year of data:** no seasonal features yet. Validation and test are Aug–Oct, so other seasons are "
-        "untested.",
+        "- **Training is one year (2026):** season enters only through the 2019-2025 climatology (baseline, and "
+        "feature in v2.1). Validation and test are Aug–Oct, so other seasons are untested.",
         "",
         "## Ethical notes",
         "",
