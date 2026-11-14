@@ -28,7 +28,7 @@ python -m godseye train-v2 --climatology && python -m godseye evaluate && python
 ## What it does
 
 - **Burning activity calendar** (`/`): a year × week grid per area (named areas or a box drawn on the map) of Aqua-equivalent fire cell-days, with a 90% range. Each raw sensor series is a toggle away, and sensors are never added together.
-- **Season and history:** the seasonal profile, critical periods, unusual weeks and "this week vs history", from 15 years **for any box you draw on Earth** (global 0.25° tiles, 2012–2026, loaded per box) and for the named areas (Levant, Jordan, Argentina). An area needs ≥ 5 years, and the app says so instead of guessing.
+- **Season and history:** the seasonal profile, critical periods, unusual weeks and "this week vs history", from 15 years **for any box you draw on Earth** (global 0.25° tiles, 2012–2026, loaded per box) and for the named areas (Levant, Jordan, Argentina, and two focused areas chosen in advance, ADR 0008: the Northern Jordan forest belt and the Paraná Delta's Islas de Victoria). An area needs ≥ 5 years, and the app says so instead of guessing.
 - **Current:** data runs to 14 Nov 2026 (FIRMS near-real-time); the 7-day outlook is issued from the last full day.
 - **Next 7 days:** a calibrated chance of satellite-detected fire per 0.25° cell, with its test-block skill shown next to the persistence baseline.
 - **3D globe** (optional, the gods-eye-view fork): Active Fires, a Wildfire Risk layer, and agent tools that answer "is this week unusual for northern Jordan?". See `integrations/gods-eye-view/README.md`.
@@ -51,7 +51,7 @@ Also measured: Aqua's daytime overpass has drifted to about **15:24 local time**
 
 - **Very large boxes** (more than ~30 million daily cell rows, roughly 40° × 40° in fire-heavy regions) fall back to the latest year and say so; draw a smaller box.
 - **2012–2026 only.** The FIRMS archive we use starts in 2012, so there is no Terra-only segment (2000–2002) and no real MODIS-only era; the MODIS → VIIRS switch in the headline figure is simulated inside the overlap and labelled so.
-- **Critical periods under a rule fixed in advance (ADR 0006):** Argentina and Jordan count as active all year, so their "critical period" is the whole year; the Levant's is 45 weeks. We report this rather than retune the rule.
+- **Critical periods under a rule fixed in advance (ADR 0006):** Argentina, Jordan and the Paraná Delta count as active all year (the app says so); the Levant's period is 45 weeks; the Northern Jordan forest belt averages 0.2 fire cell-days a week, below the floor, so it shows "too little detected activity to define critical periods". We report this rather than retune the rule.
 - **The risk model is trained on 2026** (with 2019–2025 only as a climatology); validation and test are Aug–Oct.
 - Cloud cover is not mapped: a low count can mean cloud, not absence of fire.
 - Counts are of kept detections (nominal/high confidence vegetation fires). Agricultural burning counts as fire.

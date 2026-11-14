@@ -8,3 +8,12 @@ levant:
 argentina:
   label: Argentina
   bbox: [-74.0, -55.5, -53.5, -21.5]
+# ADR 0008: focused areas, chosen before looking at their results.
+jordan_forest_belt:
+  label: Northern Jordan forest belt (Irbid, Ajloun, Jerash)
+  # Union of the governorates' bounding boxes in Natural Earth 1:10m admin-1 v5.2.0-pre (JO-IR, JO-AJ, JO-JA).
+  bbox: [35.545, 32.096, 36.094, 32.748]
+parana_delta:
+  label: Paraná Delta, Islas de Victoria (Argentina)
+  # Bounding box of OpenStreetMap relation 8319203, "Reserva de Uso Múltiple Islas de Victoria" (Entre Ríos).
+  bbox: [-60.723, -33.284, -59.766, -32.432]
