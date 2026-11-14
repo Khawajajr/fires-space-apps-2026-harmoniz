@@ -28,7 +28,7 @@
       "ingest": {
         "part": "6f4304daefcadaf3989c020c8cd518e38394260937bc6020ad0d125d5be442e6",
         "fire_cell_days": 9634518,
-        "seconds": 216.9,
+        "seconds": 195.5,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -70,7 +70,7 @@
       "ingest": {
         "part": "d4000bd505ec13aca786df9f387494b96958449c5ef13847415274f65f48bb38",
         "fire_cell_days": 7494676,
-        "seconds": 167.5,
+        "seconds": 205.7,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -112,7 +112,7 @@
       "ingest": {
         "part": "3fb76ce0b80913658bb1c72b6f7795eba2676d701666aea539c57b4335619fb1",
         "fire_cell_days": 10710294,
-        "seconds": 269.5,
+        "seconds": 256.5,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -154,7 +154,7 @@
       "ingest": {
         "part": "0aabcca02ee3fd31b618b2934bc8c74382b8cb0e47e3f83b34d0d251d99f5c2a",
         "fire_cell_days": 10840770,
-        "seconds": 274.3,
+        "seconds": 252.4,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -196,7 +196,7 @@
       "ingest": {
         "part": "e8af92a9f4845b0542db5e0a4413a21a67bb881d3b0849a6d236ad538042b39a",
         "fire_cell_days": 10336601,
-        "seconds": 266.7,
+        "seconds": 247.1,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -238,7 +238,7 @@
       "ingest": {
         "part": "b33261b0b8d5c6dc39504f6049d13f3e55682a38dbd914781440e4c97c136449",
         "fire_cell_days": 9606470,
-        "seconds": 209.7,
+        "seconds": 192.6,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -280,7 +280,7 @@
       "ingest": {
         "part": "2250f6c43bdeffbc810b198645140c488289fbe4c62213fc6e48c8a7ab8c6089",
         "fire_cell_days": 10915344,
-        "seconds": 278.7,
+        "seconds": 261.1,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -322,7 +322,7 @@
       "ingest": {
         "part": "883912439c1b17889c4028e4e4a773ccf913b8dfaa1bbc6c8bdf87bccdbc227e",
         "fire_cell_days": 11563844,
-        "seconds": 294.3,
+        "seconds": 276.6,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -364,7 +364,7 @@
       "ingest": {
         "part": "5c079c9cd04a2096a1d01bb88feab7674194c32b5f70e97ff590e869296ecc66",
         "fire_cell_days": 9273308,
-        "seconds": 204.0,
+        "seconds": 183.1,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -406,7 +406,7 @@
       "ingest": {
         "part": "ebb9f760624200bc5da1a91512701f542eb25494919ee9698d08bf13a66dd3b9",
         "fire_cell_days": 9107384,
-        "seconds": 208.2,
+        "seconds": 188.2,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -448,7 +448,7 @@
       "ingest": {
         "part": "56841bfd797554ac02ca055be6dd5ca0c2f34335a6e06591a6e7547081e18eca",
         "fire_cell_days": 11129074,
-        "seconds": 277.3,
+        "seconds": 262.7,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -472,18 +472,18 @@
         "url": "https://firms.modaps.eosdis.nasa.gov/download/",
         "request": "DL_FIRE_M-C61_845635"
       },
-      "rows": 3708770,
+      "rows": 3708772,
       "first_date": "2025-01-01",
       "last_date": "2025-12-31",
       "satellites": {
         "Aqua": 2632704,
-        "Terra": 1076066
+        "Terra": 1076068
       },
       "product": [
         "archive"
       ],
       "versions": {
-        "61.03": 3708770
+        "61.03": 3708772
       },
       "sensors": [
         "Aqua-MODIS",
@@ -491,8 +491,8 @@
       ],
       "ingest": {
         "part": "7d508e7d09161adef5118cc73b940c727380c988cde3e78ecba11fbc78428308",
-        "fire_cell_days": 3200802,
-        "seconds": 44.5,
+        "fire_cell_days": 3200804,
+        "seconds": 58.1,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -502,7 +502,7 @@
           "dropped_nrt_near_known_static_source": 0,
           "dropped_nrt_superseded_by_archive": 0,
           "dropped_duplicates": 0,
-          "detections_kept": 3332346
+          "detections_kept": 3332348
         }
       }
     },
@@ -536,7 +536,7 @@
       "ingest": {
         "part": "2e0923f289680f6f403350239c3df59cc133810510b2e0d4e335cbb4b58951bb",
         "fire_cell_days": 4334126,
-        "seconds": 39.7,
+        "seconds": 78.5,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -580,7 +580,7 @@
       "ingest": {
         "part": "e06ec37508091b6408ba90e18111983b37d50d0a04d5390f1a7aef8498c457bd",
         "fire_cell_days": 3694036,
-        "seconds": 51.1,
+        "seconds": 66.4,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -624,7 +624,7 @@
       "ingest": {
         "part": "ccc70c45baa1224da8946e112d91b2fddd4e7470599d944fc8b0cb89b405a1ff",
         "fire_cell_days": 3854758,
-        "seconds": 54.2,
+        "seconds": 70.3,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -668,7 +668,7 @@
       "ingest": {
         "part": "2f4728a40006f1982c850b5393b7a51a3ff5c80e12e4dec948de3ac2ef06cdcc",
         "fire_cell_days": 4127865,
-        "seconds": 57.6,
+        "seconds": 75.1,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -712,7 +712,7 @@
       "ingest": {
         "part": "472068e6656f542684c026d3e34601f7e1ddda698039b99ab41705823c7768e9",
         "fire_cell_days": 3847179,
-        "seconds": 54.1,
+        "seconds": 69.6,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -756,7 +756,7 @@
       "ingest": {
         "part": "8cff010e8311ecb1e8703a24cbbbae399e34afa773a0638290782b7e0d17c8e3",
         "fire_cell_days": 3863161,
-        "seconds": 53.6,
+        "seconds": 70.6,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -780,18 +780,18 @@
         "url": "https://firms.modaps.eosdis.nasa.gov/download/",
         "request": "DL_FIRE_M-C61_845768"
       },
-      "rows": 4210217,
+      "rows": 4210218,
       "first_date": "2018-01-01",
       "last_date": "2018-12-31",
       "satellites": {
-        "Aqua": 2741560,
+        "Aqua": 2741561,
         "Terra": 1468657
       },
       "product": [
         "archive"
       ],
       "versions": {
-        "6.03": 4210217
+        "6.03": 4210218
       },
       "sensors": [
         "Aqua-MODIS",
@@ -800,12 +800,12 @@
       "ingest": {
         "part": "214952bfbc9fa9c328e87ed5b684ee06cfb7580e81a0bedcff749d11470db84c",
         "fire_cell_days": 3626891,
-        "seconds": 50.4,
+        "seconds": 65.2,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
           "dropped_frp_le_zero": 1887,
-          "dropped_confidence_below_nominal": 194831,
+          "dropped_confidence_below_nominal": 194832,
           "dropped_non_vegetation_type": 223164,
           "dropped_nrt_near_known_static_source": 0,
           "dropped_nrt_superseded_by_archive": 0,
@@ -844,7 +844,7 @@
       "ingest": {
         "part": "b35f920f03dd09da2bd64eefe0d2ae2ee05e688599eb2e8d62670752a5e8ce45",
         "fire_cell_days": 3977032,
-        "seconds": 55.8,
+        "seconds": 72.4,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -888,7 +888,7 @@
       "ingest": {
         "part": "4c034594df44d4d1f63481998be8d9cfa092f7041fa25304b9a52f5c1fb5da29",
         "fire_cell_days": 3871541,
-        "seconds": 54.2,
+        "seconds": 70.8,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -932,7 +932,7 @@
       "ingest": {
         "part": "391a68dd14be5f074d707036c6c724d1d1c3d983f50ae1bec336ee364de0acac",
         "fire_cell_days": 3801470,
-        "seconds": 53.3,
+        "seconds": 68.7,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -976,7 +976,7 @@
       "ingest": {
         "part": "6066875108175e40b7a53e24c50c3e3c28dce90afd4aeb2dfb68f3bce4d6a2af",
         "fire_cell_days": 3301208,
-        "seconds": 45.9,
+        "seconds": 59.4,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1020,7 +1020,7 @@
       "ingest": {
         "part": "51b7db723df4b4893688833e259bffbd8caad6499bf4455ae0503783e054a7e7",
         "fire_cell_days": 4045570,
-        "seconds": 57.1,
+        "seconds": 72.4,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1064,7 +1064,7 @@
       "ingest": {
         "part": "ba563e5ca527e526190db8e99e59ae3e1d6786ce72d33f7c1651b07eec24aaed",
         "fire_cell_days": 4217279,
-        "seconds": 58.9,
+        "seconds": 76.0,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1106,7 +1106,7 @@
       "ingest": {
         "part": "ebcf04e7de836bc05960651a00bfdf8ea6ecd2b6787a1080416479e6737e27af",
         "fire_cell_days": 9490506,
-        "seconds": 211.6,
+        "seconds": 193.0,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1148,7 +1148,7 @@
       "ingest": {
         "part": "fe818079a236869d883678f98abdf7e653a614dbbab54821a361dcb2b9ae9442",
         "fire_cell_days": 10532727,
-        "seconds": 234.8,
+        "seconds": 252.9,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1190,7 +1190,7 @@
       "ingest": {
         "part": "729a16baad16516998554044b4d44896e94aaebe18e09088a11146f6e9926496",
         "fire_cell_days": 10148633,
-        "seconds": 253.2,
+        "seconds": 204.1,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1232,7 +1232,7 @@
       "ingest": {
         "part": "09b36609f7ead976647ae0f46947d80209dfa0ab86a28fee49aaa8638bcc8f08",
         "fire_cell_days": 10661982,
-        "seconds": 264.0,
+        "seconds": 245.6,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1274,7 +1274,7 @@
       "ingest": {
         "part": "73497ea85147246ff5c3eceaa5fa22c44139dd385c895f9c986e8e8bae360cdd",
         "fire_cell_days": 11211006,
-        "seconds": 274.3,
+        "seconds": 261.5,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1316,7 +1316,7 @@
       "ingest": {
         "part": "308cbde31de39c95e055b0b78817e8bbae53828978bef1ec2771912fa938f6b2",
         "fire_cell_days": 10711685,
-        "seconds": 269.6,
+        "seconds": 245.0,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1358,7 +1358,7 @@
       "ingest": {
         "part": "facbe956c2501c000953ad3e9a7dfc9d6870d16fe666d275af72ba2705669716",
         "fire_cell_days": 10260837,
-        "seconds": 265.8,
+        "seconds": 239.9,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1400,7 +1400,7 @@
       "ingest": {
         "part": "34c67fc44a12c52d8442aa3936b8bcea0fd58c324303b1d308aa8af574b20735",
         "fire_cell_days": 9878908,
-        "seconds": 219.1,
+        "seconds": 201.4,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1442,7 +1442,7 @@
       "ingest": {
         "part": "3d224bc41b185980a8a360608d9bd0178b48afaf5a870ac7ec47b60765046bed",
         "fire_cell_days": 10693816,
-        "seconds": 269.9,
+        "seconds": 256.2,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1484,7 +1484,7 @@
       "ingest": {
         "part": "824c59d4d75f99df97a9414bdc0c115b81a4ee4c3b9846ace1b99495faddb062",
         "fire_cell_days": 10742809,
-        "seconds": 275.3,
+        "seconds": 253.0,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1526,7 +1526,7 @@
       "ingest": {
         "part": "b16490fff76d21011b3f3a84cb5b0acda4fd1ba6773090f1206876c596c59dc4",
         "fire_cell_days": 10238684,
-        "seconds": 266.9,
+        "seconds": 247.3,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1568,7 +1568,7 @@
       "ingest": {
         "part": "2571a04659c83b0ca9461a6c505228964ce2cf88b48c58d043dffd92f9073253",
         "fire_cell_days": 8972630,
-        "seconds": 189.8,
+        "seconds": 176.0,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1610,7 +1610,7 @@
       "ingest": {
         "part": "c2ae06a22feff32abba68d60edb243239db7686fab56aba98d0dc3cb88e61360",
         "fire_cell_days": 10935829,
-        "seconds": 279.3,
+        "seconds": 264.9,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,
@@ -1652,7 +1652,7 @@
       "ingest": {
         "part": "efd6dc38a2c6ee57017e2d1fd7f379c4bbe6483ce7e81b156fe13057081db621",
         "fire_cell_days": 10629966,
-        "seconds": 261.0,
+        "seconds": 255.0,
         "filters": {
           "dropped_missing_core_fields": 0,
           "dropped_bad_coords": 0,

@@ -125,6 +125,17 @@ def pick_store(store: CalendarStore, bbox: tuple) -> CalendarStore:
     return (tiles.store_for(bbox) if tiles is not None else None) or store
 
 
+TOO_LARGE = ("This box is too large for the 15-year record (it would hold more than {rows:,} daily cell rows), so "
+             "only the latest year is shown. Draw a smaller box (up to roughly 40° x 40° in fire-heavy regions).")
+
+
+def too_large_message(bbox: tuple) -> str | None:
+    tiles = STORE.get("tiles")
+    if tiles is None or any(contains(b, bbox) for b, _ in STORE.get("aoi", {}).values()):
+        return None
+    return TOO_LARGE.format(rows=tiles.max_rows) if tiles.too_large(bbox) else None
+
+
 def get_store() -> CalendarStore:
     if "calendar" not in STORE:
         raise HTTPException(503, "calendar data not loaded - run `godseye aggregate`")

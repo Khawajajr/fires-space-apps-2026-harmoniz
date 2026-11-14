@@ -25,7 +25,11 @@ Updated 2026-11-14, ~09:15 Amman. The archive ingest, the multi-year calibration
 4. **Live pitch:** rehearse `docs/DEMO_SCRIPT.md` (3 min).
 5. **Challenge link:** add the exact Space Apps challenge URL to the top of `README.md` (Claude didn't guess it).
 
-## 4. Nice to have (only if time remains)
+## 4. Still open from your list
+
+- Item 1 referred to "the 3 follow-ups from my last message", which never reached Claude. Done from it: the 2026 Aqua NRT check and an "active all year" critical-period message. Waiting for you: **which 2 focused AOIs** (name + bbox) and **the scope of the Arabic UI**.
+
+## 5. Nice to have (only if time remains)
 
 - Per-cell "why" for the risk forecast (`pred_contrib` in the Next 7 days panel): cut candidate #2, not done.
 - Arabic UI strings (the brief calls this a bonus).

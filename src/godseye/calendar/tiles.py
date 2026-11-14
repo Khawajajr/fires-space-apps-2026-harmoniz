@@ -38,7 +38,13 @@ class TileStores:
         self.available = {p.stem for p in self.dir.glob("t_*.feather")}
         self.first, self.last = pd.Timestamp(avail.acq_date.min()), pd.Timestamp(avail.acq_date.max())
         self._stores: OrderedDict = OrderedDict()
+        self._refused: set = set()            # boxes over max_rows, remembered so they don't re-read tiles
         self._lock = threading.Lock()
+
+    def too_large(self, bbox: tuple[float, float, float, float]) -> bool:
+        """True when the box was refused for having more than max_rows (call after store_for)."""
+        cells, snapped = grid_cells(bbox, self.grid_deg)
+        return cells > 0 and tuple(snapped) in self._refused
 
     def store_for(self, bbox: tuple[float, float, float, float]) -> CalendarStore | None:
         cells, snapped = grid_cells(bbox, self.grid_deg)
@@ -46,6 +52,8 @@ class TileStores:
             return None
         key = tuple(snapped)
         with self._lock:
+            if key in self._refused:
+                return None
             if key in self._stores:
                 self._stores.move_to_end(key)
                 return self._stores[key]
@@ -57,6 +65,7 @@ class TileStores:
                 t = t[in_bbox(t.cell_lat.to_numpy(), t.cell_lon.to_numpy(), bbox)]
                 rows += len(t)
                 if rows > self.max_rows:
+                    self._refused.add(key)
                     return None
                 frames.append(t)
             grid = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame(

@@ -7,6 +7,7 @@ Last updated: 2026-11-14, after the multi-year ingest (09:xx). Read this first, 
 - The mission brief is `CLAUDE_CODE_PROMPT.md`. The design decisions are in `GLOSSARY.md` and `docs/adr/0001`–`0007`.
 - The work plan is `.scratch/space-apps-2026/spec.md`. It includes the agreed **build order and cut order**. The tickets are in `.scratch/space-apps-2026/issues/`, and each says `Status: done` or `ready-for-agent`, with notes at the bottom.
 - **Done and pushed:** every ticket (01–13), Phase 7 and Phase 8. Tickets 07 and 08 ran on the global archive on Sat 14 Nov. The user's manual steps are in `FOR_ME_TObeDONE.md`.
+- **Any box:** outside the named AOIs the calendar comes from the global 0.25° tiles (2012–2026), built by `ingest-archive`.
 - **Data:** the 2012–2025 global archive (39 zips in `C:\Users\muham\Downloads\NASA_FIRE_DATA`, read in place) plus 2026 in `data/raw`. `godseye ingest-archive` builds `data/processed/archive/` and `data/processed/aoi/{levant,argentina}/`.
 - **Served model:** risk v2.1 (NOAA-20, plus the 2019–2025 climatology feature), calibrated. Test block: ROC-AUC 0.880 vs persistence 0.749 and climatology 0.816 (`docs/MODEL_CARD.md`).
 

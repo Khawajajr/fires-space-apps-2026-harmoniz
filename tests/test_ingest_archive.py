@@ -156,3 +156,33 @@ def test_a_fire_free_box_reads_zero_not_missing_and_huge_boxes_are_refused(setup
 def test_tiles_for_handles_the_antimeridian():
     assert tiles_for((170.0, -20.0, -170.0, -10.0)) == ["t_-20_+170", "t_-20_-180"]
     assert tiles_for((34.0, 29.0, 42.5, 37.5)) == ["t_+20_+030", "t_+20_+040", "t_+30_+030", "t_+30_+040"]
+
+
+def test_api_serves_any_box_from_the_tiles_and_explains_a_box_that_is_too_large(setup):
+    from dataclasses import replace
+
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from godseye.api import calendar as calendar_api
+    from godseye.api import climatology as climatology_api
+    from godseye.calendar.store import CalendarStore
+    from godseye.config import get_config
+
+    cfg, zips, first, second = setup
+    proc = cfg.processed_dir
+    calendar_api.STORE["calendar"] = CalendarStore(pd.read_feather(proc / "sensor_grid_daily.feather"),
+                                                   pd.read_feather(proc / "sensor_availability.feather"), 0.25)
+    calendar_api.STORE["tiles"] = tile_stores(cfg, max_rows=2000)        # small box ~1,100 rows; big ~3,300
+    app = FastAPI()
+    app.include_router(calendar_api.router)
+    app.include_router(climatology_api.router)
+    app.dependency_overrides[get_config] = lambda: replace(cfg, climatology={"activity": "relative"})
+    try:
+        with TestClient(app) as c:
+            small = c.get("/api/calendar", params={"bbox": "19,9,22,12", "unit": "week"}).json()
+            assert small["years"][0] == 2025                       # from the tiles, not the 2026-only global store
+            big = c.get("/api/calendar/now", params={"bbox": "-80,-50,40,40", "series": "NOAA-20-VIIRS"}).json()
+            assert big["status"] == "insufficient_history" and "too large" in big["message"]
+    finally:
+        calendar_api.STORE.clear()

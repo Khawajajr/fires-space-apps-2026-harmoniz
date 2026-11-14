@@ -1,6 +1,7 @@
 """Climatology, anomaly and critical-period endpoints over one AOI's weekly series (ADR 0006)."""
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 from typing import Literal
 
@@ -8,7 +9,7 @@ import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from godseye.api.calendar import AOIOut, get_store, pick_store, resolve_aoi
+from godseye.api.calendar import AOIOut, get_store, pick_store, resolve_aoi, too_large_message
 from godseye.calendar import climatology as C
 from godseye.calendar.store import CalendarStore, grid_cells
 from godseye.config import Config, get_config
@@ -132,6 +133,9 @@ def analysis(aoi: str | None, bbox: str | None, series: str, store: CalendarStor
     label = store.chain.label if series == "harmonized" else series
     activity = cfg.climatology["activity"]
     a = C.analyse(years, values, coverage, days, activity)
+    big = too_large_message(area.bbox)
+    if big is not None and a.status == "insufficient_history":
+        a = replace(a, message=big)
     common = dict(aoi=AOIOut(name=area.name, label=area.label, bbox=list(area.bbox), grid_bbox=snapped, cells=cells),
                   series=series, series_label=label, status=a.status, message=a.message, years=a.years,
                   history_years=a.history_years, gate_rule=a.gate_rule, gated_weeks=a.gated_weeks,
@@ -246,7 +250,8 @@ def now(aoi: str | None = None, bbox: str | None = None, series: str = Series,
                 data_days=n_days, data_age_days=age, reference_years=ref_years, reference_values=int(len(ref)), **band)
     if ref_years < C.MIN_YEARS:
         return NowResponse(**base, **{**empty, **info}, status="insufficient_history",
-                           message=f"needs ≥{C.MIN_YEARS} years of history (currently {ref_years} other year(s))")
+                           message=too_large_message(area.bbox) or
+                           f"needs ≥{C.MIN_YEARS} years of history (currently {ref_years} other year(s))")
     pct = C.percentile_of(v, ref)
     lvl = level_of(pct)
     in_season = a.status == "ok" and min(week, C.WEEKS) in a.gated_weeks
