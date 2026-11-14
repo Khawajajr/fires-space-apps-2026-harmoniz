@@ -312,12 +312,22 @@ class SensorCoverage(BaseModel):
     days: dict[str, int] = Field(description="days per availability status in the data range")
 
 
+class StoreRange(BaseModel):
+    name: str = Field(description="'global' or the named AOI whose multi-year store serves requests inside it")
+    kind: str = Field(description="global | aoi")
+    bbox: list[float] | None
+    first_day: str
+    last_day: str
+    years: int
+
+
 class MetaResponse(BaseModel):
     name: str
     api_version: str
     challenge: str
-    data_range: list[str] | None
-    sensors: list[SensorCoverage]
+    data_range: list[str] | None = Field(description="first and last day over all calendar stores")
+    stores: list[StoreRange] = Field(default_factory=list, description="date range of each calendar store")
+    sensors: list[SensorCoverage] = Field(description="per-sensor coverage of the global store")
     model: dict | None = Field(description="risk model artifact: name, version, created_at, git_sha, data_sha256, ...")
     harmonization: list[dict] = Field(description="sensor links: source, target, method, provisional")
     aois: list[str]
@@ -344,6 +354,11 @@ ATTRIBUTION = [
 ]
 
 
+def store_range(name: str, kind: str, bbox: list[float] | None, store) -> StoreRange:
+    return StoreRange(name=name, kind=kind, bbox=bbox, first_day=store.first.strftime("%Y-%m-%d"),
+                      last_day=store.last.strftime("%Y-%m-%d"), years=store.last.year - store.first.year + 1)
+
+
 @app.get("/api/meta", response_model=MetaResponse)
 def meta():
     store = calendar_api.STORE.get("calendar")
@@ -359,6 +374,10 @@ def meta():
                 first_day=str(store.dates[has[0]].date()) if len(has) else None,
                 last_day=str(store.dates[has[-1]].date()) if len(has) else None,
                 days={names[k]: int((st == k).sum()) for k in names}))
+    stores = [store_range("global", "global", None, store)] if store is not None else []
+    stores += [store_range(name, "aoi", list(bbox), s) for name, (bbox, s) in calendar_api.STORE.get("aoi", {}).items()]
+    if stores:
+        data_range = [min(s.first_day for s in stores), max(s.last_day for s in stores)]
     links = []
     if store is not None and store.chain is not None:
         chain = store.chain
@@ -367,7 +386,7 @@ def meta():
                           "provisional": k.provisional})
     return MetaResponse(name=CONFIG.display_name, api_version=app.version,
                         challenge="NASA Space Apps 2026: Harmonization of MODIS and VIIRS Hot Spots",
-                        data_range=data_range, sensors=sensors, model=model_info(),
+                        data_range=data_range, stores=stores, sensors=sensors, model=model_info(),
                         harmonization=links, aois=sorted(CONFIG.aois), attribution=ATTRIBUTION)
 
 

@@ -63,3 +63,13 @@ def test_meta_describes_data_model_and_attribution(client):
     assert m["name"] == CFG.display_name and "FIRMS" in m["attribution"][0]
     assert {s["sensor"] for s in m["sensors"]} >= {"Aqua-MODIS", "NOAA-20-VIIRS"}
     assert m["model"]["version"] == CFG.risk.get("serve", "v1") and m["model"]["num_trees"] > 0
+
+
+def test_meta_reports_each_stores_date_range(client):
+    m = client.get("/api/meta").json()
+    stores = {s["name"]: s for s in m["stores"]}
+    assert stores["global"]["kind"] == "global"
+    assert m["data_range"] == [min(s["first_day"] for s in m["stores"]), max(s["last_day"] for s in m["stores"])]
+    for s in m["stores"]:
+        if s["kind"] == "aoi":                                 # multi-year AOI stores reach back before the global one
+            assert s["first_day"] <= stores["global"]["first_day"] and s["bbox"] is not None

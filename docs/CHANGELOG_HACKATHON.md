@@ -60,3 +60,4 @@ Times are Asia/Amman.
 ## 2026-11-14 (after the 09:00 start)
 - Docs updated to the multi-year results: README hero figure and results, SUBMISSION (incl. what existed before the
   start), DEMO_SCRIPT, DATA_CARD, METHODOLOGY, ADR 0001, spec, tickets 07/08, HANDOFF, FOR_ME_TObeDONE.
+- 09:50 /api/meta: data_range is now the range over all calendar stores (2012-01-01 -> 2026-11-06), plus a per-store list (global 2026; levant, argentina 2012-2026).
