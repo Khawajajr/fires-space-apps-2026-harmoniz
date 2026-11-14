@@ -3196,6 +3196,244 @@
             "observed_over_predicted": 0.9048
           }
         ],
+        "monthly_after_window": [
+          {
+            "month": "2022-01",
+            "observed_over_predicted": 0.9816
+          },
+          {
+            "month": "2022-02",
+            "observed_over_predicted": 1.0163
+          },
+          {
+            "month": "2022-03",
+            "observed_over_predicted": 1.0221
+          },
+          {
+            "month": "2022-04",
+            "observed_over_predicted": 0.8908
+          },
+          {
+            "month": "2022-05",
+            "observed_over_predicted": 1.0248
+          },
+          {
+            "month": "2022-06",
+            "observed_over_predicted": 1.0007
+          },
+          {
+            "month": "2022-07",
+            "observed_over_predicted": 0.989
+          },
+          {
+            "month": "2022-08",
+            "observed_over_predicted": 1.0084
+          },
+          {
+            "month": "2022-09",
+            "observed_over_predicted": 0.976
+          },
+          {
+            "month": "2022-10",
+            "observed_over_predicted": 1.0499
+          },
+          {
+            "month": "2022-11",
+            "observed_over_predicted": 0.9849
+          },
+          {
+            "month": "2022-12",
+            "observed_over_predicted": 0.9963
+          },
+          {
+            "month": "2023-01",
+            "observed_over_predicted": 0.9956
+          },
+          {
+            "month": "2023-02",
+            "observed_over_predicted": 1.0616
+          },
+          {
+            "month": "2023-03",
+            "observed_over_predicted": 0.9678
+          },
+          {
+            "month": "2023-04",
+            "observed_over_predicted": 0.9592
+          },
+          {
+            "month": "2023-05",
+            "observed_over_predicted": 1.0106
+          },
+          {
+            "month": "2023-06",
+            "observed_over_predicted": 1.0162
+          },
+          {
+            "month": "2023-07",
+            "observed_over_predicted": 1.0385
+          },
+          {
+            "month": "2023-08",
+            "observed_over_predicted": 1.0574
+          },
+          {
+            "month": "2023-09",
+            "observed_over_predicted": 1.0085
+          },
+          {
+            "month": "2023-10",
+            "observed_over_predicted": 1.0528
+          },
+          {
+            "month": "2023-11",
+            "observed_over_predicted": 1.0206
+          },
+          {
+            "month": "2023-12",
+            "observed_over_predicted": 1.0235
+          },
+          {
+            "month": "2024-01",
+            "observed_over_predicted": 1.0729
+          },
+          {
+            "month": "2024-02",
+            "observed_over_predicted": 1.0097
+          },
+          {
+            "month": "2024-03",
+            "observed_over_predicted": 0.9434
+          },
+          {
+            "month": "2024-04",
+            "observed_over_predicted": 0.9885
+          },
+          {
+            "month": "2024-05",
+            "observed_over_predicted": 1.062
+          },
+          {
+            "month": "2024-06",
+            "observed_over_predicted": 1.0067
+          },
+          {
+            "month": "2024-07",
+            "observed_over_predicted": 1.0703
+          },
+          {
+            "month": "2024-08",
+            "observed_over_predicted": 1.0693
+          },
+          {
+            "month": "2024-09",
+            "observed_over_predicted": 1.0773
+          },
+          {
+            "month": "2024-10",
+            "observed_over_predicted": 0.9758
+          },
+          {
+            "month": "2024-11",
+            "observed_over_predicted": 1.0301
+          },
+          {
+            "month": "2024-12",
+            "observed_over_predicted": 1.0237
+          },
+          {
+            "month": "2025-01",
+            "observed_over_predicted": 1.0271
+          },
+          {
+            "month": "2025-02",
+            "observed_over_predicted": 0.9854
+          },
+          {
+            "month": "2025-03",
+            "observed_over_predicted": 1.0219
+          },
+          {
+            "month": "2025-04",
+            "observed_over_predicted": 0.9785
+          },
+          {
+            "month": "2025-05",
+            "observed_over_predicted": 0.9871
+          },
+          {
+            "month": "2025-06",
+            "observed_over_predicted": 0.9626
+          },
+          {
+            "month": "2025-07",
+            "observed_over_predicted": 1.008
+          },
+          {
+            "month": "2025-08",
+            "observed_over_predicted": 1.0614
+          },
+          {
+            "month": "2025-09",
+            "observed_over_predicted": 1.0342
+          },
+          {
+            "month": "2025-10",
+            "observed_over_predicted": 1.0217
+          },
+          {
+            "month": "2025-11",
+            "observed_over_predicted": 0.9596
+          },
+          {
+            "month": "2025-12",
+            "observed_over_predicted": 0.9126
+          },
+          {
+            "month": "2026-01",
+            "observed_over_predicted": 0.9699
+          },
+          {
+            "month": "2026-02",
+            "observed_over_predicted": 0.9715
+          },
+          {
+            "month": "2026-03",
+            "observed_over_predicted": 0.8995
+          },
+          {
+            "month": "2026-04",
+            "observed_over_predicted": 0.8822
+          },
+          {
+            "month": "2026-05",
+            "observed_over_predicted": 0.8533
+          },
+          {
+            "month": "2026-06",
+            "observed_over_predicted": 0.8667
+          },
+          {
+            "month": "2026-07",
+            "observed_over_predicted": 0.8825
+          },
+          {
+            "month": "2026-08",
+            "observed_over_predicted": 0.9159
+          },
+          {
+            "month": "2026-09",
+            "observed_over_predicted": 0.8666
+          },
+          {
+            "month": "2026-10",
+            "observed_over_predicted": 0.9314
+          },
+          {
+            "month": "2026-11",
+            "observed_over_predicted": 1.0685
+          }
+        ],
         "from_year": 2022,
         "trend_per_year_after_window": -0.0205,
         "mean_ratio_in_window": 1.0032,

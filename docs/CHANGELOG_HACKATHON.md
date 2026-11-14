@@ -61,3 +61,5 @@ Times are Asia/Amman.
 - Docs updated to the multi-year results: README hero figure and results, SUBMISSION (incl. what existed before the
   start), DEMO_SCRIPT, DATA_CARD, METHODOLOGY, ADR 0001, spec, tickets 07/08, HANDOFF, FOR_ME_TObeDONE.
 - 09:50 /api/meta: data_range is now the range over all calendar stores (2012-01-01 -> 2026-11-06), plus a per-store list (global 2026; levant, argentina 2012-2026).
+- 10:00 2026 Aqua NRT check: the 2026 drift-check shortfall is not an NRT artifact. Observed/predicted is 0.905 for Jan-Jul 2026 (both sensors archive quality), 0.916 for Aug (S-NPP NRT) and 0.892 for Sep-Oct (both NRT), vs 0.999 / 1.061 / 1.029 for the same months of 2025; the decline starts around Mar 2026 (gradual: orbit drift). The monthly series is now in the drift check (harmonization_report.json, monthly_after_window).
+- 10:05 Critical periods: an area where every week passes the activity gate now says 'Active all year: no distinct critical period' (API all_year + summary; UI) instead of a 52-week period. Note text no longer calls the ADR 0006 amendment 'proposed'.

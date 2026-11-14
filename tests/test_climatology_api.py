@@ -59,6 +59,8 @@ def test_absolute_activity_lets_background_noise_make_every_week_active():
             assert b["gate_counts"]["default_rule_weeks"] == 52
             periods = c.get("/api/calendar/critical-periods", params=Q).json()["periods"]
             assert len(periods) == 1 and periods[0]["weeks"] == 52
+            crit = c.get("/api/calendar/critical-periods", params=Q).json()
+            assert crit["all_year"] and crit["summary"].startswith("Active all year")
     finally:
         calendar_api.STORE.clear()
 
@@ -81,6 +83,7 @@ def test_critical_period_is_the_summer_season(client):
     top = b["periods"][0]
     assert top["rank"] == 1 and 18 <= top["start_week"] <= 20 and 34 <= top["end_week"] <= 36
     assert " - " in top["label"]
+    assert b["all_year"] is False and b["summary"] is None
 
 
 def test_anomaly_is_the_unusual_week(client):

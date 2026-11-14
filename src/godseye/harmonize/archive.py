@@ -72,6 +72,17 @@ def drift_check(grid: pd.DataFrame, avail: pd.DataFrame, link: Link, metric: str
         x, y = np.array(after, dtype=float).T
         trend = round(float(np.polyfit(x, y, 1)[0]), 4)
     inside = [r["observed_over_predicted"] for r in rows if r["year"] < from_year and r["observed_over_predicted"]]
-    return {"years": rows, "from_year": from_year, "trend_per_year_after_window": trend,
+    # Monthly from the drift years on: shows whether a shortfall is a data-quality step (FIRMS switches from archive to
+    # near-real-time files in the latest months) or a gradual change such as orbit drift.
+    month = lambda d: d.dt.strftime("%Y-%m")
+    late_src, late_tgt = src[src.acq_date.dt.year >= from_year], tgt[tgt.acq_date.dt.year >= from_year]
+    late_r = r[(src.acq_date.dt.year >= from_year).to_numpy()]
+    mp = pd.Series(late_src[metric].to_numpy() * late_r,
+                   index=month(late_src.acq_date).to_numpy()).groupby(level=0).sum()
+    mo = late_tgt.groupby(month(late_tgt.acq_date))[metric].sum()
+    monthly = [{"month": m, "observed_over_predicted": round(float(mo.get(m, 0.0) / mp[m]), 4)}
+               for m in mp.index if mp[m] > 0]
+    return {"years": rows, "monthly_after_window": monthly, "from_year": from_year,
+            "trend_per_year_after_window": trend,
             "mean_ratio_in_window": round(float(np.mean(inside)), 4) if inside else None,
             "mean_ratio_after_window": round(float(np.mean([v for _, v in after])), 4) if after else None}

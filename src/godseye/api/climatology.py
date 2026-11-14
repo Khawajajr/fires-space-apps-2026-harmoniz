@@ -81,11 +81,17 @@ class Period(BaseModel):
 
 class CriticalPeriodsResponse(Common):
     periods: list[Period]
+    all_year: bool = Field(False, description="every week of the year passes the activity gate")
+    summary: str | None = Field(None, description="plain-language reading of the periods (e.g. active all year)")
+
+
+ALL_YEAR = ("Active all year: every week passes this area's activity gate (ADR 0006), so there is no distinct "
+            "critical period. Use the seasonal profile for the peak (week {peak}) and the unusual weeks instead.")
 
 
 def notes(activity: str, series: str) -> list[str]:
     active = (f"A week counts as active when it reaches {C.ACTIVE_SHARE:.0%} of this area's peak weekly median "
-              f"(never below {C.ACTIVE:g}); proposed amendment to ADR 0006." if activity == "relative" else
+              f"(never below {C.ACTIVE:g}); ADR 0006, amendment accepted." if activity == "relative" else
               f"A week counts as active with at least {C.ACTIVE:g} fire cell-day (ADR 0006).")
     out = [f"Climatology uses only past weeks with full data (or >= {C.MIN_PARTIAL_DAYS} of 7 days, scaled up).",
            f"Each ISO week pools the weeks either side (+-{C.POOL}) to steady estimates from few years.", active,
@@ -158,10 +164,12 @@ def anomalies(aoi: str | None = None, bbox: str | None = None, series: str = Ser
 def critical_periods(aoi: str | None = None, bbox: str | None = None, series: str = Series,
                      store: CalendarStore = Depends(get_store), cfg: Config = Depends(get_config)):
     a, common, _ = analysis(aoi, bbox, series, store, cfg)
-    return CriticalPeriodsResponse(**common, periods=[
-        Period(**p, label=f"{week_label(p['start_week'])} - "
-                          f"{day_month(date.fromisocalendar(REFERENCE_YEAR, p['end_week'], 7))}")
-        for p in a.critical_periods])
+    periods = [Period(**p, label=f"{week_label(p['start_week'])} - "
+                                 f"{day_month(date.fromisocalendar(REFERENCE_YEAR, p['end_week'], 7))}")
+               for p in a.critical_periods]
+    all_year = any(p.weeks >= 52 for p in periods)
+    return CriticalPeriodsResponse(**common, periods=periods, all_year=all_year,
+                                   summary=ALL_YEAR.format(peak=periods[0].peak_week) if all_year else None)
 
 
 class NowResponse(BaseModel):

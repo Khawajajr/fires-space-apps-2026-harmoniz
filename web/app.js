@@ -358,7 +358,9 @@ function renderSeason() {
     return;
   }
   renderProfile(c);
-  $("periods").innerHTML = s.crit.periods.length
+  $("periods").innerHTML = s.crit.all_year
+    ? empty(s.crit.summary)
+    : s.crit.periods.length
     ? `<ol>${s.crit.periods.slice(0, 5).map((p) => `<li><strong>${esc(p.label)}</strong> · ${p.weeks} weeks · ` +
         `${Math.round(p.share_of_year * 100)}% of a typical year's activity · peak week ${p.peak_week}</li>`).join("")}</ol>`
     : empty(s.crit.message || "No critical period.");
