@@ -68,6 +68,13 @@ def _ingest_archive(args) -> None:
     archive.run(cfg, Path(args.archive or cfg.archive_dir), args.workers, args.only, merge_parts=not args.no_merge)
 
 
+def _build_site(args) -> None:
+    from godseye import site
+
+    cfg = get_config()
+    print(site.build(cfg, Path(args.out or cfg.root / "site")))
+
+
 def _manifest(args) -> None:
     from godseye.ingest.manifest import write_manifest
 
@@ -167,6 +174,10 @@ def build_parser() -> argparse.ArgumentParser:
     ia.add_argument("--only", nargs="*", help="zip file names to read (timing runs)")
     ia.add_argument("--no-merge", action="store_true", help="read zips into parts only")
     ia.set_defaults(func=_ingest_archive)
+
+    bs = sub.add_parser("build-site", help="static snapshot of the calendar app (named areas, English and Arabic)")
+    bs.add_argument("--out", help="output folder (default: site/)")
+    bs.set_defaults(func=_build_site)
 
     m = sub.add_parser("manifest", help="record every FIRMS input file (source, dates, rows, sha256)")
     m.add_argument("inputs", nargs="*", help=f"files or directories (default: {cfg.raw_dir})")

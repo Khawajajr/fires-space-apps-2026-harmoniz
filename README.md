@@ -25,6 +25,8 @@ python -m godseye harmonize
 python -m godseye train-v2 --climatology && python -m godseye evaluate && python -m godseye api
 ```
 
+**Static snapshot (no backend):** `site/` holds the app with every API answer for the five named areas precomputed as JSON, in English and Arabic (`python -m godseye build-site` rebuilds it from the running pipeline's data). Serve it with any static server, for example `python -m http.server -d site 8090`, then open http://127.0.0.1:8090/. A banner says when it was built. Drawing a box needs the full app above, and the snapshot says so.
+
 ## What it does
 
 - **Burning activity calendar** (`/`): a year × week grid per area (named areas or a box drawn on the map) of Aqua-equivalent fire cell-days, with a 90% range. Each raw sensor series is a toggle away, and sensors are never added together.

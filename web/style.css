@@ -171,3 +171,7 @@ thead th { position: sticky; top: 0; background: var(--surface-1); color: var(--
 .chart, .now-scale, #map { direction: ltr; }
 [dir="rtl"] .tooltip { direction: rtl; text-align: right; }
 [dir="rtl"] .chart .hint { direction: rtl; }              /* the note under a chart is text, not a time axis */
+
+/* static snapshot only (site/, web/snapshot.js): what this page is and what it can't do */
+.snapshot-banner { margin: 0; padding: 8px 16px; background: var(--surface-0); color: var(--text-primary);
+                   border-bottom: 1px solid var(--border); font-size: 13px; }
