@@ -35,10 +35,10 @@ Fire managers need to know whether burning in their area is normal for the seaso
 
 ## How NASA data was used
 
-**NASA FIRMS** active fire detections, downloaded with the FIRMS archive tool. File list, dates, rows and sha256 are in `data/manifest.json`.
+**NASA FIRMS** active fire detections, downloaded with the FIRMS archive tool, plus the FIRMS yearly MODIS summaries by country for 2000–2011. File list, dates, rows and sha256 are in `data/manifest.json`.
 - **MODIS Collection 6.1** (MCD14ML) from Terra and Aqua.
 - **VIIRS 375 m Collection 2:** S-NPP (VNP14IMG), NOAA-20 (VJ114IMG), NOAA-21 (VJ214IMG).
-- **Coverage:** 2012-01-01 to 2026-11-06, global: 39 yearly archive files for 2012–2025 (558.9 million records; MODIS from 2012, S-NPP from 2012-01-20, NOAA-20 from 2018-04-01, NOAA-21 from 2023-03-01) plus 2026 archive and near-real-time files (51.0 million records). The archive files are read in place, never extracted.
+- **Coverage:** 2000-11-01 to 2026-11-14, global: 12 MODIS yearly files by country for 2000–2011 (49.6 million records, land only; Terra from 2000-11-01, Aqua from 2002-07-04), 39 yearly archive files for 2012–2025 (558.9 million records; S-NPP from 2012-01-20, NOAA-20 from 2018-04-01, NOAA-21 from 2023-03-01) plus 2026 archive and near-real-time files (51.0 million records). The archive files are read in place, never extracted.
 
 FIRMS acknowledgement: "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS), part of NASA's Earth Science Data and Information System (ESDIS)."
 
@@ -56,7 +56,7 @@ Copy from `docs/REFERENCES.md` (data, papers, code, libraries, AI tools). It inc
 
 | Time | Shot | Caption |
 |---|---|---|
-| 0–5 s | Headline figure (`headline_switchover.png`): the red naive record jumping | "15 years of NASA fire data. Every jump is a satellite change, not the fire." |
+| 0–5 s | Headline figure (`headline_switchover.png`): the red naive record jumping | "NASA fire data since 2000. Every jump is a satellite change, not the fire." |
 | 5–11 s | Same figure: the flat green harmonized line with its band | "We put five satellites on one scale, tested year by year on data the model never saw." |
 | 11–18 s | App: pick Levant, the calendar fills; hover a week with its 90% range | "Pick any area: its burning calendar, with uncertainty." |
 | 18–24 s | Hover an outage week (hatched / partial bar) | "Missing data is never zero fire: we flag satellite outages." |
@@ -68,7 +68,7 @@ Copy from `docs/REFERENCES.md` (data, papers, code, libraries, AI tools). It inc
 2. **Problem:** the headline figure's red line. The jumps are the satellites, not the fires.
 3. **Method:** fire cell-days, the sensor links, the simplest method that leave-one-year-out tests can't beat, bands from held-out errors.
 4. **Proof:** the slide table below: WAPE 0.086 vs 0.242 for one global ratio, band coverage 90.7–92.0%, Aqua's drift caught in 2026.
-5. **Product:** `reports/figures/app_calendar_levant.png` (and Jordan, Argentina): 15-year calendar, season, unusual weeks, this week vs history, Next 7 days.
+5. **Product:** `reports/figures/app_calendar_levant.png` (and Jordan, Argentina): 2000–2026 calendar, season, unusual weeks, this week vs history, Next 7 days.
 6. **Honesty:** outages flagged, metrics next to baselines (test ROC-AUC 0.880 vs 0.749 persistence and 0.816 climatology), limitations.
 7. **Impact and next steps:** fire managers in Jordan and the Levant; more areas; the open-source repo link.
 
@@ -76,13 +76,16 @@ Copy from `docs/REFERENCES.md` (data, papers, code, libraries, AI tools). It inc
 
 | | |
 |---|---|
-| Record | 15 years, 2012–2026, global; 5 sensors (Terra, Aqua, S-NPP, NOAA-20, NOAA-21) |
+| Record | 2000–2026, global; 5 sensors (Terra, Aqua, S-NPP, NOAA-20, NOAA-21); Aqua-equivalent headline 2003–2026 |
+| Real MODIS → VIIRS switch (2012) | naive record jumps 6.0× (Levant), 2.6× (Argentina); Aqua itself 0.95× / 0.81× |
+| Terra → Aqua link (2003–2021, 19 folds) | WAPE 0.136 > 0.086: fails the rule fixed in advance, so Terra stays per sensor |
 | Calibration window | 2013–2021 (Aqua's stable orbit), leave-one-year-out, 9 folds |
 | NOAA-20 → S-NPP (2018–2026) | no correction; ratio 0.994 (90% CI 0.992–0.996); band coverage 91.1% |
 | NOAA-21 → S-NPP (2023–2026) | one global ratio, ×1.027 (1.026–1.029); band coverage 90.7% |
 | S-NPP → Aqua-equivalent (2013–2021) | region × month ratios (shrunk); global ratio 0.245 (0.243–0.247); WAPE 0.086 vs 0.242 for one global ratio; band coverage 92.0% |
 | Aqua drift check | observed / predicted 0.97–1.04 in 2013–2025, 0.905 in 2026 (trend −0.021/yr after 2021) |
-| Calendars | Levant, Jordan, Argentina: 2012–2026 (15 years; climatology, anomalies, critical periods, this week vs history all on) |
+| Calendars | 5 named areas and any drawn box: 2000–2026, 24 history years (2003–2026; climatology, anomalies, critical periods, this week vs history all on) |
+| Critical periods (ADR 0006) | Levant 5 May – 2 Mar (43 weeks, peak week 25); Jordan, Argentina, Paraná Delta active all year; N. Jordan forest belt too little activity (0.18 cell-days/week) |
 | Risk v2, test 2–30 Oct 2026 | ROC-AUC 0.867, PR-AUC 0.731, Brier 0.106; BSS +0.197 vs persistence, +0.162 vs climatology |
 | Risk v2.1 (served), same test | ROC-AUC 0.880, PR-AUC 0.749, Brier 0.102; BSS +0.228 vs persistence, +0.194 vs climatology |
 | Baselines, same test | persistence 0.749 / 0.456 / 0.133; NOAA-20 2019–2025 climatology 0.816 / 0.605 / 0.127 |
@@ -99,7 +102,16 @@ Stated plainly, from `docs/CHANGELOG_HACKATHON.md` and the git history (times As
   - The calendar app and API, the sensor links and their validation, climatology and anomalies.
   - Risk v2/v2.1 and the model card, the globe tool, CI and the docs.
   - On Sat morning (08:00–08:59): the ingest of the 2012–2025 archive, the multi-year calibration and the v2.1 decision.
-- **After 09:00:** see the "after the 09:00 start" section of the changelog (documentation and submission updates so far).
+- **After 09:00** (details in the "after the 09:00 start" section of the changelog):
+  - per-store data ranges;
+  - the Aqua NRT check;
+  - data current to 14 Nov;
+  - global 0.25° tiles for any drawn box;
+  - the risk cache;
+  - two focused areas (ADR 0008);
+  - the Arabic UI;
+  - the record extended back to 2000 with the real 2012 switch;
+  - the static snapshot (`site/`).
 
 ## Final checklist (do these on the project page)
 - [ ] All 5 team members registered and on the Members tab (Ahmad Khawaja, Alina Abandah, Omar Sawalmeh, Zaid Ghaith, Joud Musa).

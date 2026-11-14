@@ -7,9 +7,15 @@ The headline is **Aqua-equivalent fire cell-days**: what Aqua-MODIS would have c
 - **Why fire cell-days:** counting 0.01° (~1 km) cells with any detection, instead of detections, removes most of the pixel-size effect. A 1 km MODIS pixel and the four or more 375 m VIIRS pixels covering the same fire become one cell.
 - **Why Aqua:** it has the longest afternoon record, and mapping the finer sensor down to the coarser one does not invent detail.
 - **Which value is shown when:**
-  - while Aqua's orbit was stable (to 2021), Aqua observed;
+  - before 2003: no headline value ("no data"). Aqua starts on 2002-07-04, so 2003 is its first full year;
+  - while Aqua's orbit was stable (2003–2021), Aqua observed;
   - after that, an estimate from VIIRS: S-NPP when it delivered full data that day, else NOAA-20/21 through their continuity links.
-- **Excluded from the headline:** Terra (morning orbit), shown separately.
+- **Excluded from the headline:** Terra (morning orbit), shown separately in "By sensor" from 2000-11-01.
+  - We tested whether a Terra → Aqua link could carry the headline back to 2000–2002. The test was the same leave-one-year-out test as the other links, over 2003–2021 (19 folds).
+  - The rule was fixed before running it: the band must cover 88–95% of held-out region-weeks, and region-month WAPE must be no worse than the shipped headline link's (0.086).
+  - Result: band coverage 91.4% passes, but the best method (shrunk region × month ratios) reaches WAPE 0.136 (one global ratio: 0.459). It fails, so Terra stays per sensor. The likely reason is the overpass time: morning (~10:30) against afternoon (~13:30) changes how much of the day's burning each satellite sees, region by region.
+- **Headline figure:** the naive record uses Aqua raw to 2011 and switches to the sum of the VIIRS satellites when S-NPP comes online (January 2012, the real switch). Aqua observed is the harmonized series through 2021.
+- **MODIS 2000–2011 source:** the FIRMS yearly summaries by country, with a static-source mask built from our own 2012–2025 MODIS downloads. Without it, the newer static-source flag in those files would add 1–5% of industrial cell-days. On 2012, held out of the mask, the two sources agree to within ±0.6%. See DATA_CARD.
 
 ## 2. Sensor links (ADRs 0001, 0007)
 

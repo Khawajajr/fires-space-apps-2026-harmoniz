@@ -1,5 +1,5 @@
 """
-The global multi-year calendar for any drawn box: 0.25° sensor-grid tiles (10° x 10°, 2012-2026) loaded lazily.
+The global multi-year calendar for any drawn box: 0.25° sensor-grid tiles (10° x 10°, 2000-2026) loaded lazily.
 
 A request's box reads only the tiles it touches and keeps only the cells inside it, so memory follows the box, not the
 globe. Built stores are kept in a small LRU cache. A box whose cells would exceed `max_rows` is refused (None), and the

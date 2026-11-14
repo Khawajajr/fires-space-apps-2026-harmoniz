@@ -1,6 +1,8 @@
 """
 The calendar's harmonized headline series (ADR 0001): one Aqua-equivalent value per day, never a sum of sensors.
 
+  before `observed_from` (2003, Aqua's first full year): no headline value ("no data"); MODIS 2000-2002 and Terra
+    stay per sensor only
   up to `observed_until` (2021): Aqua-MODIS observed, on days Aqua delivered data
   otherwise (and from 2022, when Aqua's orbit drifts): an estimate from VIIRS. Each day takes the first sensor in
     `priority` that delivered full data (else the first with partial data), converted to reference units with its
@@ -35,6 +37,7 @@ class Chain:
     headline: Link                       # reference -> target
     region_deg: float
     observed_until: pd.Timestamp | None = None   # target observed is the headline up to this day
+    observed_from: pd.Timestamp | None = None    # no headline value before this day
 
 
 def build_chain(headline_cfg: dict, links: list[Link], region_deg: float) -> Chain | None:
@@ -46,9 +49,9 @@ def build_chain(headline_cfg: dict, links: list[Link], region_deg: float) -> Cha
         raise ValueError(f"viirs_priority must start with the reference sensor {ref}")
     continuity = {s: (None if s == ref else by_pair.get((s, ref))) for s in headline_cfg["viirs_priority"]}
     priority = [s for s in headline_cfg["viirs_priority"] if s == ref or continuity[s] is not None]
-    until = headline_cfg.get("observed_until")
+    until, since = headline_cfg.get("observed_until"), headline_cfg.get("observed_from")
     return Chain(target, headline_cfg["label"], ref, priority, continuity, by_pair[(ref, target)], region_deg,
-                 pd.Timestamp(until) if until else None)
+                 pd.Timestamp(until) if until else None, pd.Timestamp(since) if since else None)
 
 
 def row_ratios(link: Link | None, lat: np.ndarray, lon: np.ndarray, month: np.ndarray, region_deg: float) -> np.ndarray:
@@ -141,6 +144,11 @@ class HarmonizedSeries:
             ref_value = np.where(use, 0.0, ref_value)
             estimated = np.where(use, 0.0, estimated)
             substituted = np.where(use, 0.0, substituted)
+        if self.chain.observed_from is not None:
+            before = dates < self.chain.observed_from
+            value = np.where(before, np.nan, value)
+            src_status = np.where(before, GAP, src_status)
+            ref_value, estimated, substituted = (np.where(before, 0.0, a) for a in (ref_value, estimated, substituted))
         return Daily(value, ref_value, src_status, estimated, substituted)
 
     def calendar(self, inside: np.ndarray, day: np.ndarray, dates: pd.DatetimeIndex, status: np.ndarray,

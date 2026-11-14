@@ -186,3 +186,31 @@ def test_api_serves_any_box_from_the_tiles_and_explains_a_box_that_is_too_large(
             assert big["status"] == "insufficient_history" and "too large" in big["message"]
     finally:
         calendar_api.STORE.clear()
+
+
+def test_country_files_drop_cells_our_modis_downloads_flag_as_static_sources(tmp_path):
+    """MODIS 2000-2011 comes from the FIRMS yearly summaries by country (one CSV per country, newer static-source
+    flag): fire cell-days in a cell our own MODIS downloads mark as a static land source (type 2) are dropped."""
+    cfg = load_config(env={"GODSEYE_DATA_DIR": str(tmp_path / "data")})
+    days = pd.date_range("2010-03-01", "2010-03-10")
+    download = tmp_path / "DL_FIRE_M-C61_9.zip"
+    static_row = f"{SPOTS[0][0]},{SPOTS[0][1]},330,1,1,2015-01-01,1030,Aqua,MODIS,80,6.03,290,5.5,D,2"
+    write_zip(download, "fire_archive_M-C61_9.csv", f"{HEADER}\n{static_row}\n")
+    country = tmp_path / "modis_2010_all_countries.zip"
+    rows = csv_rows(days, "Aqua", "MODIS", 80, "6.2").split("\n")
+    with zipfile.ZipFile(country, "w") as z:                  # Jordan's rows in one file, the rest in another
+        z.writestr("modis/2010/modis_2010_Jordan.csv", "\n".join([HEADER] + [r for r in rows[1:] if r.startswith(
+            ("32.0012", "31.5"))]) + "\n")
+        z.writestr("modis/2010/modis_2010_Other.csv", "\n".join([HEADER] + [r for r in rows[1:] if r and not
+                   r.startswith(("32.0012", "31.5"))]) + "\n")
+    assert archive.is_country_zip(country) and not archive.is_country_zip(download)
+    static = archive.static_mask([download], tmp_path / "mask.feather", 0.01, 1000, 1)
+    assert len(static) == 1
+    assert archive.static_mask([download], tmp_path / "mask.feather", 0.01, 1000, 1).tolist() == static.tolist()
+    meta = archive.process_zip(str(country), str(tmp_path / "parts"), "c", **archive.worker_args(cfg), static=static)
+    assert meta["filters"]["dropped_cell_days_static_source_mask"] == len(days)
+    levant = pd.read_feather(tmp_path / "parts" / "c" / "aoi_levant.feather")
+    assert len(levant) == len(days)                           # only the second Jordan spot is left
+    assert meta["rows"] == len(days) * 5 and meta["first_date"] == "2010-03-01"
+    entry = archive.manifest_entry(country, "c", meta, tmp_path)
+    assert entry["source"]["url"].endswith("/data/country/zips/modis_2010_all_countries.zip")

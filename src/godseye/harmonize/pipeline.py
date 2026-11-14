@@ -25,7 +25,7 @@ def run(cfg: Config, processed: Path, reports_dir: Path) -> list[Link]:
     h = cfg.harmonize
     grid26 = read_table(processed, "sensor_grid_daily", ["sensor", "acq_date", "cell_lat", "cell_lon", h["metric"]])
     avail26 = read_table(processed, "sensor_availability")
-    record = archive.load_record(processed, h["metric"])     # ticket 08: the global 2012-2026 record, when ingested
+    record = archive.load_record(processed, h["metric"])     # ticket 08: the global 2000-2026 record, when ingested
     grid, avail = record if record is not None else (grid26, avail26)
     links = []
     for spec in h["links"]:
@@ -75,7 +75,7 @@ def run(cfg: Config, processed: Path, reports_dir: Path) -> list[Link]:
     elif headline is not None:                                 # multi-year: the switchover figure (ticket 08)
         fig = switchover_figure(cfg, processed, links)
         print(f"  wrote {fig}" if fig else "  no ingested AOI covers the figure AOIs: switchover figure skipped")
-    span = "2012-2026" if record is not None else "2026"
+    span = "2000-2026" if record is not None else "2026"
     fig = plot_links(links, cfg.figures_dir / "harmonization_links.png",
                      f"Sensor links, {span}: monthly ratio on days both sensors delivered full data")
     print(f"  wrote {fig}")
@@ -141,12 +141,12 @@ def switchover_figure(cfg: Config, processed: Path, links: list[Link]) -> Path |
             store = CalendarStore(read_table(d, "sensor_grid_daily"), read_table(d, "sensor_availability"),
                                   cfg.clean["grid_deg"])
             data[cfg.aois[name].label.split(" (")[0]] = switchover_series(store, chain, cfg.aois[name].bbox,
-                                                                          hl["simulated_switch_after"])
+                                                                          hl["switch_after"])
             last = store.dates[-1]
     if not data:
         return None
     window = next(s["window"] for s in h["links"] if s["target"] == hl["target"])
-    return plot_switchover(data, hl["simulated_switch_after"], pd.Timestamp(hl["observed_until"]).year, tuple(window),
+    return plot_switchover(data, hl["switch_after"], pd.Timestamp(hl["observed_until"]).year, tuple(window),
                            f"{last:%d %b}", cfg.figures_dir / "headline_switchover.png")
 
 

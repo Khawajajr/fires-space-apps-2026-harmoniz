@@ -1215,6 +1215,16 @@
           "weeks": 44,
           "coverage": 0.9091,
           "weekly_wape": 0.0571
+        },
+        "jordan_forest_belt": {
+          "weeks": 35,
+          "coverage": 0.9714,
+          "weekly_wape": 0.7091
+        },
+        "parana_delta": {
+          "weeks": 40,
+          "coverage": 0.95,
+          "weekly_wape": 0.2281
         }
       }
     },
@@ -1822,6 +1832,16 @@
           "weeks": 44,
           "coverage": 0.9545,
           "weekly_wape": 0.059
+        },
+        "jordan_forest_belt": {
+          "weeks": 35,
+          "coverage": 0.9714,
+          "weekly_wape": 0.7003
+        },
+        "parana_delta": {
+          "weeks": 40,
+          "coverage": 0.95,
+          "weekly_wape": 0.3183
         }
       }
     },
@@ -3462,6 +3482,16 @@
           "weeks": 44,
           "coverage": 0.8636,
           "weekly_wape": 0.1994
+        },
+        "jordan_forest_belt": {
+          "weeks": 35,
+          "coverage": 1.0,
+          "weekly_wape": 2.4567
+        },
+        "parana_delta": {
+          "weeks": 40,
+          "coverage": 0.95,
+          "weekly_wape": 0.9661
         }
       },
       "overpass_local_solar_time_2026": {

@@ -4,7 +4,7 @@ display_name: F.I.R.E.S.
 
 paths:
   data_dir: data            # raw/ and processed/ live under it
-  archive_dir: C:/Users/muham/Downloads/NASA_FIRE_DATA  # global FIRMS archive zips 2012-2025, read in place
+  archive_dir: C:/Users/muham/Downloads/NASA_FIRE_DATA  # FIRMS zips: MODIS 2000-2011 (yearly by country) + global downloads 2012-2025, read in place
   models_dir: models
   frontend_dir: frontend          # v0 Leaflet dashboard, served at /
   web_dir: web                    # our calendar app (ADR 0003), served at /app/
@@ -58,7 +58,8 @@ harmonize:
     reference: S-NPP-VIIRS
     viirs_priority: [S-NPP-VIIRS, NOAA-20-VIIRS, NOAA-21-VIIRS]
     figure_aois: [levant, argentina]   # headline figure (README, slides, video)
-    simulated_switch_after: 2015       # headline figure: the naive record switches MODIS -> VIIRS here (inside the real overlap)
+    observed_from: 2003-01-01   # Aqua's first full year; Terra and 2000-2002 are shown per sensor ("By sensor") only
+    switch_after: 2011          # headline figure: the real switch, S-NPP VIIRS comes online in January 2012
 
 climatology:
   # ADR 0006 (amendment ACCEPTED 2026-11-14, before multi-year data was merged): "relative" = a week is active at

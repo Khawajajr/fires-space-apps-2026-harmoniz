@@ -1,0 +1,60 @@
+{
+  "paired_days": 6905,
+  "folds": 19,
+  "method": "region_month_shrunk_ratio",
+  "ratio": 2.025,
+  "cv_scores": {
+    "identity": {
+      "region_month_wape": 0.5382,
+      "region_month_mape_y50": 0.4132,
+      "region_month_mae": 622.21,
+      "region_month_corr": 0.8922,
+      "region_week_wape": 0.5486,
+      "region_week_corr": 0.873,
+      "weekly_global_wape": 0.5074,
+      "weekly_global_corr": 0.8934,
+      "monthly_global_wape": 0.5062,
+      "monthly_global_corr": 0.9358
+    },
+    "global_ratio": {
+      "region_month_wape": 0.4593,
+      "region_month_mape_y50": 0.6782,
+      "region_month_mae": 531.042,
+      "region_month_corr": 0.8922,
+      "region_week_wape": 0.4828,
+      "region_week_corr": 0.873,
+      "weekly_global_wape": 0.128,
+      "weekly_global_corr": 0.8929,
+      "monthly_global_wape": 0.0997,
+      "monthly_global_corr": 0.9353
+    },
+    "region_month_shrunk_ratio": {
+      "region_month_wape": 0.1358,
+      "region_month_mape_y50": 0.216,
+      "region_month_mae": 156.981,
+      "region_month_corr": 0.9898,
+      "region_week_wape": 0.2037,
+      "region_week_corr": 0.9765,
+      "weekly_global_wape": 0.0715,
+      "weekly_global_corr": 0.9601,
+      "monthly_global_wape": 0.0473,
+      "monthly_global_corr": 0.9822
+    },
+    "quantile_map_region_season": {
+      "region_month_wape": 0.1548,
+      "region_month_mape_y50": 0.2389,
+      "region_month_mae": 179.02,
+      "region_month_corr": 0.9867,
+      "region_week_wape": 0.217,
+      "region_week_corr": 0.9733,
+      "weekly_global_wape": 0.0715,
+      "weekly_global_corr": 0.9586,
+      "monthly_global_wape": 0.0503,
+      "monthly_global_corr": 0.9812
+    }
+  },
+  "band_coverage_out_of_fold": 0.9142,
+  "versus_global_ratio": "beats the global ratio out of sample: region-month WAPE 0.1358 vs 0.4593 (-70.4%)",
+  "rule": "band coverage 0.88-0.95 and region-month WAPE <= 0.0857",
+  "passes": false
+}

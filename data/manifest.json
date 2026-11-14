@@ -1667,6 +1667,554 @@
       }
     },
     {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2000_all_countries.zip",
+      "bytes": 4658057,
+      "mtime_ns": 1794652116703299100,
+      "sha256": "569669636fd149a5cbc41a9c77bef994c20a700e17011940046f12e69cf977a2",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2000_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 261363,
+      "first_date": "2000-11-01",
+      "last_date": "2000-12-31",
+      "satellites": {
+        "Terra": 261363
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 34,
+        "6.2": 261329
+      },
+      "sensors": [
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "569669636fd149a5cbc41a9c77bef994c20a700e17011940046f12e69cf977a2",
+        "fire_cell_days": 231124,
+        "seconds": 5.6,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 79,
+          "dropped_confidence_below_nominal": 10869,
+          "dropped_non_vegetation_type": 7031,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 243384,
+          "dropped_cell_days_static_source_mask": 1877
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2001_all_countries.zip",
+      "bytes": 31545201,
+      "mtime_ns": 1794652122575474900,
+      "sha256": "583d617aa3cf2c51971c4600c3a402c800047a861457f8ec5efad268b4304a5b",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2001_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 1769987,
+      "first_date": "2001-01-01",
+      "last_date": "2001-12-31",
+      "satellites": {
+        "Terra": 1769987
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 323,
+        "6.2": 1769664
+      },
+      "sensors": [
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "583d617aa3cf2c51971c4600c3a402c800047a861457f8ec5efad268b4304a5b",
+        "fire_cell_days": 1536276,
+        "seconds": 18.3,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 416,
+          "dropped_confidence_below_nominal": 85898,
+          "dropped_non_vegetation_type": 59106,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 1624567,
+          "dropped_cell_days_static_source_mask": 13077
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2002_all_countries.zip",
+      "bytes": 65275966,
+      "mtime_ns": 1794652127651469600,
+      "sha256": "c6e0de8fc78daffdb10097cb2fcc7ab163b903839440a240144816db75ac6476",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2002_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 3699859,
+      "first_date": "2002-01-01",
+      "last_date": "2002-12-31",
+      "satellites": {
+        "Aqua": 1857215,
+        "Terra": 1842644
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 433,
+        "6.2": 3699426
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "c6e0de8fc78daffdb10097cb2fcc7ab163b903839440a240144816db75ac6476",
+        "fire_cell_days": 3244237,
+        "seconds": 33.3,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1014,
+          "dropped_confidence_below_nominal": 184079,
+          "dropped_non_vegetation_type": 85118,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 3429648,
+          "dropped_cell_days_static_source_mask": 23983
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2003_all_countries.zip",
+      "bytes": 90378077,
+      "mtime_ns": 1794652129666415300,
+      "sha256": "a199e68b9d4beacba7b527e7e9111f162e329f1de7f582c9966d4f1dcdb4f9f3",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2003_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 5149401,
+      "first_date": "2003-01-01",
+      "last_date": "2003-12-31",
+      "satellites": {
+        "Aqua": 3404613,
+        "Terra": 1744788
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 2166,
+        "6.2": 5147235
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "a199e68b9d4beacba7b527e7e9111f162e329f1de7f582c9966d4f1dcdb4f9f3",
+        "fire_cell_days": 4535633,
+        "seconds": 60.8,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1971,
+          "dropped_confidence_below_nominal": 243301,
+          "dropped_non_vegetation_type": 125112,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4779017,
+          "dropped_cell_days_static_source_mask": 31362
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2004_all_countries.zip",
+      "bytes": 89357956,
+      "mtime_ns": 1794652127677521000,
+      "sha256": "8b0af457b85c0831e996b172520b30c97db005704b1dbe45953e4e965cd1ac07",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2004_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 5092534,
+      "first_date": "2004-01-01",
+      "last_date": "2004-12-31",
+      "satellites": {
+        "Aqua": 3368204,
+        "Terra": 1724330
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 1419,
+        "6.2": 5091115
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "8b0af457b85c0831e996b172520b30c97db005704b1dbe45953e4e965cd1ac07",
+        "fire_cell_days": 4472606,
+        "seconds": 59.9,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1124,
+          "dropped_confidence_below_nominal": 231953,
+          "dropped_non_vegetation_type": 148683,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4710774,
+          "dropped_cell_days_static_source_mask": 33542
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2005_all_countries.zip",
+      "bytes": 89941181,
+      "mtime_ns": 1794652140314224000,
+      "sha256": "0beba8973ae3f0abd6556a44b7d1974f9a8d5b3d8af5cd43394ce803ccbedc28",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2005_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 5125152,
+      "first_date": "2005-01-01",
+      "last_date": "2005-12-31",
+      "satellites": {
+        "Aqua": 3396078,
+        "Terra": 1729074
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 1511,
+        "6.2": 5123641
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "0beba8973ae3f0abd6556a44b7d1974f9a8d5b3d8af5cd43394ce803ccbedc28",
+        "fire_cell_days": 4503420,
+        "seconds": 60.7,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1424,
+          "dropped_confidence_below_nominal": 231797,
+          "dropped_non_vegetation_type": 146489,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4745442,
+          "dropped_cell_days_static_source_mask": 35010
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2006_all_countries.zip",
+      "bytes": 82443496,
+      "mtime_ns": 1794652137307917700,
+      "sha256": "732206f60d73d92fd294dea01ad149da1dfe92536136b80f562b43a3df0d79bd",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2006_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 4688046,
+      "first_date": "2006-01-01",
+      "last_date": "2006-12-31",
+      "satellites": {
+        "Aqua": 3091680,
+        "Terra": 1596366
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 904,
+        "6.2": 4687142
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "732206f60d73d92fd294dea01ad149da1dfe92536136b80f562b43a3df0d79bd",
+        "fire_cell_days": 4116704,
+        "seconds": 56.6,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1305,
+          "dropped_confidence_below_nominal": 216060,
+          "dropped_non_vegetation_type": 130175,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 1,
+          "detections_kept": 4340505,
+          "dropped_cell_days_static_source_mask": 38562
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2007_all_countries.zip",
+      "bytes": 90015477,
+      "mtime_ns": 1794652122938644300,
+      "sha256": "98789eb5e0ad509d96908cb173845648a4e9f122519006c461870fb48adca5c0",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2007_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 5134642,
+      "first_date": "2007-01-01",
+      "last_date": "2007-12-31",
+      "satellites": {
+        "Aqua": 3380728,
+        "Terra": 1753914
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 1114,
+        "6.2": 5133528
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "98789eb5e0ad509d96908cb173845648a4e9f122519006c461870fb48adca5c0",
+        "fire_cell_days": 4532465,
+        "seconds": 60.8,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1322,
+          "dropped_confidence_below_nominal": 228382,
+          "dropped_non_vegetation_type": 123918,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4781020,
+          "dropped_cell_days_static_source_mask": 40007
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2008_all_countries.zip",
+      "bytes": 84590452,
+      "mtime_ns": 1794652136696071400,
+      "sha256": "141ca567bc38537c8888206bdfa04202836607b6f17fd2017945d1900ca4e8fa",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2008_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 4818997,
+      "first_date": "2008-01-01",
+      "last_date": "2008-12-31",
+      "satellites": {
+        "Aqua": 3197443,
+        "Terra": 1621554
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 923,
+        "6.2": 4818074
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "141ca567bc38537c8888206bdfa04202836607b6f17fd2017945d1900ca4e8fa",
+        "fire_cell_days": 4268529,
+        "seconds": 58.3,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1152,
+          "dropped_confidence_below_nominal": 214969,
+          "dropped_non_vegetation_type": 109185,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4493691,
+          "dropped_cell_days_static_source_mask": 40191
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2009_all_countries.zip",
+      "bytes": 78288906,
+      "mtime_ns": 1794652127446192200,
+      "sha256": "b60e69f721b962d681aa5e02e50ff574bf3ac81857b41aad347407182baf5c2c",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2009_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 4456446,
+      "first_date": "2009-01-01",
+      "last_date": "2009-12-31",
+      "satellites": {
+        "Aqua": 2993908,
+        "Terra": 1462538
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 703,
+        "6.2": 4455743
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "b60e69f721b962d681aa5e02e50ff574bf3ac81857b41aad347407182baf5c2c",
+        "fire_cell_days": 3941103,
+        "seconds": 39.2,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 836,
+          "dropped_confidence_below_nominal": 199325,
+          "dropped_non_vegetation_type": 103326,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4152959,
+          "dropped_cell_days_static_source_mask": 40966
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2010_all_countries.zip",
+      "bytes": 82694466,
+      "mtime_ns": 1794652139968078600,
+      "sha256": "2c33683a2acab74efdef433c573d3342b7876eb1dc5d39318e833795fbf22999",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2010_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 4715142,
+      "first_date": "2010-01-01",
+      "last_date": "2010-12-31",
+      "satellites": {
+        "Aqua": 3140524,
+        "Terra": 1574618
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 886,
+        "6.2": 4714256
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "2c33683a2acab74efdef433c573d3342b7876eb1dc5d39318e833795fbf22999",
+        "fire_cell_days": 4150246,
+        "seconds": 56.8,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1084,
+          "dropped_confidence_below_nominal": 214588,
+          "dropped_non_vegetation_type": 109760,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4389710,
+          "dropped_cell_days_static_source_mask": 45461
+        }
+      }
+    },
+    {
+      "path": "C:\\Users\\muham\\Downloads\\NASA_FIRE_DATA\\modis_2011_all_countries.zip",
+      "bytes": 82526410,
+      "mtime_ns": 1794652122154059700,
+      "sha256": "c26c94231b37745a73821a5a6ca60629f20c5e53b35122a8935a632de5b015f4",
+      "source": {
+        "provider": "NASA FIRMS",
+        "url": "https://firms.modaps.eosdis.nasa.gov/data/country/zips/modis_2011_all_countries.zip",
+        "product": "yearly summary by country (MODIS C6.1, land only)"
+      },
+      "rows": 4699314,
+      "first_date": "2011-01-01",
+      "last_date": "2011-12-31",
+      "satellites": {
+        "Aqua": 3100918,
+        "Terra": 1598396
+      },
+      "product": [
+        "archive"
+      ],
+      "versions": {
+        "6.03": 807,
+        "6.2": 4698507
+      },
+      "sensors": [
+        "Aqua-MODIS",
+        "Terra-MODIS"
+      ],
+      "ingest": {
+        "part": "c26c94231b37745a73821a5a6ca60629f20c5e53b35122a8935a632de5b015f4",
+        "fire_cell_days": 4130650,
+        "seconds": 56.4,
+        "filters": {
+          "dropped_missing_core_fields": 0,
+          "dropped_bad_coords": 0,
+          "dropped_frp_le_zero": 1287,
+          "dropped_confidence_below_nominal": 214548,
+          "dropped_non_vegetation_type": 118368,
+          "dropped_nrt_near_known_static_source": 0,
+          "dropped_nrt_superseded_by_archive": 0,
+          "dropped_duplicates": 0,
+          "detections_kept": 4365111,
+          "dropped_cell_days_static_source_mask": 48606
+        }
+      }
+    },
+    {
       "path": "data/raw/DL_FIRE_J1V-C2_839672/fire_archive_J1V-C2_839672.csv",
       "bytes": 770736646,
       "mtime_ns": 1793994086000000000,

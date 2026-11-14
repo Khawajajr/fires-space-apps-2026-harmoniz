@@ -105,7 +105,8 @@ def _year_mean(a: np.ndarray) -> np.ndarray:
 def switchover_series(store, chain, bbox, switch_after: int) -> pd.DataFrame:
     """Per year for one AOI (mean weekly fire cell-days, so 2026's partial year compares): the naive record (Aqua-MODIS
     raw to `switch_after`, then every VIIRS satellite's raw counts added up: the wrong way, shown as the problem),
-    Aqua raw, the harmonized Aqua-equivalent with its band, and S-NPP mapped to Aqua-equivalent in every year."""
+    Aqua raw, the harmonized Aqua-equivalent with its band, and S-NPP mapped to Aqua-equivalent in every year.
+    Starts at the headline's first year (chain.observed_from, else the store's first year)."""
     import dataclasses
 
     cal = store.calendar(bbox, "cell_days", "week")
@@ -124,7 +125,8 @@ def switchover_series(store, chain, bbox, switch_after: int) -> pd.DataFrame:
     out = pd.DataFrame({"year": years, "naive": _year_mean(naive), "aqua": _year_mean(raw[chain.target]),
                         "harmonized": _year_mean(h.values), "lo": _year_mean(h.lo), "hi": _year_mean(h.hi),
                         "snpp_as_aqua": _year_mean(est.values)})
-    return out[out.year >= store.first.year].reset_index(drop=True)     # ISO week 1 Jan can belong to the year before
+    first = chain.observed_from.year if chain.observed_from is not None else store.first.year
+    return out[out.year >= max(first, store.first.year)].reset_index(drop=True)   # ISO week 1 can be the year before
 
 
 def plot_switchover(series: dict[str, pd.DataFrame], switch_after: int, observed_until: int,
@@ -145,7 +147,7 @@ def plot_switchover(series: dict[str, pd.DataFrame], switch_after: int, observed
         top, bottom = np.nanmax(vals), np.nanmin(vals[vals > 0])
         ax.set_yscale("log")
         ax.set_ylim(bottom / 3, top * 4)
-        for x, text, y in ((switch_after + 0.5, "simulated switch MODIS → VIIRS", 3.2),
+        for x, text, y in ((switch_after + 0.5, "S-NPP online (Jan 2012): MODIS → VIIRS", 3.2),
                            (2018.25, "+ NOAA-20 (Apr 2018)", 2.0), (2023.17, "+ NOAA-21 (Mar 2023)", 1.25)):
             ax.axvline(x, color="#77756f", lw=0.8, ls=":")
             ax.text(x + 0.08, top * y, text, fontsize=7.5, color="#55534e", va="center")
@@ -157,8 +159,8 @@ def plot_switchover(series: dict[str, pd.DataFrame], switch_after: int, observed
     fig.legend(*axes[0, 0].get_legend_handles_labels(), loc="outside lower center", fontsize=8, frameon=False,
                ncol=2 if len(series) == 1 else 3)
     fig.suptitle(f"Same fires, changing satellites: the raw record jumps, the harmonized record doesn't\n"
-                 f"(2026 to {last_day}; the {switch_after}/{switch_after + 1} MODIS → VIIRS switch is simulated "
-                 f"inside the real overlap)", fontsize=11)
+                 f"({int(min(s.year.min() for s in series.values()))}-2026, 2026 to {last_day}; the naive record "
+                 f"switches to VIIRS when S-NPP comes online in {switch_after + 1})", fontsize=11)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=130)
     plt.close(fig)

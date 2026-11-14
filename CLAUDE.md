@@ -35,10 +35,10 @@ Display name lives in one config value; the Python package stays `godseye` (inte
 - Use the native LightGBM API, not the sklearn wrapper.
 
 ## Data
-- Archive 2012–2025: 39 global yearly zips in `C:\Users\muham\Downloads\NASA_FIRE_DATA` (~60 GB unzipped: never
+- Archive 2000–2025: 51 zips (MODIS 2000–2011 FIRMS yearly files by country + 39 global yearly 2012–2025) in `C:\Users\muham\Downloads\NASA_FIRE_DATA` (~60 GB unzipped: never
   extract). `python -m godseye ingest-archive` reads them in one parallel, resumable pass into `data/processed/archive/`
   and `data/processed/aoi/<levant|argentina>/`, plus global 0.25° tiles `data/processed/archive/tiles/` (10°, 440 files,
-  ~600 MB) that the API loads per requested box (`calendar/tiles.py`, LRU cache, row cap). ~15 min read + ~5 min merge.
+  ~700 MB) that the API loads per requested box (`calendar/tiles.py`, LRU cache, row cap). ~15 min read + ~5 min merge.
 - 2026 NRT top-up: `data/raw/FIRMS_NRT_7d_*` (public FIRMS global 7-day CSVs); re-run clean, aggregate, ingest-archive.
 - `data/raw/DL_FIRE_{M-C61,SV-C2,J1V-C2,J2V-C2}_83967x`: global, 2026-01-01 → 2026-11-06 (S-NPP ends 11-02).
   Archive to 07-31 (VIIRS) / 08-31 (MODIS), NRT after. Satellite codes are Aqua/Terra/SNPP/N20/N21; the SV-C2

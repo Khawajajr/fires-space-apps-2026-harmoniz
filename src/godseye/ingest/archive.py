@@ -4,11 +4,18 @@
 One streaming pass per zip reuses seam 1 (harmonize_schema, row_filters, global_filters) and the per-sensor fire-cell
 aggregation, and writes small partial tables under data/processed/archive/parts/<sha256>/:
 
-  daily      sensor x day global detections            -> availability 2012-2025 (gaps stay "no data", never 0)
+  daily      sensor x day global detections            -> availability 2000-2025 (gaps stay "no data", never 0)
   region     sensor x day x 10° block fire cell-days   -> global calibration of the sensor links (ticket 08)
   aoi_<name> sensor x day x 0.01° fire cells in an AOI  -> multi-year AOI stores (Levant, Argentina)
   n20_weeks  NOAA-20 0.25° cell x year x week with >= 1 fire cell-day -> weekly climatology for the risk baseline
   g025/      sensor x day x 0.25° cell, split into 10° tiles -> the global multi-year calendar for any drawn box
+
+MODIS 2000-2011 comes from the FIRMS yearly summaries by country (`modis_<year>_all_countries.zip`, one CSV per
+country, land only). Those files carry a newer static-source flag (version 6.2) than our 2012-2025 downloads (6.03 /
+61.03): about 1% of detections globally, and 5% in the Levant, are vegetation fires (type 0) there but static land
+sources (type 2) in the download. Their fire cell-days in any 0.01° cell that our MODIS downloads flag as a static
+source are dropped (`static_mask`); on 2012, held out of the mask, that brings the country file to 0.994-1.004 of our
+download (global, Levant and Argentina, Aqua and Terra).
 
 Zips run in parallel (one process each). A zip whose sha256 already has a finished part is skipped, so a crash
 resumes where it stopped. The merge step adds 2026 from the processed global tables (data/raw itself is not reread)
@@ -32,7 +39,7 @@ from godseye.clean.io import iter_csvs, read_table
 from godseye.clean.pipeline import inside_bbox
 from godseye.clean.schema import compact, harmonize_schema
 from godseye.config import Config
-from godseye.ingest.aggregate import availability, fire_cells, sensor_grid
+from godseye.ingest.aggregate import availability, cell_index, fire_cells, sensor_grid
 from godseye.ingest.manifest import FIRMS_DOWNLOAD_URL, sha256
 
 USECOLS = ["latitude", "longitude", "acq_date", "acq_time", "satellite", "confidence", "version", "frp", "daynight",
@@ -41,6 +48,42 @@ CELL_KEYS = ["sensor", "acq_date", "lat_i", "lon_i"]
 CLIMATOLOGY_YEARS = (2019, 2025)
 PART_VERSION = 2          # 2: + g025 tiles. Parts written by an older version are read again.
 TILE_DEG = 10
+COUNTRY_URL = "https://firms.modaps.eosdis.nasa.gov/data/country/zips/"
+MODIS_DOWNLOADS = "DL_FIRE_M-C61_*.zip"     # our global MODIS downloads (2012-2025): the source of the static mask
+
+
+def is_country_zip(path) -> bool:
+    """A FIRMS yearly summary by country (modis_<year>_all_countries.zip)."""
+    return Path(path).name.endswith("_all_countries.zip")
+
+
+def cell_keys(lat_i: np.ndarray, lon_i: np.ndarray) -> np.ndarray:
+    return (np.asarray(lat_i, np.int64) + 10_000) * 100_000 + (np.asarray(lon_i, np.int64) + 20_000)
+
+
+def static_cells(path: str, fine: float, chunk_rows: int) -> np.ndarray:
+    """0.01° cells with at least one static land source (type 2) in one MODIS download."""
+    keys = []
+    for _, raw in iter_csvs([path], chunk_rows, usecols=["latitude", "longitude", "type"]):
+        d = raw[raw.type.astype(str).str.strip() == "2"]
+        keys.append(cell_keys(cell_index(d.latitude.astype(float).to_numpy(), fine),
+                              cell_index(d.longitude.astype(float).to_numpy(), fine)))
+    return np.unique(np.concatenate(keys)) if keys else np.array([], np.int64)
+
+
+def static_mask(downloads: list[Path], out: Path, fine: float, chunk_rows: int, workers: int) -> np.ndarray:
+    """Union of the static cells of our MODIS downloads, cached in `out` (rebuilt when the set of zips changes)."""
+    names = sorted(p.name for p in downloads)
+    if out.exists() and out.with_suffix(".json").exists() and json.loads(out.with_suffix(".json").read_text()) == names:
+        return pd.read_feather(out).key.to_numpy()
+    with ProcessPoolExecutor(max(1, min(workers, len(downloads)))) as pool:
+        parts = list(pool.map(static_cells, map(str, downloads), [fine] * len(downloads),
+                              [chunk_rows] * len(downloads)))
+    keys = np.unique(np.concatenate(parts)) if parts else np.array([], np.int64)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame({"key": keys}).to_feather(out)
+    out.with_suffix(".json").write_text(json.dumps(names))
+    return keys
 
 
 def tile_name(lat: np.ndarray, lon: np.ndarray, deg: float = TILE_DEG) -> np.ndarray:
@@ -68,8 +111,9 @@ def cell_centres(cells: pd.DataFrame, fine: float) -> tuple[pd.Series, pd.Series
 
 
 def process_zip(path: str, out_root: str, sha: str, sensors: dict, aois: dict, fine: float, coarse: float,
-                region_deg: float, min_conf: str, chunk_rows: int) -> dict:
-    """One zip -> partial tables in out_root/<sha>/ (written to a temp folder, renamed when complete)."""
+                region_deg: float, min_conf: str, chunk_rows: int, static: np.ndarray | None = None) -> dict:
+    """One zip -> partial tables in out_root/<sha>/ (written to a temp folder, renamed when complete).
+    `static`: cell keys whose fire cell-days are dropped (country files only, see the module docstring)."""
     t0 = time.time()
     tmp, final = Path(out_root) / f"{sha}.tmp", Path(out_root) / sha
     shutil.rmtree(tmp, ignore_errors=True)
@@ -91,6 +135,10 @@ def process_zip(path: str, out_root: str, sha: str, sensors: dict, aois: dict, f
     cells = (pd.concat(parts, ignore_index=True)
              .groupby(CELL_KEYS, observed=True, sort=True)[["n_detections", "n_detections_daytime", "frp_sum_mw"]]
              .sum().reset_index())          # a cell-day split across two chunks is merged here
+    if static is not None:
+        hit = np.isin(cell_keys(cells.lat_i.to_numpy(), cells.lon_i.to_numpy()), static)
+        report["dropped_cell_days_static_source_mask"] = int(hit.sum())
+        cells = cells[~hit].reset_index(drop=True)
     cells["sensor"] = pd.Categorical(cells.sensor.astype(str), categories=list(sensors))
     cells.groupby(["sensor", "acq_date"], observed=True).n_detections.sum().reset_index() \
         .to_feather(tmp / "daily.feather")
@@ -136,7 +184,9 @@ def manifest_entry(path: Path, sha: str, meta: dict, root: Path) -> dict:
     except ValueError:
         shown = str(path.resolve())
     return {"path": shown, "bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns, "sha256": sha,
-            "source": {"provider": "NASA FIRMS", "url": FIRMS_DOWNLOAD_URL, "request": path.stem},
+            "source": ({"provider": "NASA FIRMS", "url": COUNTRY_URL + path.name,
+                        "product": "yearly summary by country (MODIS C6.1, land only)"} if is_country_zip(path)
+                       else {"provider": "NASA FIRMS", "url": FIRMS_DOWNLOAD_URL, "request": path.stem}),
             **{k: meta[k] for k in ("rows", "first_date", "last_date", "satellites", "product", "versions")},
             "sensors": meta["sensors"], "ingest": {"part": sha, "fire_cell_days": meta["fire_cell_days"],
                                                    "seconds": meta["seconds"], "filters": meta["filters"]}}
@@ -174,9 +224,16 @@ def run(cfg: Config, archive_dir: Path, workers: int | None = None, only: list[s
     print(f"  {len(entries)} zips already ingested (skipped), {len(todo)} to read")
     workers = max(1, min(workers or (os.cpu_count() or 2) - 1, len(todo) or 1))
     args = worker_args(cfg)
+    static = None
+    if any(is_country_zip(z) for z in todo):
+        downloads = sorted(Path(archive_dir).glob(MODIS_DOWNLOADS))
+        static = static_mask(downloads, out_root(cfg) / "static_mask_modis.feather", args["fine"],
+                             args["chunk_rows"], workers if len(todo) > 1 else (os.cpu_count() or 2) - 1)
+        print(f"  static-source mask: {len(static):,} cells from {len(downloads)} MODIS downloads")
     if todo:
         with ProcessPoolExecutor(workers) as pool:
-            futures = {pool.submit(process_zip, str(z), str(root), shas[z], **args): z for z in todo}
+            futures = {pool.submit(process_zip, str(z), str(root), shas[z], **args,
+                                   static=static if is_country_zip(z) else None): z for z in todo}
             for f in as_completed(futures):
                 z = futures[f]
                 meta = f.result()
@@ -257,7 +314,7 @@ def merge(cfg: Config, dirs: list[Path], entries: list[dict]) -> dict:
               for s, g in avail[avail.acq_date < pd.Timestamp("2026-01-01")].groupby("sensor", observed=True)}
     summary = {"overlap_check": overlap, "first_day": str(first.date()),
                "last_day": str(pd.Timestamp(avail.acq_date.max()).date()),
-               "status_days_2012_2025": status, "region_rows": len(region), "tiles": tiles,
+               "status_days_archive": status, "region_rows": len(region), "tiles": tiles,
                "n20_climatology_cells": int(
                    clim[["cell_lat", "cell_lon"]].drop_duplicates().shape[0]), "aois": aoi_reports,
                "merge_seconds": round(time.time() - t0, 1)}
@@ -267,7 +324,7 @@ def merge(cfg: Config, dirs: list[Path], entries: list[dict]) -> dict:
 
 
 def build_tiles(out: Path, dirs: list[Path], grid26: pd.DataFrame, sensors: list[str]) -> dict:
-    """Global sensor x day x 0.25° grid, 2012-2026, one feather file per 10° tile (archive fragments + 2026)."""
+    """Global sensor x day x 0.25° grid, 2000-2026, one feather file per 10° tile (archive fragments + 2026)."""
     tmp = out.with_name(out.name + ".tmp")
     shutil.rmtree(tmp, ignore_errors=True)
     tmp.mkdir(parents=True)

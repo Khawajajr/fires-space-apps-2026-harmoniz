@@ -264,6 +264,18 @@ def test_target_observed_is_the_headline_until_observed_until():
     assert h.lo[0, 2] < h.values[0, 2] < h.hi[0, 2]
 
 
+def test_no_headline_value_before_observed_from():
+    """Headline starts at Aqua's first full year (2003): earlier weeks are "no data", not zero and not Terra."""
+    store = synthetic_store()
+    c = chain()
+    c.observed_until = pd.Timestamp("2026-01-11")
+    c.observed_from = pd.Timestamp("2026-01-05")              # start of ISO week 2
+    store.attach_chain(c)
+    h = store.harmonized((34.9, 29.1, 39.4, 33.4), "week")
+    assert np.isnan(h.values[0, 0]) and h.data_days[0, 0] == 0 and h.estimated_days[0, 0] == 0
+    assert h.values[0, 1] == 7                                # Aqua observed from then on
+
+
 def test_day_view_has_no_band(hclient):
     h = hclient.get("/api/calendar", params={"aoi": "jordan", "unit": "day"}).json()["harmonized"]
     assert all(v is None for row in h["lo"] for v in row) and "weekly totals" in h["band_note"]

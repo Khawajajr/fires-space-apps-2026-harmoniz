@@ -128,7 +128,7 @@ def contains(outer: tuple, inner: tuple) -> bool:
 
 def pick_store(store: CalendarStore, bbox: tuple) -> CalendarStore:
     """An ingested AOI's multi-year store when the request lies inside that AOI (ticket 07); else the global
-    multi-year tiles for the box (2012-2026); else (no tiles, or a box too large for them) the global store."""
+    multi-year tiles for the box (2000-2026); else (no tiles, or a box too large for them) the global store."""
     for aoi_bbox, aoi_store in STORE.get("aoi", {}).values():
         if contains(aoi_bbox, bbox):
             return aoi_store

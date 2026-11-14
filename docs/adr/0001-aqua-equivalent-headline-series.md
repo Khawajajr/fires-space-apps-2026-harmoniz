@@ -29,3 +29,11 @@ The FIRMS archive arrived as **global yearly files for 2012–2025** (MODIS from
 - **NOAA-21 → S-NPP:** one global ratio, ×1.027 (CI 1.026–1.029).
 - **Drift check** (Aqua observed / predicted from S-NPP, global, per year): 0.97–1.04 for 2013–2021 (in the window), 1.00/1.02/1.04/1.01 for 2022–2025, and **0.905 in 2026**. The trend after the window is −0.021 per year, driven by 2026. So Aqua's drift barely moved fire cell-days until 2025, but by 2026 (overpass ~15:24) Aqua reads about 10% low. This supports switching the headline to VIIRS from 2022.
 - **Superseded:** the 2026-only provisional fit (WAPE 0.203, ratio 0.216) and its "same fires, different camera" figure.
+
+## Update (2026-11-14, afternoon): record extended back to 2000
+
+MODIS 2000–2011 was added from the FIRMS yearly summaries by country (see DATA_CARD for the source check and the static-source mask). The VIIRS links and the 2013–2021 calibration window are unchanged, and so are their numbers.
+
+- **Record shown:** 2000-11-01 to 2026 per sensor; the Aqua-equivalent headline runs from **2003** (Aqua's first full year) to 2026. July–December 2002 is left out of the headline rather than shown as a half year.
+- **Terra stays out of the headline.** We tested a Terra → Aqua link with the same leave-one-year-out test (2003–2021, 19 folds), against a rule fixed before running it (band coverage 88–95% and region-month WAPE ≤ 0.086, the headline link's). It reached WAPE 0.136, so it fails. 2000–2002 and Terra appear in "By sensor" only, as the first bullet above always intended.
+- **Headline figure:** the switch is now the real one. The naive record uses Aqua raw to 2011 and then the VIIRS satellites' raw counts from S-NPP's first year (2012). It jumps 6.0× (Levant) and 2.6× (Argentina) in 2012, while Aqua's own count moved 0.95× and 0.81×.

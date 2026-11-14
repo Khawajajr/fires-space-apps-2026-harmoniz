@@ -2,7 +2,7 @@
 Ticket 08: calibrate the sensor links on the global multi-year record (ADR 0001).
 
 With `godseye ingest-archive` done, every link is fitted on data/processed/archive/region_daily (sensor x day x 10°
-block fire cell-days, 2012-2026) and the matching availability: the VIIRS continuity links on their whole overlap,
+block fire cell-days, 2000-2026) and the matching availability: the VIIRS continuity links on their whole overlap,
 the headline link (S-NPP -> Aqua-MODIS) on its `window` (2013-2021: Aqua's original orbit). With >= 3 years the folds
 are years, so month effects are validated and the headline link is no longer provisional. Without the archive every
 link falls back to the 2026 global data, as before.
